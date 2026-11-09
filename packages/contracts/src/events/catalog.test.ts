@@ -4,7 +4,7 @@ import { eventCatalog, parseEventPayload } from './catalog.js';
 describe('event catalog', () => {
   it('names every event in the past tense with a version', () => {
     for (const key of Object.keys(eventCatalog)) {
-      expect(key).toMatch(/^[A-Z][A-Za-z]+(ed|Paid)\.v\d+$/);
+      expect(key).toMatch(/^[A-Z][A-Za-z]+(ed|Paid|Sent)\.v\d+$/);
     }
   });
 

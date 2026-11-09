@@ -117,6 +117,20 @@ export const eventCatalog = {
     producer: 'clients',
     payload: z.object({ clientId: id, advisorId: id, privacyRequestId: id }),
   },
+  // ---- Partners (Sprint 3) ----
+  /** Program state for Catalog's preferred-partner marking (Catalog may not call Partners: same layer). */
+  'PartnerProgramChanged.v1': {
+    producer: 'partners',
+    payload: z.object({
+      programId: id,
+      name: z.string(),
+      tier: z.string(),
+      active: z.boolean(),
+      propertyIds: z.array(id),
+      perks: z.array(z.object({ kind: z.string(), description: z.string() })),
+      rateCodes: z.array(z.string()),
+    }),
+  },
   // ---- Core events from ARCH ----
   'TierChanged.v1': {
     producer: 'membership',
@@ -129,7 +143,29 @@ export const eventCatalog = {
   },
   'ProposalPublished.v1': {
     producer: 'itineraries',
-    payload: z.object({ proposalId: id, tripId: id, advisorId: id }),
+    payload: z.object({
+      proposalId: id,
+      proposalVersion: z.number().int(),
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+    }),
+  },
+  /**
+   * Proposal emailed to the traveler. Carries the secret link (like VerificationCodeIssued carries a code);
+   * Notifications stores the message body redacted. The link expires with the proposal token.
+   */
+  'ProposalSent.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      proposalId: id,
+      advisorId: id,
+      advisorName: z.string(),
+      recipientEmail: z.string(),
+      recipientName: z.string(),
+      url: z.string(),
+      expiresAt: z.iso.datetime(),
+    }),
   },
   'ProposalApproved.v1': {
     producer: 'itineraries',
@@ -138,6 +174,40 @@ export const eventCatalog = {
       proposalVersion: z.number().int(),
       tripId: id,
       advisorId: id,
+      advisorUserId: id,
+    }),
+  },
+  'ProposalChangesRequested.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      proposalId: id,
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+      note: z.string(),
+    }),
+  },
+  'ProposalDeclined.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      proposalId: id,
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+      note: z.string(),
+    }),
+  },
+  /** Trip summary for the CRM's trip history (FR-CRM-03). */
+  'TripUpdated.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      tripId: id,
+      clientId: id,
+      advisorId: id,
+      title: z.string(),
+      startDate: z.iso.date().nullable(),
+      endDate: z.iso.date().nullable(),
+      status: z.string(),
     }),
   },
   'PaymentCaptured.v1': {

@@ -1,14 +1,53 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { AuditLog } from '../../audit/index.js';
+import { CatalogApi } from '../../catalog/index.js';
 import { ClientsApi, privacyRequestRowSchema } from '../../clients/index.js';
+import { PERK_KINDS, PartnersApi } from '../../partners/index.js';
 import { ADVISOR_STATUSES, IdentityApi } from '../../identity/index.js';
 import { MembershipApi, membershipViewSchema, promoCreateSchema } from '../../membership/index.js';
 import { CurrentUser, Roles, type AuthUser } from '../../../platform/http/auth.js';
 import { pageQuerySchema } from '../../../platform/http/pagination.js';
 import { ZBody, ZQuery, ZResponse } from '../../../platform/http/zod.js';
 
+const propertyQuery = z.object({ q: z.string().trim().min(2).max(100) });
+const supplierSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  type: z.enum(['hotel', 'hotel_group', 'cruise_line', 'tour_operator']),
+  commissionTerms: z.string().max(2000).optional(),
+  payoutTerms: z.string().max(2000).optional(),
+});
+const programSchema = z.object({
+  supplierId: z.uuid(),
+  name: z.string().trim().min(2).max(120),
+  tier: z.enum(['preferred', 'luxury', 'exclusive']),
+  description: z.string().max(2000).optional(),
+  perks: z
+    .array(z.object({ kind: z.enum(PERK_KINDS), description: z.string().trim().min(2).max(200) }))
+    .max(10),
+  rateCodes: z
+    .array(z.string().regex(/^[A-Z0-9_-]{2,20}$/))
+    .max(20)
+    .optional(),
+  propertyIds: z.array(z.uuid()).max(500),
+  active: z.boolean().optional(),
+  validFrom: z.iso.date().nullable().optional(),
+  validTo: z.iso.date().nullable().optional(),
+});
+const programPatchSchema = programSchema
+  .omit({ supplierId: true })
+  .partial()
+  .extend({ version: z.number().int().positive() });
 const privacyQuery = z.object({
   status: z.enum(['requested', 'verified', 'completed', 'rejected']).optional(),
 });
@@ -53,6 +92,8 @@ export class AdminController {
     private readonly membership: MembershipApi,
     private readonly audit: AuditLog,
     private readonly clients: ClientsApi,
+    private readonly catalog: CatalogApi,
+    private readonly partners: PartnersApi,
   ) {}
 
   @Get('applications')
@@ -128,6 +169,57 @@ export class AdminController {
   @Roles('support', 'admin')
   privacyExport(@Param('id', ParseUUIDPipe) id: string) {
     return this.clients.privacyExport(id);
+  }
+
+  // ---------- Catalog and partner programs (FR-INV-01, FR-PRT-01) ----------
+
+  @Post('catalog/ingest')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ZResponse(202, z.object({ suppliers: z.array(z.string()) }))
+  async ingest() {
+    return { suppliers: await this.catalog.ingestAll() };
+  }
+
+  @Get('catalog/properties')
+  findProperties(@ZQuery(propertyQuery) q: z.infer<typeof propertyQuery>) {
+    return this.catalog.findProperties(q.q);
+  }
+
+  @Get('partners/suppliers')
+  suppliers() {
+    return this.partners.listSuppliers();
+  }
+
+  @Post('partners/suppliers')
+  @ZResponse(201, z.object({ id: z.uuid() }))
+  createSupplier(
+    @ZBody(supplierSchema) body: z.infer<typeof supplierSchema>,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.partners.createSupplier(user.id, body);
+  }
+
+  @Get('partners/programs')
+  programs() {
+    return this.partners.listPrograms();
+  }
+
+  @Post('partners/programs')
+  createProgram(
+    @ZBody(programSchema) body: z.infer<typeof programSchema>,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.partners.createProgram(user.id, { ...body, rateCodes: body.rateCodes ?? [] });
+  }
+
+  @Patch('partners/programs/:id')
+  updateProgram(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZBody(programPatchSchema) body: z.infer<typeof programPatchSchema>,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const { version, ...patch } = body;
+    return this.partners.updateProgram(user.id, id, version, patch);
   }
 
   @Post('promo-codes')

@@ -8,6 +8,8 @@ import { createHttpApp } from '../src/http-app.js';
 import { MESSAGING_PORT, MemoryMessaging } from '../src/modules/notifications/index.js';
 import { totp } from '../src/modules/identity/domain/totp.js';
 import { AuthService, IdentityApi } from '../src/modules/identity/index.js';
+import { CatalogApi, FakeHotelSupplier, HOTEL_SUPPLIERS } from '../src/modules/catalog/index.js';
+import { SearchService } from '../src/modules/catalog/application/search.service.js';
 import { Database } from '../src/platform/db/database.js';
 import { EventBus } from '../src/platform/events/event-bus.js';
 import { OutboxRelay } from '../src/platform/events/outbox-relay.js';
@@ -16,7 +18,17 @@ import { buildTaskList } from '../src/platform/jobs/worker-runner.js';
 import { REDIS } from '../src/platform/tokens.js';
 
 /** Reference data loaded by migrations; never truncated between tests. */
-const SEED_TABLES = ['plans', 'courses', 'lessons', 'quiz_questions', 'forum_categories'];
+const SEED_TABLES = [
+  'plans',
+  'courses',
+  'lessons',
+  'quiz_questions',
+  'forum_categories',
+  'destinations',
+  'properties',
+  'property_sources',
+  'ingestion_runs',
+];
 
 /**
  * The real HTTP app (all modules, fake providers, in-memory email) plus a way to run the worker's work
@@ -33,6 +45,13 @@ export async function startApp() {
   const redis = app.get<Redis>(REDIS);
   const admin = new Pool({ connectionString: config.DATABASE_ADMIN_URL, max: 2 });
   const http = () => request(app.getHttpServer());
+  const suppliers = app.get<FakeHotelSupplier[]>(HOTEL_SUPPLIERS);
+
+  /** Loads both fake suppliers' content into the catalog (idempotent; catalog tables survive reset). */
+  async function ingestCatalog(): Promise<void> {
+    await app.get(CatalogApi).ingestAll();
+    await settle();
+  }
   const server = () => app.getHttpServer();
   const app_ = app;
 
@@ -56,7 +75,7 @@ export async function startApp() {
     adminAgent = null;
     const { rows } = await admin.query<{ t: string }>(
       `SELECT format('%I.%I', schemaname, tablename) AS t FROM pg_tables
-        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients')
+        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries')
           AND tablename <> ALL ($1)`,
       [SEED_TABLES],
     );
@@ -66,6 +85,13 @@ export async function startApp() {
     if (redis.status === 'wait') await redis.connect();
     await redis.flushdb();
     mail.clear();
+    for (const s of suppliers) {
+      s.priceEpoch = 0;
+      s.failing = false;
+      s.hangMs = 0;
+      s.soldOut.clear();
+    }
+    app.get(SearchService).resetBreakers();
   }
 
   /** Signs up, verifies the email code and enrols MFA. Returns a cookie-carrying agent and the TOTP secret. */
@@ -171,11 +197,18 @@ export async function startApp() {
     signInAdmin,
     admin1,
     onboardAdvisor,
+    ingestCatalog,
+    suppliers,
     close,
   };
 }
 
 export type TestApp = Awaited<ReturnType<typeof startApp>>;
+
+/** An ISO date `days` from today (UTC). */
+export function inDays(days: number): string {
+  return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+}
 
 export const application = {
   legalName: 'Ada Lovelace',
