@@ -20,7 +20,7 @@ const TABS: NavItem[] = [
 ];
 const RAIL: NavItem[] = [
   { href: '/learn', label: 'Learn', icon: GraduationCap },
-  { href: '/application', label: 'Account and membership', icon: IdCard },
+  { href: '/application', label: 'Membership', icon: IdCard },
 ];
 
 /** Advisor portal (session cookie + MFA enforced by the API; this guard only redirects). */
