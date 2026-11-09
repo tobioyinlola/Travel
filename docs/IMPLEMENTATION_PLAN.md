@@ -145,7 +145,13 @@ renewals and dunning (FR-MEM-03, Sprint 8).
 
 Fakes: `FakeKycProvider`, `FakeSignatureProvider`, `FakeBilling` (Membership's own `BillingPort`, ADR-11), Mailpit or the `log` transport for email.
 
-### Sprint 2-3: Learning, Clients
+### Sprint 2-3: Learning, Clients — DONE (Sprint 2)
+
+Status: complete, see ADR-12. Also done: RLS on advisor-owned tables (carried over from Sprint 1).
+Deferred: course authoring UI (the Essentials course is seeded by migration; content needs review by the
+advisor-success lead before launch), forum pagination beyond 500 replies, CRM trip history population (arrives
+with Itineraries and Booking events in Sprints 3-6), support-role web console (support uses the API until
+then; the admin console is admin-only).
 
 | Module   | Requirements                                                                                                                                                                                 |
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -48,3 +48,26 @@ export function formatMoney(m: { amountMinor: string; currency: string }): strin
   const value = Number(m.amountMinor) / 10 ** digits; // display only; never used for arithmetic
   return new Intl.NumberFormat('en', { style: 'currency', currency: m.currency }).format(value);
 }
+
+function minorDigits(currency: string): number {
+  return (
+    new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions()
+      .maximumFractionDigits ?? 2
+  );
+}
+
+/** "150" or "150.5" in major units -> minor-unit string, exactly (no floating point). */
+export function toMinor(major: string, currency: string): string {
+  const digits = minorDigits(currency);
+  const m = /^(\d+)(?:\.(\d+))?$/.exec(major.trim());
+  if (!m) throw new Error('Enter a number like 150 or 150.50');
+  const frac = (m[2] ?? '').slice(0, digits).padEnd(digits, '0');
+  return String(BigInt(m[1]! + frac));
+}
+
+export function toMajor(amountMinor: string, currency: string): string {
+  const digits = minorDigits(currency);
+  if (digits === 0) return amountMinor;
+  const s = amountMinor.padStart(digits + 1, '0');
+  return `${s.slice(0, -digits)}.${s.slice(-digits)}`;
+}

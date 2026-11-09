@@ -494,6 +494,44 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
 
   // ---------- Queries ----------
 
+  /**
+   * The advisor behind a signed-in user, if their status is one of `allowed`; otherwise a 403 problem.
+   * Used by modules whose features are for members only (CRM, community).
+   */
+  async requireAdvisor(userId: string, allowed: readonly AdvisorStatus[]): Promise<AdvisorSummary> {
+    const a = await this.getAdvisorByUser(userId);
+    if (!a)
+      throw problem(
+        HttpStatus.FORBIDDEN,
+        'not-an-advisor',
+        'Submit your advisor application first',
+      );
+    if (!allowed.includes(a.status)) {
+      throw problem(
+        HttpStatus.FORBIDDEN,
+        'advisor-status',
+        'Not available for your account yet',
+        `Current status: ${a.status}.`,
+      );
+    }
+    return a;
+  }
+
+  async getDisplayName(userId: string): Promise<string> {
+    const [u] = await this.db.read<{
+      display_name: string | null;
+      legal_name: string | null;
+      role: string;
+    }>(
+      'identity',
+      `SELECT u.display_name, a.legal_name, u.role FROM identity.users u
+         LEFT JOIN identity.advisors a ON a.user_id = u.id WHERE u.id = $1`,
+      [userId],
+    );
+    if (!u) return 'Unknown';
+    return u.display_name ?? u.legal_name ?? (u.role === 'advisor' ? 'Advisor' : 'Team member');
+  }
+
   async getApplication(advisorId: string): Promise<AdvisorApplicationView> {
     const [a] = await this.db.read<AdvisorRow>(
       'identity',

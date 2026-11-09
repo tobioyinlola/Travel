@@ -44,6 +44,14 @@ export class Tx {
     return rows[0] as R;
   }
 
+  /**
+   * Sets a transaction-local setting, e.g. the advisor id that row-level security policies read
+   * (`current_setting('atp.advisor_id', true)`). Cleared automatically at commit or rollback.
+   */
+  async setLocal(name: `atp.${string}`, value: string): Promise<void> {
+    await this.client.query('SELECT set_config($1, $2, true)', [name, value]);
+  }
+
   /** Write a domain event to the outbox in this transaction. Returns the event id. */
   publish(event: DomainEventInput): Promise<string> {
     if (!this.hooks) throw new Error('Event publishing is not wired (PlatformModule not loaded)');

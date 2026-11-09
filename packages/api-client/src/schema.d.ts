@@ -308,6 +308,342 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientsController_list_v1"];
+        put?: never;
+        post: operations["ClientsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ClientsController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ClientsController_update_v1"];
+        trace?: never;
+    };
+    "/v1/clients/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientsController_archive_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clients/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientsController_restore_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clients/{id}/companions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientsController_addCompanion_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clients/{id}/companions/{companionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ClientsController_removeCompanion_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/clients/{id}/privacy-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ClientsController_privacy_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/learning/courses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LearningController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/learning/courses/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LearningController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/learning/courses/{slug}/lessons/{position}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LearningController_lesson_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/learning/courses/{slug}/lessons/{position}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LearningController_complete_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/learning/courses/{slug}/quiz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LearningController_quiz_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/learning/courses/{slug}/quiz/attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LearningController_submit_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommunityController_categories_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommunityController_topics_v1"];
+        put?: never;
+        post: operations["CommunityController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/topics/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommunityController_topic_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["CommunityController_editTopic_v1"];
+        trace?: never;
+    };
+    "/v1/community/topics/{id}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CommunityController_reply_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/posts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["CommunityController_editPost_v1"];
+        trace?: never;
+    };
+    "/v1/community/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CommunityController_report_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/moderation/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommunityController_reports_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/community/moderation/{type}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CommunityController_moderate_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/applications": {
         parameters: {
             query?: never;
@@ -350,6 +686,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AdminController_decide_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/privacy-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_privacyRequests_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/privacy-requests/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminController_verifyPrivacy_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/privacy-requests/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminController_rejectPrivacy_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/privacy-requests/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_privacyExport_v1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1273,6 +1673,1269 @@ export interface operations {
             };
         };
     };
+    ClientsController_list_v1: {
+        parameters: {
+            query?: {
+                q?: string;
+                status?: "active" | "archived";
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            email: string | null;
+                            phone: string | null;
+                            homeCity: string | null;
+                            /** @enum {string} */
+                            status: "active" | "archived" | "erased";
+                            updatedAt: string;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    firstName: string;
+                    lastName: string;
+                    /** Format: email */
+                    email?: string | null;
+                    phone?: string | null;
+                    /** Format: date */
+                    dateOfBirth?: string | null;
+                    homeCity?: string | null;
+                    notes?: string;
+                    preferences?: {
+                        budgetPerNight?: {
+                            min?: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            max?: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                        dietary?: string[];
+                        accessibility?: string;
+                        loyalty?: {
+                            program: string;
+                            number: string;
+                        }[];
+                        /** @enum {string} */
+                        travelPace?: "relaxed" | "balanced" | "packed";
+                        other?: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    firstName?: string;
+                    lastName?: string;
+                    /** Format: email */
+                    email?: string | null;
+                    phone?: string | null;
+                    /** Format: date */
+                    dateOfBirth?: string | null;
+                    homeCity?: string | null;
+                    notes?: string;
+                    preferences?: {
+                        budgetPerNight?: {
+                            min?: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            max?: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                        dietary?: string[];
+                        accessibility?: string;
+                        loyalty?: {
+                            program: string;
+                            number: string;
+                        }[];
+                        /** @enum {string} */
+                        travelPace?: "relaxed" | "balanced" | "packed";
+                        other?: string;
+                    };
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_restore_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_addCompanion_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    firstName: string;
+                    lastName: string;
+                    relationship: string;
+                    /** Format: date */
+                    dateOfBirth?: string | null;
+                    notes?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_removeCompanion_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                companionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string | null;
+                        phone: string | null;
+                        homeCity: string | null;
+                        /** @enum {string} */
+                        status: "active" | "archived" | "erased";
+                        updatedAt: string;
+                        dateOfBirth: string | null;
+                        notes: string;
+                        preferences: {
+                            budgetPerNight?: {
+                                min?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                max?: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            hotelStyles?: ("boutique" | "luxury" | "resort" | "business" | "family" | "eco" | "all_inclusive" | "villa")[];
+                            dietary?: string[];
+                            accessibility?: string;
+                            loyalty?: {
+                                program: string;
+                                number: string;
+                            }[];
+                            /** @enum {string} */
+                            travelPace?: "relaxed" | "balanced" | "packed";
+                            other?: string;
+                        };
+                        version: number;
+                        createdAt: string;
+                        companions: {
+                            /** Format: uuid */
+                            id: string;
+                            firstName: string;
+                            lastName: string;
+                            relationship: string;
+                            dateOfBirth: string | null;
+                            notes: string;
+                        }[];
+                        trips: {
+                            /** Format: uuid */
+                            tripId: string;
+                            title: string;
+                            startDate: string | null;
+                            endDate: string | null;
+                            status: string;
+                            bookingIds: string[];
+                        }[];
+                        privacyRequests: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "export" | "delete";
+                            status: string;
+                            createdAt: string;
+                            dueAt: string;
+                            completedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ClientsController_privacy_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    kind: "export" | "delete";
+                    /** @default  */
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+        };
+    };
+    LearningController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string;
+                        title: string;
+                        summary: string;
+                        isEssentials: boolean;
+                        lessonCount: number;
+                        lessonsCompleted: number;
+                        passed: boolean;
+                    }[];
+                };
+            };
+        };
+    };
+    LearningController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string;
+                        title: string;
+                        summary: string;
+                        isEssentials: boolean;
+                        lessonCount: number;
+                        lessonsCompleted: number;
+                        passed: boolean;
+                        passMarkPct: number;
+                        lessons: {
+                            /** Format: uuid */
+                            id: string;
+                            position: number;
+                            title: string;
+                            estMinutes: number;
+                            completed: boolean;
+                        }[];
+                        quiz: {
+                            questionCount: number;
+                            unlocked: boolean;
+                            attemptsToday: number;
+                            attemptsLeftToday: number;
+                            bestScorePct: number | null;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    LearningController_lesson_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        position: number;
+                        title: string;
+                        bodyMarkdown: string;
+                        estMinutes: number;
+                        lessonCount: number;
+                    };
+                };
+            };
+        };
+    };
+    LearningController_complete_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+                position: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LearningController_quiz_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        passMarkPct: number;
+                        attemptsLeftToday: number;
+                        questions: {
+                            /** Format: uuid */
+                            id: string;
+                            prompt: string;
+                            options: {
+                                id: string;
+                                text: string;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    LearningController_submit_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    answers: {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        scorePct: number;
+                        passed: boolean;
+                        passMarkPct: number;
+                        incorrect: string[];
+                        review: {
+                            questionId: string;
+                            correctOption: string;
+                            explanation: string;
+                        }[] | null;
+                        bookingUnlocked: boolean;
+                    };
+                };
+            };
+        };
+    };
+    CommunityController_categories_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string;
+                        name: string;
+                        description: string;
+                        topicCount: number;
+                    }[];
+                };
+            };
+        };
+    };
+    CommunityController_topics_v1: {
+        parameters: {
+            query?: {
+                category?: string;
+                q?: string;
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            category: string;
+                            title: string;
+                            authorName: string;
+                            replyCount: number;
+                            locked: boolean;
+                            hidden: boolean;
+                            lastActivityAt: string;
+                            createdAt: string;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    CommunityController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    category: string;
+                    title: string;
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+        };
+    };
+    CommunityController_topic_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        category: string;
+                        categoryName: string;
+                        title: string;
+                        locked: boolean;
+                        opening: {
+                            /** Format: uuid */
+                            id: string;
+                            authorName: string;
+                            body: string;
+                            hidden: boolean;
+                            createdAt: string;
+                            editedAt: string | null;
+                            mine: boolean;
+                        };
+                        replies: {
+                            /** Format: uuid */
+                            id: string;
+                            authorName: string;
+                            body: string;
+                            hidden: boolean;
+                            createdAt: string;
+                            editedAt: string | null;
+                            mine: boolean;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    CommunityController_editTopic_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_reply_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+        };
+    };
+    CommunityController_editPost_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CommunityController_report_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    targetType: "topic" | "post";
+                    /** Format: uuid */
+                    targetId: string;
+                    /** @enum {string} */
+                    reason: "spam" | "harassment" | "off_topic" | "misinformation" | "other";
+                };
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        hidden: boolean;
+                    };
+                };
+            };
+        };
+    };
+    CommunityController_reports_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        targetType: "topic" | "post";
+                        /** Format: uuid */
+                        targetId: string;
+                        /** Format: uuid */
+                        topicId: string;
+                        topicTitle: string;
+                        authorName: string;
+                        body: string;
+                        hidden: boolean;
+                        reports: number;
+                        reasons: string[];
+                        firstReportedAt: string;
+                    }[];
+                };
+            };
+        };
+    };
+    CommunityController_moderate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    action: "hide" | "dismiss" | "unhide" | "lock" | "unlock";
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AdminController_list_v1: {
         parameters: {
             query?: {
@@ -1429,6 +3092,114 @@ export interface operations {
                 };
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminController_privacyRequests_v1: {
+        parameters: {
+            query?: {
+                status?: "requested" | "verified" | "completed" | "rejected";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        /** Format: uuid */
+                        advisorId: string;
+                        clientName: string;
+                        /** @enum {string} */
+                        kind: "export" | "delete";
+                        status: string;
+                        requesterNote: string;
+                        verificationNote: string | null;
+                        rejectedReason: string | null;
+                        createdAt: string;
+                        dueAt: string;
+                        completedAt: string | null;
+                        hasExport: boolean;
+                    }[];
+                };
+            };
+        };
+    };
+    AdminController_verifyPrivacy_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    note: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminController_rejectPrivacy_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    note: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminController_privacyExport_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

@@ -7,13 +7,16 @@ import { loadConfig } from '../src/config.js';
 import { createHttpApp } from '../src/http-app.js';
 import { MESSAGING_PORT, MemoryMessaging } from '../src/modules/notifications/index.js';
 import { totp } from '../src/modules/identity/domain/totp.js';
-import { AuthService } from '../src/modules/identity/index.js';
+import { AuthService, IdentityApi } from '../src/modules/identity/index.js';
 import { Database } from '../src/platform/db/database.js';
 import { EventBus } from '../src/platform/events/event-bus.js';
 import { OutboxRelay } from '../src/platform/events/outbox-relay.js';
 import { JobRegistry } from '../src/platform/jobs/job-registry.js';
 import { buildTaskList } from '../src/platform/jobs/worker-runner.js';
 import { REDIS } from '../src/platform/tokens.js';
+
+/** Reference data loaded by migrations; never truncated between tests. */
+const SEED_TABLES = ['plans', 'courses', 'lessons', 'quiz_questions', 'forum_categories'];
 
 /**
  * The real HTTP app (all modules, fake providers, in-memory email) plus a way to run the worker's work
@@ -30,6 +33,8 @@ export async function startApp() {
   const redis = app.get<Redis>(REDIS);
   const admin = new Pool({ connectionString: config.DATABASE_ADMIN_URL, max: 2 });
   const http = () => request(app.getHttpServer());
+  const server = () => app.getHttpServer();
+  const app_ = app;
 
   async function settle(): Promise<void> {
     for (let i = 0; i < 20; i++) {
@@ -48,9 +53,12 @@ export async function startApp() {
   }
 
   async function reset(): Promise<void> {
+    adminAgent = null;
     const { rows } = await admin.query<{ t: string }>(
       `SELECT format('%I.%I', schemaname, tablename) AS t FROM pg_tables
-        WHERE schemaname IN ('identity', 'notifications', 'membership') AND tablename <> 'plans'`,
+        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients')
+          AND tablename <> ALL ($1)`,
+      [SEED_TABLES],
     );
     await admin.query(`TRUNCATE ${rows.map((r) => r.t).join(', ')}, platform.outbox, platform.processed_events,
       platform.idempotency_keys, platform.webhook_inbox CASCADE`);
@@ -84,6 +92,53 @@ export async function startApp() {
     };
   }
 
+  let adminAgent: ReturnType<typeof request.agent> | null = null;
+
+  /** Signed-in admin for this test (created once per reset). */
+  async function admin1() {
+    adminAgent ??= await signInAdmin();
+    return adminAgent;
+  }
+
+  /**
+   * Full AC-01 path to an Approved advisor (and Active with `essentials: true`): sign-up, MFA, application,
+   * fake KYC + signature, plan with a waiver, admin acceptance.
+   */
+  async function onboardAdvisor(email: string, opts: { essentials?: boolean } = {}) {
+    const a = await signUpAdvisor(email);
+    const app = (await a.agent.post('/v1/advisor-application').send(application).expect(201)).body;
+    await settle();
+    const view = (await a.agent.get('/v1/advisor-application').expect(200)).body;
+    await request(server())
+      .post(`/v1/dev/fake-kyc/${view.kyc.redirectUrl.match(/fake-kyc\/([^?]+)/)[1]}/pass`)
+      .expect(202);
+    await request(server())
+      .post(
+        `/v1/dev/fake-signature/${view.agreement.signingUrl.match(/fake-signature\/(.+)$/)[1]}/sign`,
+      )
+      .expect(202);
+    await settle();
+    const adm = await admin1();
+    await adm
+      .post('/v1/admin/promo-codes')
+      .send({ code: `W${Math.random().toString(36).slice(2, 10)}`, kind: 'waiver' })
+      .expect(201)
+      .then(async (r) => {
+        await a.agent
+          .post('/v1/membership/checkout')
+          .set('Idempotency-Key', crypto.randomUUID())
+          .send({ planCode: 'annual', promoCode: r.body.code, paymentMethodRef: 'pm_fake_visa' })
+          .expect(200);
+      });
+    await adm
+      .post(`/v1/admin/applications/${app.id}/decision`)
+      .send({ decision: 'accept' })
+      .expect(200);
+    await settle();
+    if (opts.essentials) await app_.get(IdentityApi).recordEssentialsPassed(app.id);
+    return { ...a, advisorId: app.id as string };
+  }
+
   /** Creates an admin and signs them in with MFA. */
   async function signInAdmin(email = 'admin@atp.test', password = 'admin password long enough') {
     await app.get(AuthService).createStaffUser({ email, password, role: 'admin' });
@@ -103,7 +158,21 @@ export async function startApp() {
     await app.close();
   }
 
-  return { app, db, mail, admin, redis, http, settle, reset, signUpAdvisor, signInAdmin, close };
+  return {
+    app,
+    db,
+    mail,
+    admin,
+    redis,
+    http,
+    settle,
+    reset,
+    signUpAdvisor,
+    signInAdmin,
+    admin1,
+    onboardAdvisor,
+    close,
+  };
 }
 
 export type TestApp = Awaited<ReturnType<typeof startApp>>;

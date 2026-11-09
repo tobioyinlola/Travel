@@ -100,6 +100,23 @@ export const eventCatalog = {
     producer: 'membership',
     payload: z.object({ membershipId: id, advisorId: id, userId: id, endsAt: z.iso.datetime() }),
   },
+  // ---- Learning (Sprint 2) ----
+  'CoursePassed.v1': {
+    producer: 'learning',
+    payload: z.object({
+      courseId: id,
+      courseSlug: z.string(),
+      advisorId: id,
+      userId: id,
+      scorePct: z.number().int(),
+    }),
+  },
+  // ---- Clients (Sprint 2) ----
+  /** A verified privacy deletion: every module holding this client's personal data must erase it (FR-CRM-08). */
+  'ClientDataErased.v1': {
+    producer: 'clients',
+    payload: z.object({ clientId: id, advisorId: id, privacyRequestId: id }),
+  },
   // ---- Core events from ARCH ----
   'TierChanged.v1': {
     producer: 'membership',

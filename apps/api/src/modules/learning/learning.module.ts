@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
+import { CoursesService } from './application/courses.service.js';
+import { ForumService } from './application/forum.service.js';
+import { CommunityController } from './http/community.controller.js';
+import { LearningController } from './http/learning.controller.js';
 
 /**
- * Learning module (core domain layer). Courses, quizzes, Essentials gate, forum (FR-LRN, FR-CMT).
- * Owns schema(s): learning.
- * May call (public interfaces only): shared-kernel, identity, notifications, audit.
+ * Learning module (core domain layer). Courses, quizzes, the Essentials gate, community forum
+ * (FR-LRN, FR-CMT). Owns schema: learning. May call: shared-kernel, identity.
  */
 @Module({
-  providers: [],
-  exports: [],
+  controllers: [LearningController, CommunityController],
+  providers: [CoursesService, ForumService],
 })
 export class LearningModule {}

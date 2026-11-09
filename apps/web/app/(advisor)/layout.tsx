@@ -5,8 +5,10 @@ import { Shell } from '@/components/shell';
 import { useRequireRole } from '@/lib/session';
 
 const NAV = [
-  { href: '/application', label: 'Application' },
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/application', label: 'Account' },
+  { href: '/learn', label: 'Learn' },
+  { href: '/clients', label: 'Clients' },
+  { href: '/community', label: 'Community' },
 ];
 
 /** Advisor portal: session cookie + MFA (enforced by the API; this guard only redirects). */

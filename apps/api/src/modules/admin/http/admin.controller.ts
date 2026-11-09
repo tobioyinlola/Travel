@@ -2,12 +2,17 @@ import { Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } fro
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { AuditLog } from '../../audit/index.js';
+import { ClientsApi, privacyRequestRowSchema } from '../../clients/index.js';
 import { ADVISOR_STATUSES, IdentityApi } from '../../identity/index.js';
 import { MembershipApi, membershipViewSchema, promoCreateSchema } from '../../membership/index.js';
 import { CurrentUser, Roles, type AuthUser } from '../../../platform/http/auth.js';
 import { pageQuerySchema } from '../../../platform/http/pagination.js';
 import { ZBody, ZQuery, ZResponse } from '../../../platform/http/zod.js';
 
+const privacyQuery = z.object({
+  status: z.enum(['requested', 'verified', 'completed', 'rejected']).optional(),
+});
+const privacyDecision = z.object({ note: z.string().trim().min(3).max(2000) });
 const listQuery = pageQuerySchema.extend({ status: z.enum(ADVISOR_STATUSES).optional() });
 const decisionSchema = z.object({
   decision: z.enum(['accept', 'reject', 'request_info']),
@@ -47,6 +52,7 @@ export class AdminController {
     private readonly identity: IdentityApi,
     private readonly membership: MembershipApi,
     private readonly audit: AuditLog,
+    private readonly clients: ClientsApi,
   ) {}
 
   @Get('applications')
@@ -85,6 +91,43 @@ export class AdminController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.identity.decideApplication(id, body.decision, body.note ?? null, user.id);
+  }
+
+  // ---------- Privacy requests (FR-CRM-08). Support verifies the requester; admins can too. ----------
+
+  @Get('privacy-requests')
+  @Roles('support', 'admin')
+  @ZResponse(200, z.array(privacyRequestRowSchema))
+  privacyRequests(@ZQuery(privacyQuery) q: z.infer<typeof privacyQuery>) {
+    return this.clients.listPrivacyRequests(q.status);
+  }
+
+  @Post('privacy-requests/:id/verify')
+  @Roles('support', 'admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async verifyPrivacy(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZBody(privacyDecision) body: z.infer<typeof privacyDecision>,
+    @CurrentUser() user: AuthUser,
+  ) {
+    await this.clients.verifyPrivacyRequest(user.id, id, body.note);
+  }
+
+  @Post('privacy-requests/:id/reject')
+  @Roles('support', 'admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async rejectPrivacy(
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZBody(privacyDecision) body: z.infer<typeof privacyDecision>,
+    @CurrentUser() user: AuthUser,
+  ) {
+    await this.clients.rejectPrivacyRequest(user.id, id, body.note);
+  }
+
+  @Get('privacy-requests/:id/export')
+  @Roles('support', 'admin')
+  privacyExport(@Param('id', ParseUUIDPipe) id: string) {
+    return this.clients.privacyExport(id);
   }
 
   @Post('promo-codes')

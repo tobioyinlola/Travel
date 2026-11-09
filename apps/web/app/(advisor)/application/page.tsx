@@ -48,8 +48,13 @@ export default function ApplicationPage() {
       <div>
         <h1 className="text-2xl font-semibold">Your application</h1>
         {app && (
-          <p className="mt-2 flex items-center gap-2 text-muted">
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-muted">
             <StatusBadge status={app.status} /> {STATUS_COPY[app.status]}
+            {app.status === 'approved' && (
+              <a className="text-brand-700 underline" href="/learn/essentials">
+                Start Essentials
+              </a>
+            )}
           </p>
         )}
       </div>

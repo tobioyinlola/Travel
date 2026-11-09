@@ -55,6 +55,14 @@ export class IdentityApi {
     return this.advisors.recordEssentialsPassed(advisorId);
   }
 
+  requireAdvisor(userId: string, allowed: readonly AdvisorStatus[]): Promise<AdvisorSummary> {
+    return this.advisors.requireAdvisor(userId, allowed);
+  }
+
+  getDisplayName(userId: string): Promise<string> {
+    return this.advisors.getDisplayName(userId);
+  }
+
   canBook(advisorId: string): Promise<{ allowed: boolean; reason: string | null }> {
     return this.advisors.canBook(advisorId);
   }

@@ -2468,6 +2468,4022 @@
         ]
       }
     },
+    "/v1/clients": {
+      "get": {
+        "operationId": "ClientsController_list_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "active",
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 25,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "email": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "phone": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "homeCity": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "archived",
+                              "erased"
+                            ]
+                          },
+                          "updatedAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "email",
+                          "phone",
+                          "homeCity",
+                          "status",
+                          "updatedAt"
+                        ]
+                      }
+                    },
+                    "nextCursor": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      },
+      "post": {
+        "operationId": "ClientsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "email": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "phone": {
+                    "nullable": true,
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{6,14}$"
+                  },
+                  "dateOfBirth": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "homeCity": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "notes": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "preferences": {
+                    "type": "object",
+                    "properties": {
+                      "budgetPerNight": {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                              },
+                              "currency": {
+                                "type": "string",
+                                "pattern": "^[A-Z]{3}$"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "max": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                              },
+                              "currency": {
+                                "type": "string",
+                                "pattern": "^[A-Z]{3}$"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          }
+                        }
+                      },
+                      "hotelStyles": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "boutique",
+                            "luxury",
+                            "resort",
+                            "business",
+                            "family",
+                            "eco",
+                            "all_inclusive",
+                            "villa"
+                          ]
+                        }
+                      },
+                      "dietary": {
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        }
+                      },
+                      "accessibility": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "loyalty": {
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "program": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "number": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
+                            }
+                          },
+                          "required": [
+                            "program",
+                            "number"
+                          ]
+                        }
+                      },
+                      "travelPace": {
+                        "type": "string",
+                        "enum": [
+                          "relaxed",
+                          "balanced",
+                          "packed"
+                        ]
+                      },
+                      "other": {
+                        "type": "string",
+                        "maxLength": 2000
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/clients/{id}": {
+      "get": {
+        "operationId": "ClientsController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      },
+      "patch": {
+        "operationId": "ClientsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "email": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "phone": {
+                    "nullable": true,
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{6,14}$"
+                  },
+                  "dateOfBirth": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "homeCity": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "notes": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "preferences": {
+                    "type": "object",
+                    "properties": {
+                      "budgetPerNight": {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                              },
+                              "currency": {
+                                "type": "string",
+                                "pattern": "^[A-Z]{3}$"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "max": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string",
+                                "pattern": "^\\d+$"
+                              },
+                              "currency": {
+                                "type": "string",
+                                "pattern": "^[A-Z]{3}$"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          }
+                        }
+                      },
+                      "hotelStyles": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "boutique",
+                            "luxury",
+                            "resort",
+                            "business",
+                            "family",
+                            "eco",
+                            "all_inclusive",
+                            "villa"
+                          ]
+                        }
+                      },
+                      "dietary": {
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        }
+                      },
+                      "accessibility": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "loyalty": {
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "program": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "number": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 40
+                            }
+                          },
+                          "required": [
+                            "program",
+                            "number"
+                          ]
+                        }
+                      },
+                      "travelPace": {
+                        "type": "string",
+                        "enum": [
+                          "relaxed",
+                          "balanced",
+                          "packed"
+                        ]
+                      },
+                      "other": {
+                        "type": "string",
+                        "maxLength": 2000
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "version"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/clients/{id}/archive": {
+      "post": {
+        "operationId": "ClientsController_archive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/clients/{id}/restore": {
+      "post": {
+        "operationId": "ClientsController_restore_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/clients/{id}/companions": {
+      "post": {
+        "operationId": "ClientsController_addCompanion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "relationship": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 50
+                  },
+                  "dateOfBirth": {
+                    "nullable": true,
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "lastName",
+                  "relationship"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/clients/{id}/companions/{companionId}": {
+      "delete": {
+        "operationId": "ClientsController_removeCompanion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "companionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "homeCity": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "active",
+                        "archived",
+                        "erased"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    },
+                    "dateOfBirth": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "preferences": {
+                      "type": "object",
+                      "properties": {
+                        "budgetPerNight": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "max": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string",
+                                  "pattern": "^\\d+$"
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "pattern": "^[A-Z]{3}$"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          }
+                        },
+                        "hotelStyles": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "boutique",
+                              "luxury",
+                              "resort",
+                              "business",
+                              "family",
+                              "eco",
+                              "all_inclusive",
+                              "villa"
+                            ]
+                          }
+                        },
+                        "dietary": {
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "accessibility": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "loyalty": {
+                          "maxItems": 20,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "program": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "number": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "program",
+                              "number"
+                            ]
+                          }
+                        },
+                        "travelPace": {
+                          "type": "string",
+                          "enum": [
+                            "relaxed",
+                            "balanced",
+                            "packed"
+                          ]
+                        },
+                        "other": {
+                          "type": "string",
+                          "maxLength": 2000
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "version": {
+                      "type": "number"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "companions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "firstName": {
+                            "type": "string"
+                          },
+                          "lastName": {
+                            "type": "string"
+                          },
+                          "relationship": {
+                            "type": "string"
+                          },
+                          "dateOfBirth": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "notes": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "relationship",
+                          "dateOfBirth",
+                          "notes"
+                        ]
+                      }
+                    },
+                    "trips": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "endDate": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "bookingIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "tripId",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "status",
+                          "bookingIds"
+                        ]
+                      }
+                    },
+                    "privacyRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "export",
+                              "delete"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "dueAt": {
+                            "type": "string"
+                          },
+                          "completedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "createdAt",
+                          "dueAt",
+                          "completedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "phone",
+                    "homeCity",
+                    "status",
+                    "updatedAt",
+                    "dateOfBirth",
+                    "notes",
+                    "preferences",
+                    "version",
+                    "createdAt",
+                    "companions",
+                    "trips",
+                    "privacyRequests"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/clients/{id}/privacy-requests": {
+      "post": {
+        "operationId": "ClientsController_privacy_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "export",
+                      "delete"
+                    ]
+                  },
+                  "note": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/v1/learning/courses": {
+      "get": {
+        "operationId": "LearningController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "slug": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "isEssentials": {
+                        "type": "boolean"
+                      },
+                      "lessonCount": {
+                        "type": "number"
+                      },
+                      "lessonsCompleted": {
+                        "type": "number"
+                      },
+                      "passed": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slug",
+                      "title",
+                      "summary",
+                      "isEssentials",
+                      "lessonCount",
+                      "lessonsCompleted",
+                      "passed"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/v1/learning/courses/{slug}": {
+      "get": {
+        "operationId": "LearningController_get_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "slug": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "isEssentials": {
+                      "type": "boolean"
+                    },
+                    "lessonCount": {
+                      "type": "number"
+                    },
+                    "lessonsCompleted": {
+                      "type": "number"
+                    },
+                    "passed": {
+                      "type": "boolean"
+                    },
+                    "passMarkPct": {
+                      "type": "number"
+                    },
+                    "lessons": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "position": {
+                            "type": "number"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "estMinutes": {
+                            "type": "number"
+                          },
+                          "completed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "position",
+                          "title",
+                          "estMinutes",
+                          "completed"
+                        ]
+                      }
+                    },
+                    "quiz": {
+                      "type": "object",
+                      "properties": {
+                        "questionCount": {
+                          "type": "number"
+                        },
+                        "unlocked": {
+                          "type": "boolean"
+                        },
+                        "attemptsToday": {
+                          "type": "number"
+                        },
+                        "attemptsLeftToday": {
+                          "type": "number"
+                        },
+                        "bestScorePct": {
+                          "nullable": true,
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "questionCount",
+                        "unlocked",
+                        "attemptsToday",
+                        "attemptsLeftToday",
+                        "bestScorePct"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "title",
+                    "summary",
+                    "isEssentials",
+                    "lessonCount",
+                    "lessonsCompleted",
+                    "passed",
+                    "passMarkPct",
+                    "lessons",
+                    "quiz"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/v1/learning/courses/{slug}/lessons/{position}": {
+      "get": {
+        "operationId": "LearningController_lesson_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "position",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "position": {
+                      "type": "number"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "bodyMarkdown": {
+                      "type": "string"
+                    },
+                    "estMinutes": {
+                      "type": "number"
+                    },
+                    "lessonCount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "position",
+                    "title",
+                    "bodyMarkdown",
+                    "estMinutes",
+                    "lessonCount"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/v1/learning/courses/{slug}/lessons/{position}/complete": {
+      "post": {
+        "operationId": "LearningController_complete_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "position",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/v1/learning/courses/{slug}/quiz": {
+      "get": {
+        "operationId": "LearningController_quiz_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "passMarkPct": {
+                      "type": "number"
+                    },
+                    "attemptsLeftToday": {
+                      "type": "number"
+                    },
+                    "questions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "prompt": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "text"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "prompt",
+                          "options"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "passMarkPct",
+                    "attemptsLeftToday",
+                    "questions"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/v1/learning/courses/{slug}/quiz/attempts": {
+      "post": {
+        "operationId": "LearningController_submit_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "maxLength": 8
+                    }
+                  }
+                },
+                "required": [
+                  "answers"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "scorePct": {
+                      "type": "number"
+                    },
+                    "passed": {
+                      "type": "boolean"
+                    },
+                    "passMarkPct": {
+                      "type": "number"
+                    },
+                    "incorrect": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "review": {
+                      "nullable": true,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "questionId": {
+                            "type": "string"
+                          },
+                          "correctOption": {
+                            "type": "string"
+                          },
+                          "explanation": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "questionId",
+                          "correctOption",
+                          "explanation"
+                        ]
+                      }
+                    },
+                    "bookingUnlocked": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "scorePct",
+                    "passed",
+                    "passMarkPct",
+                    "incorrect",
+                    "review",
+                    "bookingUnlocked"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/v1/community/categories": {
+      "get": {
+        "operationId": "CommunityController_categories_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "slug": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "topicCount": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "slug",
+                      "name",
+                      "description",
+                      "topicCount"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/topics": {
+      "get": {
+        "operationId": "CommunityController_topics_v1",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "authorName": {
+                            "type": "string"
+                          },
+                          "replyCount": {
+                            "type": "number"
+                          },
+                          "locked": {
+                            "type": "boolean"
+                          },
+                          "hidden": {
+                            "type": "boolean"
+                          },
+                          "lastActivityAt": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "category",
+                          "title",
+                          "authorName",
+                          "replyCount",
+                          "locked",
+                          "hidden",
+                          "lastActivityAt",
+                          "createdAt"
+                        ]
+                      }
+                    },
+                    "nextCursor": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      },
+      "post": {
+        "operationId": "CommunityController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 150
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "category",
+                  "title",
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/topics/{id}": {
+      "get": {
+        "operationId": "CommunityController_topic_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "categoryName": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "opening": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "authorName": {
+                          "type": "string"
+                        },
+                        "body": {
+                          "type": "string"
+                        },
+                        "hidden": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "editedAt": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "mine": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "authorName",
+                        "body",
+                        "hidden",
+                        "createdAt",
+                        "editedAt",
+                        "mine"
+                      ]
+                    },
+                    "replies": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "authorName": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "hidden": {
+                            "type": "boolean"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "editedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "mine": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "authorName",
+                          "body",
+                          "hidden",
+                          "createdAt",
+                          "editedAt",
+                          "mine"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "category",
+                    "categoryName",
+                    "title",
+                    "locked",
+                    "opening",
+                    "replies"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      },
+      "patch": {
+        "operationId": "CommunityController_editTopic_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/topics/{id}/replies": {
+      "post": {
+        "operationId": "CommunityController_reply_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/posts/{id}": {
+      "patch": {
+        "operationId": "CommunityController_editPost_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/reports": {
+      "post": {
+        "operationId": "CommunityController_report_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "targetType": {
+                    "type": "string",
+                    "enum": [
+                      "topic",
+                      "post"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "spam",
+                      "harassment",
+                      "off_topic",
+                      "misinformation",
+                      "other"
+                    ]
+                  }
+                },
+                "required": [
+                  "targetType",
+                  "targetId",
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "hidden": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "hidden"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/moderation/reports": {
+      "get": {
+        "operationId": "CommunityController_reports_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "targetType": {
+                        "type": "string",
+                        "enum": [
+                          "topic",
+                          "post"
+                        ]
+                      },
+                      "targetId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "topicId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "topicTitle": {
+                        "type": "string"
+                      },
+                      "authorName": {
+                        "type": "string"
+                      },
+                      "body": {
+                        "type": "string"
+                      },
+                      "hidden": {
+                        "type": "boolean"
+                      },
+                      "reports": {
+                        "type": "number"
+                      },
+                      "reasons": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "firstReportedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "targetType",
+                      "targetId",
+                      "topicId",
+                      "topicTitle",
+                      "authorName",
+                      "body",
+                      "hidden",
+                      "reports",
+                      "reasons",
+                      "firstReportedAt"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/v1/community/moderation/{type}/{id}": {
+      "post": {
+        "operationId": "CommunityController_moderate_v1",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "hide",
+                      "dismiss",
+                      "unhide",
+                      "lock",
+                      "unlock"
+                    ]
+                  }
+                },
+                "required": [
+                  "action"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "community"
+        ]
+      }
+    },
     "/v1/admin/applications": {
       "get": {
         "operationId": "AdminController_list_v1",
@@ -2980,6 +6996,223 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/privacy-requests": {
+      "get": {
+        "operationId": "AdminController_privacyRequests_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "requested",
+                "verified",
+                "completed",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "clientId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "advisorId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "clientName": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "export",
+                          "delete"
+                        ]
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "requesterNote": {
+                        "type": "string"
+                      },
+                      "verificationNote": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "rejectedReason": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "dueAt": {
+                        "type": "string"
+                      },
+                      "completedAt": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "hasExport": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "clientId",
+                      "advisorId",
+                      "clientName",
+                      "kind",
+                      "status",
+                      "requesterNote",
+                      "verificationNote",
+                      "rejectedReason",
+                      "createdAt",
+                      "dueAt",
+                      "completedAt",
+                      "hasExport"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/privacy-requests/{id}/verify": {
+      "post": {
+        "operationId": "AdminController_verifyPrivacy_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "note"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/privacy-requests/{id}/reject": {
+      "post": {
+        "operationId": "AdminController_rejectPrivacy_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "note"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/privacy-requests/{id}/export": {
+      "get": {
+        "operationId": "AdminController_privacyExport_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""

@@ -7,3 +7,4 @@ coverage
 .env
 .env.local
 next-env.d.ts
+dump.rdb
