@@ -15,7 +15,7 @@ export async function createHttpApp(
   opts: { logger?: boolean } = {},
 ): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule.forRole(config, 'web'), {
-    logger: opts.logger === false ? false : ['error', 'warn', 'log'],
+    logger: opts.logger === false ? ['error'] : ['error', 'warn', 'log'],
     bufferLogs: false,
     // Raw body is kept for webhook signature verification.
     rawBody: true,

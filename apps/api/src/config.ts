@@ -26,6 +26,10 @@ const envSchema = z.object({
   MAIL_FROM: z.string().default('Advisor Travel Platform <no-reply@atp.local>'),
   /** Email adapter: smtp (Mailpit locally), memory (tests) or log (prints to stdout; dev without Mailpit). */
   MAIL_TRANSPORT: z.enum(['smtp', 'memory', 'log']).default('smtp'),
+  /** How long proposal prices stay valid before they must be re-checked (FR-ITN-05). */
+  PROPOSAL_RATE_TTL_HOURS: z.coerce.number().int().positive().default(24),
+  /** How long a traveler proposal link works. */
+  PROPOSAL_LINK_DAYS: z.coerce.number().int().positive().default(30),
   OTEL_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

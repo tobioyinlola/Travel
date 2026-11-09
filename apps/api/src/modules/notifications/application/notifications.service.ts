@@ -27,8 +27,17 @@ type Rule = {
   event: string;
   template: string;
   urgent?: boolean;
+  /** Payload field holding the recipient's user id (default `userId`). */
+  recipient?: string;
   vars?: (p: Record<string, unknown>) => Record<string, string>;
 };
+
+const decision = (p: Record<string, unknown>) => ({
+  tripId: String(p.tripId),
+  title: String(p.tripTitle),
+  decidedBy: String(p.decidedByName),
+  note: String(p.note ?? ''),
+});
 
 const RULES: Rule[] = [
   { event: 'AdvisorApplicationSubmitted', template: 'application_received' },
@@ -57,6 +66,25 @@ const RULES: Rule[] = [
     event: 'MembershipCancelled',
     template: 'membership_cancelled',
     vars: (p) => ({ endsAt: String(p.endsAt).slice(0, 10) }),
+  },
+  {
+    event: 'ProposalApproved',
+    template: 'proposal_approved',
+    recipient: 'advisorUserId',
+    vars: decision,
+  },
+  {
+    event: 'ProposalChangesRequested',
+    template: 'proposal_changes_requested',
+    recipient: 'advisorUserId',
+    urgent: true,
+    vars: decision,
+  },
+  {
+    event: 'ProposalDeclined',
+    template: 'proposal_declined',
+    recipient: 'advisorUserId',
+    vars: decision,
   },
 ];
 
@@ -133,6 +161,39 @@ export class NotificationsService implements OnModuleInit {
       },
     });
 
+    // The traveler has no account: send to the address in the event. The link is secret, so not stored.
+    this.bus.subscribe<{
+      proposalId: string;
+      advisorName: string;
+      recipientEmail: string;
+      recipientName: string;
+      url: string;
+    }>({
+      module: 'notifications',
+      handler: 'notifications.sendProposal',
+      event: 'ProposalSent',
+      version: 1,
+      handle: async (e, tx) => {
+        const r = templates.proposal_sent!({
+          name: e.payload.recipientName,
+          advisorName: e.payload.advisorName,
+          url: e.payload.url,
+        });
+        await this.queue(
+          tx,
+          e,
+          'proposal_sent',
+          null,
+          'email',
+          e.payload.recipientEmail,
+          r.subject,
+          r.text,
+          true,
+          true,
+        );
+      },
+    });
+
     for (const rule of RULES) {
       this.bus.subscribe({
         module: 'notifications',
@@ -145,7 +206,7 @@ export class NotificationsService implements OnModuleInit {
   }
 
   private async applyRule(rule: Rule, e: EventEnvelope, tx: Tx): Promise<void> {
-    const userId = String(e.payload.userId);
+    const userId = String(e.payload[rule.recipient ?? 'userId']);
     const [r] = await tx.query<Recipient>(
       'SELECT * FROM notifications.recipients WHERE user_id = $1',
       [userId],
@@ -177,7 +238,7 @@ export class NotificationsService implements OnModuleInit {
     tx: Tx,
     e: EventEnvelope,
     template: string,
-    userId: string,
+    userId: string | null,
     channel: 'email' | 'sms',
     to: string,
     subject: string,
@@ -188,7 +249,7 @@ export class NotificationsService implements OnModuleInit {
     const id = newId();
     const inserted = await tx.query(
       `INSERT INTO notifications.messages (id, event_id, template, user_id, channel, destination, subject, body_text)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (event_id, template, user_id) DO NOTHING RETURNING id`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING RETURNING id`,
       [id, e.id, template, userId, channel, to, subject, sensitive ? '[redacted]' : text],
     );
     if (inserted.length === 0) return; // FR-NTF-05: duplicate suppressed

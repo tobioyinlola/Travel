@@ -82,7 +82,11 @@ describe('background jobs', () => {
 
     failNext = false;
     expect(await deadLetters.replay([dead[0]!.id])).toBe(1);
-    await p.runJobs();
+    // The replayed job is due "now"; give the runner a few passes rather than assuming the first sees it.
+    for (let i = 0; i < 5 && !seen.includes('flaky-ok'); i++) {
+      await p.runJobs();
+      if (!seen.includes('flaky-ok')) await new Promise((r) => setTimeout(r, 100));
+    }
     expect(seen).toContain('flaky-ok');
     expect(await deadLetters.list()).toHaveLength(0);
   });

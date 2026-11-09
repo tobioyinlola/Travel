@@ -6,6 +6,10 @@ import { ClientsService } from './clients.service.js';
 export class ClientsApi {
   constructor(private readonly clients: ClientsService) {}
 
+  getContact(advisorId: string, clientId: string) {
+    return this.clients.contact(advisorId, clientId);
+  }
+
   listPrivacyRequests(status?: string) {
     return this.clients.listPrivacyRequests(status);
   }

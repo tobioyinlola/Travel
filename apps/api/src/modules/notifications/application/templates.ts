@@ -44,6 +44,23 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
     subject: 'Your membership payment did not go through',
     text: `Hi ${v.name},\n\nWe could not take your membership payment (${v.reason}). Update your card here: ${v.webBaseUrl}/membership`,
   }),
+  proposal_sent: (v) => ({
+    subject: `${v.advisorName} sent you a trip proposal`,
+    text: `Hi ${v.name},\n\n${v.advisorName} has put together a trip proposal for you. Review it, ask for changes or approve it here:\n${v.url}\n\nThis link is personal to you; please do not forward it.`,
+    sensitive: true,
+  }),
+  proposal_approved: (v) => ({
+    subject: `Proposal approved: ${v.title}`,
+    text: `Hi ${v.name},\n\n${v.decidedBy} approved your proposal. Next: book it from the trip page:\n${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  proposal_changes_requested: (v) => ({
+    subject: `Changes requested: ${v.title}`,
+    text: `Hi ${v.name},\n\n${v.decidedBy} asked for changes:\n\n${v.note}\n\nUpdate the trip here: ${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  proposal_declined: (v) => ({
+    subject: `Proposal declined: ${v.title}`,
+    text: `Hi ${v.name},\n\n${v.decidedBy} declined the proposal.${v.note ? `\n\nTheir note: ${v.note}` : ''}`,
+  }),
   membership_cancelled: (v) => ({
     subject: 'Your membership is cancelled',
     text: `Hi ${v.name},\n\nYour membership is cancelled and ends on ${v.endsAt}. Your open bookings stay serviceable.`,

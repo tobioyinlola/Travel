@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
+import { ProposalLinkService } from './application/proposal-link.service.js';
+import { TripsService } from './application/trips.service.js';
+import { ProposalLinkController } from './http/proposal-link.controller.js';
+import { TripsController } from './http/trips.controller.js';
 
 /**
- * Itineraries module (orchestration layer). Itinerary builder, proposals, secure traveler links (FR-ITN, FR-TRV).
- * Owns schema(s): itineraries.
- * May call (public interfaces only): shared-kernel, identity, notifications, audit, clients, catalog, partners, membership, learning.
+ * Itineraries module (orchestration layer). Trips, itinerary builder, proposals and the traveler link
+ * (FR-ITN, FR-TRV). Owns schema: itineraries (row-level security by owning advisor).
+ * May call: shared-kernel, identity, clients, catalog, partners.
  */
 @Module({
-  providers: [],
-  exports: [],
+  controllers: [TripsController, ProposalLinkController],
+  providers: [TripsService, ProposalLinkService],
 })
 export class ItinerariesModule {}

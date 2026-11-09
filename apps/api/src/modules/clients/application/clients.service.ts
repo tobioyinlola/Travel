@@ -7,6 +7,7 @@ import type { Tx } from '../../../platform/db/tx.js';
 import { decodeCursor, toPage, type Page } from '../../../platform/http/pagination.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
 import { JobRegistry } from '../../../platform/jobs/job-registry.js';
+import { EventBus } from '../../../platform/events/event-bus.js';
 import type { Preferences } from '../domain/preferences.js';
 
 const problem = (status: HttpStatus, slug: string, title: string, detail?: string) =>
@@ -85,6 +86,7 @@ export class ClientsService implements OnModuleInit {
     private readonly identity: IdentityApi,
     private readonly audit: AuditWriter,
     private readonly jobs: JobRegistry,
+    private readonly bus: EventBus,
   ) {}
 
   onModuleInit(): void {
@@ -93,6 +95,42 @@ export class ClientsService implements OnModuleInit {
       module: 'clients',
       queue: 'default',
       handle: ({ requestId }) => this.processPrivacyRequest(requestId),
+    });
+    // FR-CRM-03: trip history projected from Itineraries (a higher layer, so it reaches us by event).
+    this.bus.subscribe<{
+      tripId: string;
+      clientId: string;
+      advisorId: string;
+      title: string;
+      startDate: string | null;
+      endDate: string | null;
+      status: string;
+    }>({
+      module: 'clients',
+      handler: 'clients.projectTripHistory',
+      event: 'TripUpdated',
+      version: 1,
+      handle: async (e, tx) => {
+        const p = e.payload;
+        await tx.setLocal('atp.advisor_id', p.advisorId);
+        await tx.query(
+          `INSERT INTO clients.trip_history (trip_id, client_id, owner_advisor_id, title, start_date, end_date, status, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (trip_id) DO UPDATE SET title = EXCLUDED.title, start_date = EXCLUDED.start_date,
+             end_date = EXCLUDED.end_date, status = EXCLUDED.status, updated_at = EXCLUDED.updated_at
+           WHERE clients.trip_history.updated_at <= EXCLUDED.updated_at`,
+          [
+            p.tripId,
+            p.clientId,
+            p.advisorId,
+            p.title,
+            p.startDate,
+            p.endDate,
+            p.status,
+            e.occurredAt,
+          ],
+        );
+      },
     });
     this.jobs.register({
       name: 'clients.purge-privacy-exports',
@@ -105,6 +143,17 @@ export class ClientsService implements OnModuleInit {
                      WHERE export_payload IS NOT NULL AND completed_at < now() - interval '30 days'`),
         );
       },
+    });
+  }
+
+  /** Name and email for proposals (Itineraries). 404 unless the client is this advisor's and not erased. */
+  async contact(
+    advisorId: string,
+    clientId: string,
+  ): Promise<{ id: string; firstName: string; lastName: string; email: string | null }> {
+    return this.asAdvisor(advisorId, async (tx) => {
+      const c = await this.load(tx, clientId);
+      return { id: c.id, firstName: c.first_name, lastName: c.last_name, email: c.email };
     });
   }
 
