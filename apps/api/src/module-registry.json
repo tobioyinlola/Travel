@@ -1,0 +1,20 @@
+{
+  "$comment": "Single source of truth for module layers (ARCH module map). Used by the DB role setup and dependency-cruiser. Layer 0 = foundation, 1 = core domain, 2 = orchestration, 3 = top. A module may call only modules in a LOWER layer; shared-kernel is importable by everyone.",
+  "modules": [
+    { "name": "shared-kernel", "layer": 0, "schemas": [] },
+    { "name": "identity", "layer": 0, "schemas": ["identity"] },
+    { "name": "notifications", "layer": 0, "schemas": ["notifications"] },
+    { "name": "audit", "layer": 0, "schemas": ["audit"] },
+    { "name": "clients", "layer": 1, "schemas": ["clients"] },
+    { "name": "catalog", "layer": 1, "schemas": ["catalog"] },
+    { "name": "partners", "layer": 1, "schemas": ["partners"] },
+    { "name": "membership", "layer": 1, "schemas": ["membership"] },
+    { "name": "learning", "layer": 1, "schemas": ["learning"] },
+    { "name": "itineraries", "layer": 2, "schemas": ["itineraries"] },
+    { "name": "booking", "layer": 2, "schemas": ["booking"] },
+    { "name": "commission-payments", "layer": 2, "schemas": ["commission", "payments"] },
+    { "name": "reporting", "layer": 3, "schemas": ["reporting"] },
+    { "name": "ai", "layer": 3, "schemas": ["ai"] },
+    { "name": "admin", "layer": 3, "schemas": ["admin"] }
+  ]
+}

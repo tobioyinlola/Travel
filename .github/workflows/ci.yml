@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: atp_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format
+        run: pnpm format:check
+      - name: Build packages
+        run: pnpm --filter @atp/contracts --filter @atp/api-client build
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Module boundaries
+        run: pnpm arch:check
+      - name: Tests (unit + integration against Postgres and Redis)
+        run: pnpm --filter @atp/contracts --filter @atp/api test
+      - name: OpenAPI contract and generated client are up to date
+        run: |
+          pnpm api-client:generate
+          git diff --exit-code -- apps/api/openapi.json packages/api-client/src/schema.d.ts
+      - name: Build
+        run: pnpm build
+      - name: Dependency audit
+        run: pnpm audit --prod --audit-level high
+
+  images:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f apps/api/Dockerfile -t atp-api:${{ github.sha }} .
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile -t atp-web:${{ github.sha }} .
+      - name: Scan images
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: atp-api:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true

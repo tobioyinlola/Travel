@@ -1,0 +1,50 @@
+{
+  "name": "@atp/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch --entryFile main.web",
+    "dev:worker": "nest start --watch --entryFile main.worker",
+    "start": "node dist/main.web.js",
+    "start:worker": "node dist/main.worker.js",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "arch:check": "depcruise src --config .dependency-cruiser.cjs",
+    "db:migrate": "nest build && node dist/scripts/migrate.js",
+    "openapi:export": "nest build && node dist/scripts/openapi-export.js"
+  },
+  "dependencies": {
+    "@atp/contracts": "workspace:*",
+    "@nestjs/common": "^12.4.1",
+    "@nestjs/core": "^12.4.1",
+    "@nestjs/platform-express": "^12.4.1",
+    "@nestjs/swagger": "^12.1.1",
+    "graphile-worker": "^0.18.0",
+    "ioredis": "^6.0.0",
+    "nestjs-pino": "^5.3.1",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "uuid": "^14.0.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.12",
+    "@nestjs/testing": "^12.4.1",
+    "@swc/core": "^1.16.22",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^6.0.3",
+    "dependency-cruiser": "^18.7.2",
+    "supertest": "^7.1.4",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "^5.1.0"
+  },
+  "type": "module"
+}

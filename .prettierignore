@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+dist
+.next
+coverage
+packages/api-client/src/schema.d.ts
+apps/api/openapi.json
+docs/source

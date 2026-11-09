@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+/* Design tokens. Colours meet WCAG 2.1 AA contrast on their paired backgrounds (NFR-13). */
+@theme {
+  --color-brand-600: #1f5f8b;
+  --color-brand-700: #184b6e;
+  --color-ink: #1b1f24;
+  --color-muted: #4b5563;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f7f9;
+}
+
+html {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
