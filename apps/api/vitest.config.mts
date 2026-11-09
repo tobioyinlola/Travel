@@ -23,7 +23,9 @@ export default defineConfig({
       DATABASE_ADMIN_URL:
         process.env.TEST_DATABASE_ADMIN_URL ??
         `postgres://postgres:postgres@${PG_HOST}:5432/${TEST_DB}`,
-      REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6379',
+      REDIS_URL: process.env.TEST_REDIS_URL ?? 'redis://localhost:6379/1',
+      MAIL_TRANSPORT: 'memory',
+      PROVIDERS_MODE: 'fake',
     },
   },
 });

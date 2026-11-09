@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
+import { AuditModule } from '../audit/index.js';
+import { AdminController } from './http/admin.controller.js';
 
 /**
  * Admin module (top layer). Back office: application review, finance tools, config (FR-ADM).
- * Owns schema(s): admin.
- * May call (public interfaces only): shared-kernel, identity, notifications, audit, clients, catalog, partners, membership, learning, itineraries, booking, commission-payments.
+ * Owns schema: admin. May call: shared-kernel and every lower module through its public interface.
  */
 @Module({
-  providers: [],
-  exports: [],
+  imports: [AuditModule],
+  controllers: [AdminController],
 })
 export class AdminModule {}

@@ -1,15 +1,18 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditLog } from '../src/modules/audit/index.js';
+import { AuditWriter } from '../src/platform/audit/audit-writer.js';
 import { newId } from '../src/modules/shared-kernel/index.js';
 import { makePlatform, type TestPlatform } from './helpers.js';
 
 describe('audit log (FR-AUTH-09, NFR-12)', () => {
   let p: TestPlatform;
-  let audit: AuditLog;
+  let audit: AuditWriter;
+  let reader: AuditLog;
 
   beforeAll(() => {
     p = makePlatform();
-    audit = new AuditLog(p.db);
+    audit = new AuditWriter(p.db);
+    reader = new AuditLog(p.db);
   });
   afterAll(() => p.close());
 
@@ -25,7 +28,7 @@ describe('audit log (FR-AUTH-09, NFR-12)', () => {
       before: { status: 'Applied' },
       after: { status: 'Under review' },
     });
-    const rows = await audit.forEntity('advisor', entityId);
+    const rows = await reader.forEntity('advisor', entityId);
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
       action: 'advisor.status_changed',
@@ -47,7 +50,7 @@ describe('audit log (FR-AUTH-09, NFR-12)', () => {
         throw new Error('business change failed');
       }),
     ).rejects.toThrow();
-    expect(await audit.forEntity('advisor', entityId)).toHaveLength(0);
+    expect(await reader.forEntity('advisor', entityId)).toHaveLength(0);
   });
 
   it('cannot be updated or deleted, even by the owning role', async () => {

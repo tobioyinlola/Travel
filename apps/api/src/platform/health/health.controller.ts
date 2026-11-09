@@ -8,6 +8,7 @@ import {
 import type { Response } from 'express';
 import type { Redis } from 'ioredis';
 import { Database } from '../db/database.js';
+import { Public } from '../http/auth.js';
 import { REDIS } from '../tokens.js';
 
 class HealthChecksDto {
@@ -21,6 +22,7 @@ class HealthDto {
 }
 
 @ApiTags('platform')
+@Public()
 @Controller({ path: 'health', version: '1' })
 export class HealthController {
   constructor(

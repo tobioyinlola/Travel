@@ -1,4 +1,5 @@
 import {
+  applyDecorators,
   CallHandler,
   ExecutionContext,
   HttpStatus,
@@ -8,6 +9,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ApiHeader } from '@nestjs/swagger';
 import { createHash } from 'node:crypto';
 import type { Request, Response } from 'express';
 import { HTTP_CODE_METADATA } from '@nestjs/common/constants';
@@ -18,7 +20,15 @@ import { ProblemException, problemType } from './problem.js';
 
 const REQUIRED = 'atp:idempotency-required';
 /** Mark endpoints that move money or create bookings: the Idempotency-Key header becomes mandatory. */
-export const RequireIdempotencyKey = () => SetMetadata(REQUIRED, true);
+export const RequireIdempotencyKey = () =>
+  applyDecorators(
+    SetMetadata(REQUIRED, true),
+    ApiHeader({
+      name: 'Idempotency-Key',
+      required: true,
+      description: 'Unique per logical request; reuse it on retry.',
+    }),
+  );
 
 const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const KEY_RE = /^[A-Za-z0-9_-]{8,128}$/;

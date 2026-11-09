@@ -1,60 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { newId } from '../../shared-kernel/index.js';
-import { requestContext } from '../../../platform/context/request-context.js';
 import { Database } from '../../../platform/db/database.js';
+import type { AuditEntry } from '../../../platform/audit/audit-writer.js';
 
-export interface AuditEntry {
-  actorType: 'user' | 'system' | 'support' | 'provider';
-  actorId?: string | null;
+export interface AuditRecord {
+  id: string;
+  occurredAt: Date;
+  actorId: string | null;
+  actorType: AuditEntry['actorType'];
   action: string;
   entityType: string;
   entityId: string;
-  /** Module recording the change. */
   module: string;
-  before?: unknown;
-  after?: unknown;
-  metadata?: Record<string, unknown>;
-}
-
-export interface AuditRecord extends Required<Omit<AuditEntry, 'metadata'>> {
-  id: string;
-  occurredAt: Date;
+  before: unknown;
+  after: unknown;
   correlationId: string | null;
   metadata: Record<string, unknown> | null;
 }
 
-/**
- * Public interface of the audit module. `record()` joins the caller's open transaction when there is one,
- * so the audit row commits or rolls back with the change it describes.
- */
+/** Read side of the audit trail (admin console, support). Writing goes through the platform AuditWriter. */
 @Injectable()
 export class AuditLog {
   constructor(private readonly db: Database) {}
-
-  async record(entry: AuditEntry): Promise<string> {
-    const id = newId();
-    await this.db.transaction('audit', (tx) =>
-      tx.query(
-        `INSERT INTO audit.log (id, actor_id, actor_type, action, entity_type, entity_id, module,
-                                before, after, correlation_id, metadata)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [
-          id,
-          entry.actorId ?? requestContext.get()?.actorId ?? null,
-          entry.actorType,
-          entry.action,
-          entry.entityType,
-          entry.entityId,
-          entry.module,
-          entry.before === undefined ? null : JSON.stringify(entry.before),
-          entry.after === undefined ? null : JSON.stringify(entry.after),
-          requestContext.correlationId(),
-          entry.metadata ? JSON.stringify(entry.metadata) : null,
-        ],
-      ),
-    );
-    return id;
-  }
 
   async forEntity(entityType: string, entityId: string, limit = 100): Promise<AuditRecord[]> {
     const rows = await this.db.read<Record<string, unknown>>(

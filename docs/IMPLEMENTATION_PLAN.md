@@ -126,7 +126,13 @@ Status: complete. See README and ADR-08..10. Not yet verified locally: Docker im
 
 **Exit:** a dummy module can publish an event through the outbox and another can consume it exactly-once-effectively; violating an import rule fails CI.
 
-### Sprint 1-2: Identity, Audit, Notifications, Membership (skeleton)
+### Sprint 1-2: Identity, Audit, Notifications, Membership (skeleton) — DONE (Sprint 1)
+
+Status: complete, see ADR-11. Done beyond the table: dev-only fake provider pages, `create-staff` CLI,
+generic signed-webhook inbox. Deferred: RLS on advisor-owned tables (first advisor-owned tables arrive with
+Clients in Sprint 2), real SMS provider (phone sign-up codes go to an in-memory/log transport until
+FR-NTF-03), storing the signed agreement PDF in object storage (needs the live e-signature provider),
+renewals and dunning (FR-MEM-03, Sprint 8).
 
 | Module        | Requirements                                                                                                                                                                                                                                                                                                                                                       |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -137,7 +143,7 @@ Status: complete. See README and ADR-08..10. Not yet verified locally: Docker im
 | Membership    | FR-MEM-01 (configurable plans), 02 (charge on approval + invoice via `PaymentProviderPort`), 04 (promo codes / waivers with expiry), 07 (cancel at period end)                                                                                                                                                                                                     |
 | Admin         | FR-ADM-01 (application review: approve / reject / request info)                                                                                                                                                                                                                                                                                                    |
 
-Fakes: `FakeKyc`, `FakeSignature`, `FakePaymentProvider`, Mailpit for email.
+Fakes: `FakeKycProvider`, `FakeSignatureProvider`, `FakeBilling` (Membership's own `BillingPort`, ADR-11), Mailpit or the `log` transport for email.
 
 ### Sprint 2-3: Learning, Clients
 

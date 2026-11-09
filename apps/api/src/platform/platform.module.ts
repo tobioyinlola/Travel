@@ -23,9 +23,13 @@ import { PLATFORM } from './modules.js';
 import { createLogger } from './observability/logger.js';
 import { PlatformJobs } from './platform-jobs.js';
 import { createRedis } from './redis.js';
+import { AuditWriter } from './audit/audit-writer.js';
+import { FieldCrypto } from './security/field-crypto.js';
+import { WebhookController, WebhookInbox, WebhookRegistry } from './webhooks/webhooks.js';
 import { LOGGER, REDIS } from './tokens.js';
 
-export type ProcessRole = 'web' | 'worker';
+/** web: HTTP API. worker: job runners and outbox relay. cli: one-off scripts (neither). */
+export type ProcessRole = 'web' | 'worker' | 'cli';
 const PROCESS_ROLE = Symbol('PROCESS_ROLE');
 
 /**
@@ -91,7 +95,7 @@ export class PlatformModule {
   static forRoot(config: AppConfig, role: ProcessRole): DynamicModule {
     return {
       module: PlatformModule,
-      controllers: role === 'web' ? [HealthController] : [],
+      controllers: role === 'web' ? [HealthController, WebhookController] : [],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: PROCESS_ROLE, useValue: role },
@@ -125,6 +129,14 @@ export class PlatformModule {
           inject: [Database],
           useFactory: (db: Database) => new DeadLetterService(db),
         },
+        {
+          provide: AuditWriter,
+          inject: [Database],
+          useFactory: (db: Database) => new AuditWriter(db),
+        },
+        { provide: FieldCrypto, useFactory: () => new FieldCrypto(config.FIELD_ENCRYPTION_KEY) },
+        WebhookRegistry,
+        WebhookInbox,
         IdempotencyInterceptor,
         PlatformJobs,
         PlatformLifecycle,
@@ -138,6 +150,10 @@ export class PlatformModule {
         JobRegistry,
         DeadLetterService,
         IdempotencyInterceptor,
+        AuditWriter,
+        FieldCrypto,
+        WebhookRegistry,
+        WebhookInbox,
       ],
     };
   }

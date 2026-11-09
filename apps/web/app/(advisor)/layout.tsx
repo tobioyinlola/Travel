@@ -1,7 +1,20 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { Shell } from '@/components/shell';
+import { useRequireRole } from '@/lib/session';
 
-/** Advisor portal (session cookie + MFA, added in Sprint 1). */
+const NAV = [
+  { href: '/application', label: 'Application' },
+  { href: '/dashboard', label: 'Dashboard' },
+];
+
+/** Advisor portal: session cookie + MFA (enforced by the API; this guard only redirects). */
 export default function AdvisorLayout({ children }: { children: ReactNode }) {
-  return <Shell area="Advisor portal">{children}</Shell>;
+  const { me } = useRequireRole('advisor');
+  return (
+    <Shell area="Advisor portal" nav={NAV}>
+      {me ? children : <p className="text-muted">Loading…</p>}
+    </Shell>
+  );
 }

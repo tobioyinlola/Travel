@@ -20,6 +20,358 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_register_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_verify_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/verify/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_resend_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_login_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_logout_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuthController_me_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/mfa/enroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_startEnrollment_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/mfa/enroll/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_confirmEnrollment_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/mfa/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_challenge_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/advisor-application": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ApplicationController_get_v1"];
+        put?: never;
+        post: operations["ApplicationController_submit_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dev/fake-kyc/{reference}/{outcome}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FakeProvidersController_kyc_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dev/fake-signature/{envelopeRef}/{outcome}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FakeProvidersController_sign_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/membership/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MembershipController_plans_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/membership/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MembershipController_quote_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/membership": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MembershipController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/membership/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MembershipController_checkout_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/membership/payment-method": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MembershipController_updatePaymentMethod_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/membership/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MembershipController_cancel_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/applications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_detail_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/applications/{id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminController_decide_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminController_createPromo_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -65,6 +417,1061 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthDto"];
+                };
+            };
+        };
+    };
+    AuthController_register_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: email */
+                    email?: string;
+                    phone?: string;
+                    password: string;
+                    displayName?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        userId: string;
+                        /** @enum {string} */
+                        channel: "email" | "sms";
+                    };
+                };
+            };
+        };
+    };
+    AuthController_verify_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    userId: string;
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        role: "advisor" | "team_lead" | "supplier_manager" | "support" | "finance" | "admin";
+                        email: string | null;
+                        phone: string | null;
+                        displayName: string | null;
+                        mfaEnabled: boolean;
+                        mfaVerified: boolean;
+                        /** @enum {string|null} */
+                        next: "verify_contact" | "mfa_enroll" | "mfa_challenge" | null;
+                    };
+                };
+            };
+        };
+    };
+    AuthController_resend_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    userId: string;
+                };
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_login_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    identifier: string;
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        role: "advisor" | "team_lead" | "supplier_manager" | "support" | "finance" | "admin";
+                        email: string | null;
+                        phone: string | null;
+                        displayName: string | null;
+                        mfaEnabled: boolean;
+                        mfaVerified: boolean;
+                        /** @enum {string|null} */
+                        next: "verify_contact" | "mfa_enroll" | "mfa_challenge" | null;
+                    };
+                };
+            };
+        };
+    };
+    AuthController_logout_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AuthController_me_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        role: "advisor" | "team_lead" | "supplier_manager" | "support" | "finance" | "admin";
+                        email: string | null;
+                        phone: string | null;
+                        displayName: string | null;
+                        mfaEnabled: boolean;
+                        mfaVerified: boolean;
+                        /** @enum {string|null} */
+                        next: "verify_contact" | "mfa_enroll" | "mfa_challenge" | null;
+                    };
+                };
+            };
+        };
+    };
+    AuthController_startEnrollment_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        secret: string;
+                        otpauthUri: string;
+                        qrDataUrl: string;
+                    };
+                };
+            };
+        };
+    };
+    AuthController_confirmEnrollment_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        recoveryCodes: string[];
+                    };
+                };
+            };
+        };
+    };
+    AuthController_challenge_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code?: string;
+                    recoveryCode?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        role: "advisor" | "team_lead" | "supplier_manager" | "support" | "finance" | "admin";
+                        email: string | null;
+                        phone: string | null;
+                        displayName: string | null;
+                        mfaEnabled: boolean;
+                        mfaVerified: boolean;
+                        /** @enum {string|null} */
+                        next: "verify_contact" | "mfa_enroll" | "mfa_challenge" | null;
+                    };
+                };
+            };
+        };
+    };
+    ApplicationController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        userId: string;
+                        /** @enum {string} */
+                        status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                        legalName: string;
+                        country: string;
+                        acceptedAt: string | null;
+                        approvedAt: string | null;
+                        essentialsPassedAt: string | null;
+                        address: {
+                            line1: string;
+                            line2?: string;
+                            city: string;
+                            region?: string;
+                            postalCode?: string;
+                        };
+                        taxResidency: string;
+                        /** @enum {string} */
+                        experience: "none" | "some" | "professional";
+                        niche: string;
+                        submittedAt: string;
+                        infoRequestNote: string | null;
+                        kyc: {
+                            /** @enum {string} */
+                            status: "not_started" | "pending" | "passed" | "failed";
+                            redirectUrl: string | null;
+                            checkedAt: string | null;
+                        };
+                        agreement: {
+                            /** @enum {string} */
+                            status: "not_sent" | "sent" | "signed" | "declined";
+                            version: string | null;
+                            signingUrl: string | null;
+                            signedAt: string | null;
+                            documentRef: string | null;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    ApplicationController_submit_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    legalName: string;
+                    country: string;
+                    address: {
+                        line1: string;
+                        line2?: string;
+                        city: string;
+                        region?: string;
+                        postalCode?: string;
+                    };
+                    taxResidency: string;
+                    /** @enum {string} */
+                    experience: "none" | "some" | "professional";
+                    niche: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        userId: string;
+                        /** @enum {string} */
+                        status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                        legalName: string;
+                        country: string;
+                        acceptedAt: string | null;
+                        approvedAt: string | null;
+                        essentialsPassedAt: string | null;
+                        address: {
+                            line1: string;
+                            line2?: string;
+                            city: string;
+                            region?: string;
+                            postalCode?: string;
+                        };
+                        taxResidency: string;
+                        /** @enum {string} */
+                        experience: "none" | "some" | "professional";
+                        niche: string;
+                        submittedAt: string;
+                        infoRequestNote: string | null;
+                        kyc: {
+                            /** @enum {string} */
+                            status: "not_started" | "pending" | "passed" | "failed";
+                            redirectUrl: string | null;
+                            checkedAt: string | null;
+                        };
+                        agreement: {
+                            /** @enum {string} */
+                            status: "not_sent" | "sent" | "signed" | "declined";
+                            version: string | null;
+                            signingUrl: string | null;
+                            signedAt: string | null;
+                            documentRef: string | null;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    FakeProvidersController_kyc_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+                outcome: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    FakeProvidersController_sign_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                envelopeRef: string;
+                outcome: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MembershipController_plans_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        name: string;
+                        /** @enum {string} */
+                        billingPeriod: "quarter" | "year";
+                        price: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                    }[];
+                };
+            };
+        };
+    };
+    MembershipController_quote_v1: {
+        parameters: {
+            query: {
+                planCode: string;
+                promoCode?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        subtotal: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        discount: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    MembershipController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        advisorId: string;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "past_due" | "cancelled";
+                        plan: {
+                            code: string;
+                            name: string;
+                            /** @enum {string} */
+                            billingPeriod: "quarter" | "year";
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        promoCode: string | null;
+                        hasPaymentMethod: boolean;
+                        applicationAccepted: boolean;
+                        currentPeriodStart: string | null;
+                        currentPeriodEnd: string | null;
+                        cancelAtPeriodEnd: boolean;
+                        quote: {
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        invoices: {
+                            /** Format: uuid */
+                            id: string;
+                            number: string;
+                            description: string;
+                            /** @enum {string} */
+                            status: "open" | "paid" | "void";
+                            periodStart: string;
+                            periodEnd: string;
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            issuedAt: string;
+                            paidAt: string | null;
+                            lastError: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    MembershipController_checkout_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    planCode: string;
+                    promoCode?: string;
+                    paymentMethodRef: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        advisorId: string;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "past_due" | "cancelled";
+                        plan: {
+                            code: string;
+                            name: string;
+                            /** @enum {string} */
+                            billingPeriod: "quarter" | "year";
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        promoCode: string | null;
+                        hasPaymentMethod: boolean;
+                        applicationAccepted: boolean;
+                        currentPeriodStart: string | null;
+                        currentPeriodEnd: string | null;
+                        cancelAtPeriodEnd: boolean;
+                        quote: {
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        invoices: {
+                            /** Format: uuid */
+                            id: string;
+                            number: string;
+                            description: string;
+                            /** @enum {string} */
+                            status: "open" | "paid" | "void";
+                            periodStart: string;
+                            periodEnd: string;
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            issuedAt: string;
+                            paidAt: string | null;
+                            lastError: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    MembershipController_updatePaymentMethod_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    paymentMethodRef: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        advisorId: string;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "past_due" | "cancelled";
+                        plan: {
+                            code: string;
+                            name: string;
+                            /** @enum {string} */
+                            billingPeriod: "quarter" | "year";
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        promoCode: string | null;
+                        hasPaymentMethod: boolean;
+                        applicationAccepted: boolean;
+                        currentPeriodStart: string | null;
+                        currentPeriodEnd: string | null;
+                        cancelAtPeriodEnd: boolean;
+                        quote: {
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        invoices: {
+                            /** Format: uuid */
+                            id: string;
+                            number: string;
+                            description: string;
+                            /** @enum {string} */
+                            status: "open" | "paid" | "void";
+                            periodStart: string;
+                            periodEnd: string;
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            issuedAt: string;
+                            paidAt: string | null;
+                            lastError: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    MembershipController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        advisorId: string;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "past_due" | "cancelled";
+                        plan: {
+                            code: string;
+                            name: string;
+                            /** @enum {string} */
+                            billingPeriod: "quarter" | "year";
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        promoCode: string | null;
+                        hasPaymentMethod: boolean;
+                        applicationAccepted: boolean;
+                        currentPeriodStart: string | null;
+                        currentPeriodEnd: string | null;
+                        cancelAtPeriodEnd: boolean;
+                        quote: {
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        invoices: {
+                            /** Format: uuid */
+                            id: string;
+                            number: string;
+                            description: string;
+                            /** @enum {string} */
+                            status: "open" | "paid" | "void";
+                            periodStart: string;
+                            periodEnd: string;
+                            subtotal: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            discount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            issuedAt: string;
+                            paidAt: string | null;
+                            lastError: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AdminController_list_v1: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string;
+                status?: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            userId: string;
+                            /** @enum {string} */
+                            status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                            legalName: string;
+                            country: string;
+                            submittedAt: string;
+                            kycStatus: string;
+                            agreementStatus: string;
+                            acceptedAt: string | null;
+                            approvedAt: string | null;
+                            essentialsPassedAt: string | null;
+                        }[];
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    AdminController_detail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        application: unknown;
+                        membership: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "active" | "past_due" | "cancelled";
+                            plan: {
+                                code: string;
+                                name: string;
+                                /** @enum {string} */
+                                billingPeriod: "quarter" | "year";
+                                price: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            promoCode: string | null;
+                            hasPaymentMethod: boolean;
+                            applicationAccepted: boolean;
+                            currentPeriodStart: string | null;
+                            currentPeriodEnd: string | null;
+                            cancelAtPeriodEnd: boolean;
+                            quote: {
+                                subtotal: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                discount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                total: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            };
+                            invoices: {
+                                /** Format: uuid */
+                                id: string;
+                                number: string;
+                                description: string;
+                                /** @enum {string} */
+                                status: "open" | "paid" | "void";
+                                periodStart: string;
+                                periodEnd: string;
+                                subtotal: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                discount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                total: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                issuedAt: string;
+                                paidAt: string | null;
+                                lastError: string | null;
+                            }[];
+                        } | null;
+                        history: {
+                            /** Format: uuid */
+                            id: string;
+                            occurredAt: string;
+                            actorId: string | null;
+                            actorType: string;
+                            action: string;
+                            before: unknown;
+                            after: unknown;
+                            metadata: unknown;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AdminController_decide_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    decision: "accept" | "reject" | "request_info";
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminController_createPromo_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code: string;
+                    /** @enum {string} */
+                    kind: "percent_off" | "amount_off" | "waiver";
+                    percentBps?: number;
+                    amount?: {
+                        amountMinor: string;
+                        currency: string;
+                    };
+                    description?: string;
+                    /** Format: date-time */
+                    expiresAt?: string;
+                    maxRedemptions?: number;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                    };
                 };
             };
         };

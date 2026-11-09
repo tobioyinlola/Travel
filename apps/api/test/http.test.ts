@@ -45,7 +45,7 @@ describe('HTTP conventions', () => {
 
   beforeAll(async () => {
     p = makePlatform();
-    app = await NestFactory.create(TestRoot.create(), { logger: false });
+    app = await NestFactory.create(TestRoot.create(), { logger: false, rawBody: true });
     configureHttpApp(app, loadConfig());
     await app.init();
   });

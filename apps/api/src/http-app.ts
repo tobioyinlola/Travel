@@ -1,10 +1,12 @@
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import type { AppConfig } from './config.js';
 import { correlationMiddleware } from './platform/http/correlation.middleware.js';
 import { IdempotencyInterceptor } from './platform/http/idempotency.js';
+import { originCheck } from './platform/http/origin-check.middleware.js';
 import { ProblemDetailsFilter } from './platform/http/problem-details.filter.js';
 
 /** Builds the HTTP application (shared by main.web, tests and the OpenAPI export). */
@@ -15,6 +17,10 @@ export async function createHttpApp(
   const app = await NestFactory.create(AppModule.forRole(config, 'web'), {
     logger: opts.logger === false ? false : ['error', 'warn', 'log'],
     bufferLogs: false,
+    // Raw body is kept for webhook signature verification.
+    rawBody: true,
+    // Throw startup errors (with their message) instead of calling process.abort().
+    abortOnError: false,
   });
   configureHttpApp(app, config);
   return app;
@@ -25,12 +31,15 @@ export function configureHttpApp(
   app: INestApplication,
   config: Pick<AppConfig, 'WEB_ORIGINS'>,
 ): void {
+  const origins = config.WEB_ORIGINS.split(',').map((o) => o.trim());
   app.enableCors({
-    origin: config.WEB_ORIGINS.split(',').map((o) => o.trim()),
+    origin: origins,
     credentials: true,
     exposedHeaders: ['x-correlation-id', 'idempotent-replayed'],
   });
   app.use(correlationMiddleware);
+  app.use(cookieParser());
+  app.use(originCheck(origins));
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.useGlobalFilters(new ProblemDetailsFilter());
   app.useGlobalInterceptors(app.get(IdempotencyInterceptor));

@@ -31,6 +31,3056 @@
           "platform"
         ]
       }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^\\+[1-9]\\d{6,14}$"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 128
+                  },
+                  "displayName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "email",
+                        "sms"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "userId",
+                    "channel"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/verify": {
+      "post": {
+        "operationId": "AuthController_verify_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": [
+                  "userId",
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "advisor",
+                        "team_lead",
+                        "supplier_manager",
+                        "support",
+                        "finance",
+                        "admin"
+                      ]
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "mfaEnabled": {
+                      "type": "boolean"
+                    },
+                    "mfaVerified": {
+                      "type": "boolean"
+                    },
+                    "next": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "verify_contact",
+                        "mfa_enroll",
+                        "mfa_challenge"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "role",
+                    "email",
+                    "phone",
+                    "displayName",
+                    "mfaEnabled",
+                    "mfaVerified",
+                    "next"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/verify/resend": {
+      "post": {
+        "operationId": "AuthController_resend_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "userId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "identifier",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "advisor",
+                        "team_lead",
+                        "supplier_manager",
+                        "support",
+                        "finance",
+                        "admin"
+                      ]
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "mfaEnabled": {
+                      "type": "boolean"
+                    },
+                    "mfaVerified": {
+                      "type": "boolean"
+                    },
+                    "next": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "verify_contact",
+                        "mfa_enroll",
+                        "mfa_challenge"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "role",
+                    "email",
+                    "phone",
+                    "displayName",
+                    "mfaEnabled",
+                    "mfaVerified",
+                    "next"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "advisor",
+                        "team_lead",
+                        "supplier_manager",
+                        "support",
+                        "finance",
+                        "admin"
+                      ]
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "mfaEnabled": {
+                      "type": "boolean"
+                    },
+                    "mfaVerified": {
+                      "type": "boolean"
+                    },
+                    "next": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "verify_contact",
+                        "mfa_enroll",
+                        "mfa_challenge"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "role",
+                    "email",
+                    "phone",
+                    "displayName",
+                    "mfaEnabled",
+                    "mfaVerified",
+                    "next"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/mfa/enroll": {
+      "post": {
+        "operationId": "AuthController_startEnrollment_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "secret": {
+                      "type": "string"
+                    },
+                    "otpauthUri": {
+                      "type": "string"
+                    },
+                    "qrDataUrl": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "secret",
+                    "otpauthUri",
+                    "qrDataUrl"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/mfa/enroll/confirm": {
+      "post": {
+        "operationId": "AuthController_confirmEnrollment_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": [
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recoveryCodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "recoveryCodes"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/mfa/challenge": {
+      "post": {
+        "operationId": "AuthController_challenge_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "recoveryCode": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 32
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "advisor",
+                        "team_lead",
+                        "supplier_manager",
+                        "support",
+                        "finance",
+                        "admin"
+                      ]
+                    },
+                    "email": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "phone": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "displayName": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "mfaEnabled": {
+                      "type": "boolean"
+                    },
+                    "mfaVerified": {
+                      "type": "boolean"
+                    },
+                    "next": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "verify_contact",
+                        "mfa_enroll",
+                        "mfa_challenge"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "role",
+                    "email",
+                    "phone",
+                    "displayName",
+                    "mfaEnabled",
+                    "mfaVerified",
+                    "next"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/advisor-application": {
+      "get": {
+        "operationId": "ApplicationController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "applied",
+                        "under_review",
+                        "approved",
+                        "active",
+                        "suspended",
+                        "offboarded",
+                        "rejected"
+                      ]
+                    },
+                    "legalName": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "acceptedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "approvedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "essentialsPassedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "line1": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "line2": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "city": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "region": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "postalCode": {
+                          "type": "string",
+                          "maxLength": 20
+                        }
+                      },
+                      "required": [
+                        "line1",
+                        "city"
+                      ]
+                    },
+                    "taxResidency": {
+                      "type": "string"
+                    },
+                    "experience": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "some",
+                        "professional"
+                      ]
+                    },
+                    "niche": {
+                      "type": "string"
+                    },
+                    "submittedAt": {
+                      "type": "string"
+                    },
+                    "infoRequestNote": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "kyc": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "not_started",
+                            "pending",
+                            "passed",
+                            "failed"
+                          ]
+                        },
+                        "redirectUrl": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "checkedAt": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "redirectUrl",
+                        "checkedAt"
+                      ]
+                    },
+                    "agreement": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "not_sent",
+                            "sent",
+                            "signed",
+                            "declined"
+                          ]
+                        },
+                        "version": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "signingUrl": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "signedAt": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "documentRef": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "version",
+                        "signingUrl",
+                        "signedAt",
+                        "documentRef"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "userId",
+                    "status",
+                    "legalName",
+                    "country",
+                    "acceptedAt",
+                    "approvedAt",
+                    "essentialsPassedAt",
+                    "address",
+                    "taxResidency",
+                    "experience",
+                    "niche",
+                    "submittedAt",
+                    "infoRequestNote",
+                    "kyc",
+                    "agreement"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "advisor-application"
+        ]
+      },
+      "post": {
+        "operationId": "ApplicationController_submit_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "legalName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "country": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z]{2}$"
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "line1": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "line2": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "city": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "region": {
+                        "type": "string",
+                        "maxLength": 100
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "maxLength": 20
+                      }
+                    },
+                    "required": [
+                      "line1",
+                      "city"
+                    ]
+                  },
+                  "taxResidency": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z]{2}$"
+                  },
+                  "experience": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "some",
+                      "professional"
+                    ]
+                  },
+                  "niche": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "legalName",
+                  "country",
+                  "address",
+                  "taxResidency",
+                  "experience",
+                  "niche"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "applied",
+                        "under_review",
+                        "approved",
+                        "active",
+                        "suspended",
+                        "offboarded",
+                        "rejected"
+                      ]
+                    },
+                    "legalName": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "acceptedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "approvedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "essentialsPassedAt": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "line1": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "line2": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "city": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "region": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "postalCode": {
+                          "type": "string",
+                          "maxLength": 20
+                        }
+                      },
+                      "required": [
+                        "line1",
+                        "city"
+                      ]
+                    },
+                    "taxResidency": {
+                      "type": "string"
+                    },
+                    "experience": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "some",
+                        "professional"
+                      ]
+                    },
+                    "niche": {
+                      "type": "string"
+                    },
+                    "submittedAt": {
+                      "type": "string"
+                    },
+                    "infoRequestNote": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "kyc": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "not_started",
+                            "pending",
+                            "passed",
+                            "failed"
+                          ]
+                        },
+                        "redirectUrl": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "checkedAt": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "redirectUrl",
+                        "checkedAt"
+                      ]
+                    },
+                    "agreement": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "not_sent",
+                            "sent",
+                            "signed",
+                            "declined"
+                          ]
+                        },
+                        "version": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "signingUrl": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "signedAt": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "documentRef": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "version",
+                        "signingUrl",
+                        "signedAt",
+                        "documentRef"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "userId",
+                    "status",
+                    "legalName",
+                    "country",
+                    "acceptedAt",
+                    "approvedAt",
+                    "essentialsPassedAt",
+                    "address",
+                    "taxResidency",
+                    "experience",
+                    "niche",
+                    "submittedAt",
+                    "infoRequestNote",
+                    "kyc",
+                    "agreement"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "advisor-application"
+        ]
+      }
+    },
+    "/v1/dev/fake-kyc/{reference}/{outcome}": {
+      "post": {
+        "operationId": "FakeProvidersController_kyc_v1",
+        "parameters": [
+          {
+            "name": "reference",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "outcome",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/v1/dev/fake-signature/{envelopeRef}/{outcome}": {
+      "post": {
+        "operationId": "FakeProvidersController_sign_v1",
+        "parameters": [
+          {
+            "name": "envelopeRef",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "outcome",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/v1/membership/plans": {
+      "get": {
+        "operationId": "MembershipController_plans_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "billingPeriod": {
+                        "type": "string",
+                        "enum": [
+                          "quarter",
+                          "year"
+                        ]
+                      },
+                      "price": {
+                        "type": "object",
+                        "properties": {
+                          "amountMinor": {
+                            "type": "string"
+                          },
+                          "currency": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "amountMinor",
+                          "currency"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "billingPeriod",
+                      "price"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "membership"
+        ]
+      }
+    },
+    "/v1/membership/quote": {
+      "get": {
+        "operationId": "MembershipController_quote_v1",
+        "parameters": [
+          {
+            "name": "planCode",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "promoCode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subtotal": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "discount": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subtotal",
+                    "discount",
+                    "total"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "membership"
+        ]
+      }
+    },
+    "/v1/membership": {
+      "get": {
+        "operationId": "MembershipController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "advisorId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "active",
+                        "past_due",
+                        "cancelled"
+                      ]
+                    },
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "billingPeriod": {
+                          "type": "string",
+                          "enum": [
+                            "quarter",
+                            "year"
+                          ]
+                        },
+                        "price": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "name",
+                        "billingPeriod",
+                        "price"
+                      ]
+                    },
+                    "promoCode": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "hasPaymentMethod": {
+                      "type": "boolean"
+                    },
+                    "applicationAccepted": {
+                      "type": "boolean"
+                    },
+                    "currentPeriodStart": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "currentPeriodEnd": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "cancelAtPeriodEnd": {
+                      "type": "boolean"
+                    },
+                    "quote": {
+                      "type": "object",
+                      "properties": {
+                        "subtotal": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "discount": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "total": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subtotal",
+                        "discount",
+                        "total"
+                      ]
+                    },
+                    "invoices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "number": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "paid",
+                              "void"
+                            ]
+                          },
+                          "periodStart": {
+                            "type": "string"
+                          },
+                          "periodEnd": {
+                            "type": "string"
+                          },
+                          "subtotal": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "discount": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "issuedAt": {
+                            "type": "string"
+                          },
+                          "paidAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "lastError": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "number",
+                          "description",
+                          "status",
+                          "periodStart",
+                          "periodEnd",
+                          "subtotal",
+                          "discount",
+                          "total",
+                          "issuedAt",
+                          "paidAt",
+                          "lastError"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "advisorId",
+                    "status",
+                    "plan",
+                    "promoCode",
+                    "hasPaymentMethod",
+                    "applicationAccepted",
+                    "currentPeriodStart",
+                    "currentPeriodEnd",
+                    "cancelAtPeriodEnd",
+                    "quote",
+                    "invoices"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "membership"
+        ]
+      }
+    },
+    "/v1/membership/checkout": {
+      "post": {
+        "operationId": "MembershipController_checkout_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per logical request; reuse it on retry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "planCode": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "promoCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "paymentMethodRef": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "planCode",
+                  "paymentMethodRef"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "advisorId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "active",
+                        "past_due",
+                        "cancelled"
+                      ]
+                    },
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "billingPeriod": {
+                          "type": "string",
+                          "enum": [
+                            "quarter",
+                            "year"
+                          ]
+                        },
+                        "price": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "name",
+                        "billingPeriod",
+                        "price"
+                      ]
+                    },
+                    "promoCode": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "hasPaymentMethod": {
+                      "type": "boolean"
+                    },
+                    "applicationAccepted": {
+                      "type": "boolean"
+                    },
+                    "currentPeriodStart": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "currentPeriodEnd": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "cancelAtPeriodEnd": {
+                      "type": "boolean"
+                    },
+                    "quote": {
+                      "type": "object",
+                      "properties": {
+                        "subtotal": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "discount": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "total": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subtotal",
+                        "discount",
+                        "total"
+                      ]
+                    },
+                    "invoices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "number": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "paid",
+                              "void"
+                            ]
+                          },
+                          "periodStart": {
+                            "type": "string"
+                          },
+                          "periodEnd": {
+                            "type": "string"
+                          },
+                          "subtotal": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "discount": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "issuedAt": {
+                            "type": "string"
+                          },
+                          "paidAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "lastError": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "number",
+                          "description",
+                          "status",
+                          "periodStart",
+                          "periodEnd",
+                          "subtotal",
+                          "discount",
+                          "total",
+                          "issuedAt",
+                          "paidAt",
+                          "lastError"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "advisorId",
+                    "status",
+                    "plan",
+                    "promoCode",
+                    "hasPaymentMethod",
+                    "applicationAccepted",
+                    "currentPeriodStart",
+                    "currentPeriodEnd",
+                    "cancelAtPeriodEnd",
+                    "quote",
+                    "invoices"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "membership"
+        ]
+      }
+    },
+    "/v1/membership/payment-method": {
+      "put": {
+        "operationId": "MembershipController_updatePaymentMethod_v1",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per logical request; reuse it on retry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "paymentMethodRef": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "paymentMethodRef"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "advisorId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "active",
+                        "past_due",
+                        "cancelled"
+                      ]
+                    },
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "billingPeriod": {
+                          "type": "string",
+                          "enum": [
+                            "quarter",
+                            "year"
+                          ]
+                        },
+                        "price": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "name",
+                        "billingPeriod",
+                        "price"
+                      ]
+                    },
+                    "promoCode": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "hasPaymentMethod": {
+                      "type": "boolean"
+                    },
+                    "applicationAccepted": {
+                      "type": "boolean"
+                    },
+                    "currentPeriodStart": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "currentPeriodEnd": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "cancelAtPeriodEnd": {
+                      "type": "boolean"
+                    },
+                    "quote": {
+                      "type": "object",
+                      "properties": {
+                        "subtotal": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "discount": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "total": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subtotal",
+                        "discount",
+                        "total"
+                      ]
+                    },
+                    "invoices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "number": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "paid",
+                              "void"
+                            ]
+                          },
+                          "periodStart": {
+                            "type": "string"
+                          },
+                          "periodEnd": {
+                            "type": "string"
+                          },
+                          "subtotal": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "discount": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "issuedAt": {
+                            "type": "string"
+                          },
+                          "paidAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "lastError": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "number",
+                          "description",
+                          "status",
+                          "periodStart",
+                          "periodEnd",
+                          "subtotal",
+                          "discount",
+                          "total",
+                          "issuedAt",
+                          "paidAt",
+                          "lastError"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "advisorId",
+                    "status",
+                    "plan",
+                    "promoCode",
+                    "hasPaymentMethod",
+                    "applicationAccepted",
+                    "currentPeriodStart",
+                    "currentPeriodEnd",
+                    "cancelAtPeriodEnd",
+                    "quote",
+                    "invoices"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "membership"
+        ]
+      }
+    },
+    "/v1/membership/cancel": {
+      "post": {
+        "operationId": "MembershipController_cancel_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "advisorId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending",
+                        "active",
+                        "past_due",
+                        "cancelled"
+                      ]
+                    },
+                    "plan": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "billingPeriod": {
+                          "type": "string",
+                          "enum": [
+                            "quarter",
+                            "year"
+                          ]
+                        },
+                        "price": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "name",
+                        "billingPeriod",
+                        "price"
+                      ]
+                    },
+                    "promoCode": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "hasPaymentMethod": {
+                      "type": "boolean"
+                    },
+                    "applicationAccepted": {
+                      "type": "boolean"
+                    },
+                    "currentPeriodStart": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "currentPeriodEnd": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "cancelAtPeriodEnd": {
+                      "type": "boolean"
+                    },
+                    "quote": {
+                      "type": "object",
+                      "properties": {
+                        "subtotal": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "discount": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "total": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subtotal",
+                        "discount",
+                        "total"
+                      ]
+                    },
+                    "invoices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "number": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "open",
+                              "paid",
+                              "void"
+                            ]
+                          },
+                          "periodStart": {
+                            "type": "string"
+                          },
+                          "periodEnd": {
+                            "type": "string"
+                          },
+                          "subtotal": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "discount": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "issuedAt": {
+                            "type": "string"
+                          },
+                          "paidAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "lastError": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "number",
+                          "description",
+                          "status",
+                          "periodStart",
+                          "periodEnd",
+                          "subtotal",
+                          "discount",
+                          "total",
+                          "issuedAt",
+                          "paidAt",
+                          "lastError"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "advisorId",
+                    "status",
+                    "plan",
+                    "promoCode",
+                    "hasPaymentMethod",
+                    "applicationAccepted",
+                    "currentPeriodStart",
+                    "currentPeriodEnd",
+                    "cancelAtPeriodEnd",
+                    "quote",
+                    "invoices"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "membership"
+        ]
+      }
+    },
+    "/v1/admin/applications": {
+      "get": {
+        "operationId": "AdminController_list_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 25,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "applied",
+                "under_review",
+                "approved",
+                "active",
+                "suspended",
+                "offboarded",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "userId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "applied",
+                              "under_review",
+                              "approved",
+                              "active",
+                              "suspended",
+                              "offboarded",
+                              "rejected"
+                            ]
+                          },
+                          "legalName": {
+                            "type": "string"
+                          },
+                          "country": {
+                            "type": "string"
+                          },
+                          "submittedAt": {
+                            "type": "string"
+                          },
+                          "kycStatus": {
+                            "type": "string"
+                          },
+                          "agreementStatus": {
+                            "type": "string"
+                          },
+                          "acceptedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "approvedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "essentialsPassedAt": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "userId",
+                          "status",
+                          "legalName",
+                          "country",
+                          "submittedAt",
+                          "kycStatus",
+                          "agreementStatus",
+                          "acceptedAt",
+                          "approvedAt",
+                          "essentialsPassedAt"
+                        ]
+                      }
+                    },
+                    "nextCursor": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/applications/{id}": {
+      "get": {
+        "operationId": "AdminController_detail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "application": {},
+                    "membership": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "advisorId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "active",
+                            "past_due",
+                            "cancelled"
+                          ]
+                        },
+                        "plan": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "billingPeriod": {
+                              "type": "string",
+                              "enum": [
+                                "quarter",
+                                "year"
+                              ]
+                            },
+                            "price": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string"
+                                },
+                                "currency": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "code",
+                            "name",
+                            "billingPeriod",
+                            "price"
+                          ]
+                        },
+                        "promoCode": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "hasPaymentMethod": {
+                          "type": "boolean"
+                        },
+                        "applicationAccepted": {
+                          "type": "boolean"
+                        },
+                        "currentPeriodStart": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "currentPeriodEnd": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "cancelAtPeriodEnd": {
+                          "type": "boolean"
+                        },
+                        "quote": {
+                          "type": "object",
+                          "properties": {
+                            "subtotal": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string"
+                                },
+                                "currency": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "discount": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string"
+                                },
+                                "currency": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            },
+                            "total": {
+                              "type": "object",
+                              "properties": {
+                                "amountMinor": {
+                                  "type": "string"
+                                },
+                                "currency": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "amountMinor",
+                                "currency"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "subtotal",
+                            "discount",
+                            "total"
+                          ]
+                        },
+                        "invoices": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "number": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "open",
+                                  "paid",
+                                  "void"
+                                ]
+                              },
+                              "periodStart": {
+                                "type": "string"
+                              },
+                              "periodEnd": {
+                                "type": "string"
+                              },
+                              "subtotal": {
+                                "type": "object",
+                                "properties": {
+                                  "amountMinor": {
+                                    "type": "string"
+                                  },
+                                  "currency": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "amountMinor",
+                                  "currency"
+                                ]
+                              },
+                              "discount": {
+                                "type": "object",
+                                "properties": {
+                                  "amountMinor": {
+                                    "type": "string"
+                                  },
+                                  "currency": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "amountMinor",
+                                  "currency"
+                                ]
+                              },
+                              "total": {
+                                "type": "object",
+                                "properties": {
+                                  "amountMinor": {
+                                    "type": "string"
+                                  },
+                                  "currency": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "amountMinor",
+                                  "currency"
+                                ]
+                              },
+                              "issuedAt": {
+                                "type": "string"
+                              },
+                              "paidAt": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "lastError": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "number",
+                              "description",
+                              "status",
+                              "periodStart",
+                              "periodEnd",
+                              "subtotal",
+                              "discount",
+                              "total",
+                              "issuedAt",
+                              "paidAt",
+                              "lastError"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "advisorId",
+                        "status",
+                        "plan",
+                        "promoCode",
+                        "hasPaymentMethod",
+                        "applicationAccepted",
+                        "currentPeriodStart",
+                        "currentPeriodEnd",
+                        "cancelAtPeriodEnd",
+                        "quote",
+                        "invoices"
+                      ]
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "occurredAt": {
+                            "type": "string"
+                          },
+                          "actorId": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "actorType": {
+                            "type": "string"
+                          },
+                          "action": {
+                            "type": "string"
+                          },
+                          "before": {},
+                          "after": {},
+                          "metadata": {}
+                        },
+                        "required": [
+                          "id",
+                          "occurredAt",
+                          "actorId",
+                          "actorType",
+                          "action",
+                          "before",
+                          "after",
+                          "metadata"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "application",
+                    "membership",
+                    "history"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/applications/{id}/decision": {
+      "post": {
+        "operationId": "AdminController_decide_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "accept",
+                      "reject",
+                      "request_info"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "decision"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/promo-codes": {
+      "post": {
+        "operationId": "AdminController_createPromo_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{3,64}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "percent_off",
+                      "amount_off",
+                      "waiver"
+                    ]
+                  },
+                  "percentBps": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000
+                  },
+                  "amount": {
+                    "type": "object",
+                    "properties": {
+                      "amountMinor": {
+                        "type": "string"
+                      },
+                      "currency": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "amountMinor",
+                      "currency"
+                    ]
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "expiresAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "maxRedemptions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "code",
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {

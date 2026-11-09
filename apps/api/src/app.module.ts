@@ -16,15 +16,12 @@ import { PartnersModule } from './modules/partners/index.js';
 import { ReportingModule } from './modules/reporting/index.js';
 import { PlatformModule, type ProcessRole } from './platform/platform.module.js';
 
-/** Every business module, in layer order (foundation -> top). Both processes load all of them. */
+/** Business modules without config, in layer order. Both processes load all of them (plus Identity). */
 export const BUSINESS_MODULES = [
-  IdentityModule,
-  NotificationsModule,
   AuditModule,
   ClientsModule,
   CatalogModule,
   PartnersModule,
-  MembershipModule,
   LearningModule,
   ItinerariesModule,
   BookingModule,
@@ -39,7 +36,13 @@ export class AppModule {
   static forRole(config: AppConfig, role: ProcessRole): DynamicModule {
     return {
       module: AppModule,
-      imports: [PlatformModule.forRoot(config, role), ...BUSINESS_MODULES],
+      imports: [
+        PlatformModule.forRoot(config, role),
+        IdentityModule.forRoot(config),
+        NotificationsModule.forRoot(config),
+        MembershipModule.forRoot(config),
+        ...BUSINESS_MODULES,
+      ],
     };
   }
 }

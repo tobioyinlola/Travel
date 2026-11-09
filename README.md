@@ -63,6 +63,25 @@ pnpm --filter @atp/web dev
 | `pnpm db:migrate`              | Bootstrap roles and schemas, then apply module migrations                 |
 | `pnpm api-client:generate`     | Re-export OpenAPI from the API and regenerate the typed client            |
 
+Create the first admin (the password comes from the environment so it stays out of shell history):
+
+```bash
+STAFF_PASSWORD='choose a long password' pnpm --filter @atp/api create-staff --email you@example.com --role admin
+```
+
+## Trying the onboarding flow locally
+
+Providers run as fakes (`PROVIDERS_MODE=fake`):
+
+- **Email:** with Mailpit running, codes and emails appear at http://localhost:8025. Without Mailpit, set
+  `MAIL_TRANSPORT=log` for the API and worker and read them from the worker's output.
+- **Identity verification and contract signing:** the application page links to test-mode provider pages
+  (`/dev/fake-kyc/...`, `/dev/fake-signature/...`) where you choose the outcome.
+- **Cards:** `pm_fake_visa` succeeds, `pm_fake_declined` is declined. No real card is charged.
+
+Flow: sign up at `/signup`, verify the code, set up MFA, submit the application, complete both checks,
+choose a plan, then accept the application as an admin at `/admin/applications`.
+
 ## How the backend is organised
 
 ```

@@ -11,11 +11,96 @@ const money = z.object({
  * Key format: `<EventType>.v<version>`. Payloads carry identifiers, never another module's full state.
  * Adding a field is a new minor change in the same version only if optional; anything else is a new version.
  */
+const advisorStatus = z.enum([
+  'applied',
+  'under_review',
+  'approved',
+  'active',
+  'suspended',
+  'offboarded',
+  'rejected',
+]);
+
 export const eventCatalog = {
+  // ---- Identity (Sprint 1) ----
+  /** Carries contact details so Notifications can keep its own recipient list (it may not call Identity). */
+  'UserRegistered.v1': {
+    producer: 'identity',
+    payload: z.object({
+      userId: id,
+      role: z.string(),
+      email: z.string().nullable(),
+      phone: z.string().nullable(),
+      displayName: z.string().nullable(),
+    }),
+  },
+  /**
+   * One-time code to deliver. The code is short-lived (minutes) and single-use; it sits in the outbox only
+   * until the 14-day outbox cleanup. Accepted trade-off so Identity need not call Notifications.
+   */
+  'VerificationCodeIssued.v1': {
+    producer: 'identity',
+    payload: z.object({
+      userId: id,
+      channel: z.enum(['email', 'sms']),
+      destination: z.string(),
+      code: z.string().regex(/^\d{6}$/),
+      expiresAt: z.iso.datetime(),
+    }),
+  },
+  'AdvisorApplicationSubmitted.v1': {
+    producer: 'identity',
+    payload: z.object({ advisorId: id, userId: id }),
+  },
+  'AdvisorStatusChanged.v1': {
+    producer: 'identity',
+    payload: z.object({
+      advisorId: id,
+      userId: id,
+      from: advisorStatus.nullable(),
+      to: advisorStatus,
+    }),
+  },
+  'AdvisorApplicationAccepted.v1': {
+    producer: 'identity',
+    payload: z.object({ advisorId: id, userId: id }),
+  },
+  'AdvisorApplicationRejected.v1': {
+    producer: 'identity',
+    payload: z.object({ advisorId: id, userId: id }),
+  },
+  'AdvisorInformationRequested.v1': {
+    producer: 'identity',
+    payload: z.object({ advisorId: id, userId: id, note: z.string().max(2000) }),
+  },
   'AdvisorApproved.v1': {
     producer: 'identity',
     payload: z.object({ advisorId: id, userId: id }),
   },
+  'AdvisorActivated.v1': {
+    producer: 'identity',
+    payload: z.object({ advisorId: id, userId: id }),
+  },
+  // ---- Membership (Sprint 1) ----
+  'MembershipInvoicePaid.v1': {
+    producer: 'membership',
+    payload: z.object({ invoiceId: id, membershipId: id, advisorId: id, userId: id, total: money }),
+  },
+  'MembershipPaymentFailed.v1': {
+    producer: 'membership',
+    payload: z.object({
+      invoiceId: id,
+      membershipId: id,
+      advisorId: id,
+      userId: id,
+      reason: z.string(),
+    }),
+  },
+  'MembershipCancelled.v1': {
+    producer: 'membership',
+    payload: z.object({ membershipId: id, advisorId: id, userId: id, endsAt: z.iso.datetime() }),
+  },
+  // ---- Core events from ARCH ----
   'TierChanged.v1': {
     producer: 'membership',
     payload: z.object({

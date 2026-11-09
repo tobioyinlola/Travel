@@ -109,6 +109,19 @@ CREATE TABLE IF NOT EXISTS platform.idempotency_keys (
 );
 CREATE INDEX IF NOT EXISTS idempotency_keys_expiry_idx ON platform.idempotency_keys (expires_at);
 
+-- Inbound provider webhooks: stored raw, de-duplicated by provider event id, processed asynchronously.
+CREATE TABLE IF NOT EXISTS platform.webhook_inbox (
+  id            uuid PRIMARY KEY,
+  provider      text NOT NULL,
+  event_id      text NOT NULL,
+  event_type    text NOT NULL,
+  payload       jsonb NOT NULL,
+  raw_body      text NOT NULL,
+  received_at   timestamptz NOT NULL DEFAULT now(),
+  processed_at  timestamptz,
+  UNIQUE (provider, event_id)
+);
+
 RESET ROLE;
 `;
 }
