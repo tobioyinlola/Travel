@@ -6,6 +6,7 @@ import { useRequireRole } from '@/lib/session';
 
 const NAV = [
   { href: '/admin/applications', label: 'Applications' },
+  { href: '/admin/partners', label: 'Partners' },
   { href: '/admin/moderation', label: 'Moderation' },
   { href: '/admin/privacy', label: 'Privacy requests' },
   { href: '/admin/promo-codes', label: 'Promo codes' },

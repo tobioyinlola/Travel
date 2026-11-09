@@ -11,7 +11,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { AuditLog } from '../../audit/index.js';
-import { CatalogApi } from '../../catalog/index.js';
+import { CatalogApi, propertySchema } from '../../catalog/index.js';
 import { ClientsApi, privacyRequestRowSchema } from '../../clients/index.js';
 import { PERK_KINDS, PartnersApi } from '../../partners/index.js';
 import { ADVISOR_STATUSES, IdentityApi } from '../../identity/index.js';
@@ -43,6 +43,22 @@ const programSchema = z.object({
   active: z.boolean().optional(),
   validFrom: z.iso.date().nullable().optional(),
   validTo: z.iso.date().nullable().optional(),
+});
+const programViewSchema = z.object({
+  id: z.uuid(),
+  supplierId: z.uuid(),
+  supplierName: z.string(),
+  name: z.string(),
+  tier: z.enum(['preferred', 'luxury', 'exclusive']),
+  description: z.string(),
+  perks: z.array(z.object({ kind: z.string(), description: z.string() })),
+  rateCodes: z.array(z.string()),
+  propertyIds: z.array(z.uuid()),
+  active: z.boolean(),
+  effective: z.boolean(),
+  validFrom: z.string().nullable(),
+  validTo: z.string().nullable(),
+  version: z.number(),
 });
 const programPatchSchema = programSchema
   .omit({ supplierId: true })
@@ -181,11 +197,24 @@ export class AdminController {
   }
 
   @Get('catalog/properties')
+  @ZResponse(200, z.array(propertySchema.extend({ suppliers: z.array(z.string()) })))
   findProperties(@ZQuery(propertyQuery) q: z.infer<typeof propertyQuery>) {
     return this.catalog.findProperties(q.q);
   }
 
   @Get('partners/suppliers')
+  @ZResponse(
+    200,
+    z.array(
+      z.object({
+        id: z.uuid(),
+        name: z.string(),
+        type: z.string(),
+        commissionTerms: z.string(),
+        payoutTerms: z.string(),
+      }),
+    ),
+  )
   suppliers() {
     return this.partners.listSuppliers();
   }
@@ -200,11 +229,13 @@ export class AdminController {
   }
 
   @Get('partners/programs')
+  @ZResponse(200, z.array(programViewSchema))
   programs() {
     return this.partners.listPrograms();
   }
 
   @Post('partners/programs')
+  @ZResponse(201, programViewSchema)
   createProgram(
     @ZBody(programSchema) body: z.infer<typeof programSchema>,
     @CurrentUser() user: AuthUser,
@@ -213,6 +244,7 @@ export class AdminController {
   }
 
   @Patch('partners/programs/:id')
+  @ZResponse(200, programViewSchema)
   updateProgram(
     @Param('id', ParseUUIDPipe) id: string,
     @ZBody(programPatchSchema) body: z.infer<typeof programPatchSchema>,

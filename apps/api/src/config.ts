@@ -30,6 +30,12 @@ const envSchema = z.object({
   PROPOSAL_RATE_TTL_HOURS: z.coerce.number().int().positive().default(24),
   /** How long a traveler proposal link works. */
   PROPOSAL_LINK_DAYS: z.coerce.number().int().positive().default(30),
+  /**
+   * Express "trust proxy": whose X-Forwarded-For to believe for the client IP (rate limits, audit).
+   * 'loopback' trusts the web app's server-side requests on the same host; set the load balancer's
+   * addresses or hop count in production.
+   */
+  TRUST_PROXY: z.string().default('loopback'),
   OTEL_ENABLED: z
     .enum(['true', 'false'])
     .default('false')

@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { IdentityApi } from '../../identity/index.js';
 import { CurrentUser, Roles, type AuthUser } from '../../../platform/http/auth.js';
@@ -39,6 +39,7 @@ export class CatalogController {
   }
 
   @Get('destinations')
+  @ApiQuery({ name: 'q', required: false })
   @ZResponse(
     200,
     z.array(z.object({ slug: z.string(), name: z.string(), countryCode: z.string() })),

@@ -176,7 +176,7 @@ export const decisionSchema = z
     name: z.string().trim().min(2).max(120),
     note: z.string().trim().max(2000).optional(),
   })
-  .refine((v) => v.decision === 'approve' || (v.note && v.note.length > 0), {
+  .refine((v) => v.decision !== 'request_changes' || (v.note && v.note.length > 0), {
     message: 'Tell your advisor what to change',
     path: ['note'],
   });

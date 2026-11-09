@@ -160,7 +160,9 @@ then; the admin console is admin-only).
 
 **Milestone (AC-01):** applicant → KYC → signed agreement → membership paid → Approved → Essentials passed → Active; booking blocked until then.
 
-### Sprint 3-5: Catalog, Partners, Itineraries, Traveler link
+### Sprint 3-5: Catalog, Partners, Itineraries, Traveler link — DONE except payment (Sprint 3)
+
+Status: complete apart from FR-TRV-03 payment from the link, which needs Payments (next sprint). See ADR-13.
 
 | Module                          | Requirements                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

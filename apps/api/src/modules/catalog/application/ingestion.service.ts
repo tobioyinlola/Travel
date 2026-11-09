@@ -72,6 +72,9 @@ export class IngestionService implements OnModuleInit {
         // Fetch outside any transaction (ARCH rule 7); write each page in one transaction.
         const page = await supplier.listContent(cursor);
         await this.db.transaction('catalog', async (tx) => {
+          // Suppliers ingest in parallel; matching must see every other supplier's committed hotels, so
+          // catalog writes are serialised (otherwise two feeds can both create the same hotel).
+          await tx.query(`SELECT pg_advisory_xact_lock(hashtext('catalog.ingest'))`);
           for (const item of page.items) stats[await this.upsert(tx, supplierName, item)] += 1;
         });
         cursor = page.nextCursor;

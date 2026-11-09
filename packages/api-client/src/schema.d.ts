@@ -420,6 +420,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/catalog/destinations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogController_destinations_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/catalog/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogController_hotels_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/catalog/rates/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CatalogController_check_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/catalog/properties/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CatalogController_property_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/learning/courses": {
         parameters: {
             query?: never;
@@ -644,6 +708,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TripsController_list_v1"];
+        put?: never;
+        post: operations["TripsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TripsController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["TripsController_update_v1"];
+        trace?: never;
+    };
+    "/v1/trips/{id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TripsController_addItem_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/hotels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TripsController_addHotel_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["TripsController_removeItem_v1"];
+        options?: never;
+        head?: never;
+        patch: operations["TripsController_updateItem_v1"];
+        trace?: never;
+    };
+    "/v1/trips/{id}/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TripsController_publish_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/proposals/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TripsController_refresh_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/proposal-links/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProposalLinkController_view_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/proposal-links/{token}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProposalLinkController_decide_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/applications": {
         parameters: {
             query?: never;
@@ -754,6 +962,86 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminController_ingest_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/properties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_findProperties_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/partners/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_suppliers_v1"];
+        put?: never;
+        post: operations["AdminController_createSupplier_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/partners/programs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminController_programs_v1"];
+        put?: never;
+        post: operations["AdminController_createProgram_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/partners/programs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminController_updateProgram_v1"];
         trace?: never;
     };
     "/v1/admin/promo-codes": {
@@ -2429,6 +2717,299 @@ export interface operations {
             };
         };
     };
+    CatalogController_destinations_v1: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        slug: string;
+                        name: string;
+                        countryCode: string;
+                    }[];
+                };
+            };
+        };
+    };
+    CatalogController_hotels_v1: {
+        parameters: {
+            query: {
+                destination: string;
+                checkIn: string;
+                checkOut: string;
+                adults: number;
+                childrenAges?: string;
+                currency?: string;
+                maxNightly?: string;
+                minStars?: number;
+                brand?: string;
+                amenities?: string;
+                preferredOnly?: "true" | "false";
+                sort?: "recommended" | "price" | "stars";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        destination: {
+                            slug: string;
+                            name: string;
+                        };
+                        /** Format: date */
+                        checkIn: string;
+                        /** Format: date */
+                        checkOut: string;
+                        nights: number;
+                        occupancy: {
+                            adults: number;
+                            childrenAges: number[];
+                        };
+                        currency: string;
+                        results: {
+                            property: {
+                                /** Format: uuid */
+                                id: string;
+                                name: string;
+                                brand: string | null;
+                                starRating: number;
+                                address: string;
+                                city: string;
+                                countryCode: string;
+                                lat: number;
+                                lng: number;
+                                amenities: string[];
+                                description: string;
+                                photos: string[];
+                            };
+                            preferred: {
+                                /** Format: uuid */
+                                programId: string;
+                                programName: string;
+                                tier: string;
+                                perks: {
+                                    kind: string;
+                                    description: string;
+                                }[];
+                                rateCodes: string[];
+                            } | null;
+                            fromNightly: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            rates: {
+                                rateKey: string;
+                                supplier: string;
+                                /** Format: uuid */
+                                propertyId: string;
+                                /** Format: date */
+                                checkIn: string;
+                                /** Format: date */
+                                checkOut: string;
+                                nights: number;
+                                occupancy: {
+                                    adults: number;
+                                    childrenAges: number[];
+                                };
+                                roomName: string;
+                                maxOccupancy: number;
+                                /** @enum {string} */
+                                board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                refundable: boolean;
+                                freeCancellationUntil: string | null;
+                                cancellationPolicy: string;
+                                total: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                taxes: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                feesAtHotel: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                commissionable: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                commissionBps: number;
+                                paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                rateCodes: string[];
+                                nightlyAverage: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                partnerEligible: boolean;
+                                checkedAt: string;
+                            }[];
+                        }[];
+                        warnings: {
+                            supplier: string;
+                            reason: string;
+                        }[];
+                        tookMs: number;
+                    };
+                };
+            };
+        };
+    };
+    CatalogController_check_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    rateKey: string;
+                    currency: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        available: boolean;
+                        rate: {
+                            rateKey: string;
+                            supplier: string;
+                            /** Format: uuid */
+                            propertyId: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            nights: number;
+                            occupancy: {
+                                adults: number;
+                                childrenAges: number[];
+                            };
+                            roomName: string;
+                            maxOccupancy: number;
+                            /** @enum {string} */
+                            board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                            refundable: boolean;
+                            freeCancellationUntil: string | null;
+                            cancellationPolicy: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            taxes: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            feesAtHotel: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            commissionable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            commissionBps: number;
+                            paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                            rateCodes: string[];
+                            nightlyAverage: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            partnerEligible: boolean;
+                            checkedAt: string;
+                        } | null;
+                        property: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            brand: string | null;
+                            starRating: number;
+                            address: string;
+                            city: string;
+                            countryCode: string;
+                            lat: number;
+                            lng: number;
+                            amenities: string[];
+                            description: string;
+                            photos: string[];
+                        } | null;
+                        preferred: {
+                            /** Format: uuid */
+                            programId: string;
+                            programName: string;
+                            tier: string;
+                            perks: {
+                                kind: string;
+                                description: string;
+                            }[];
+                            rateCodes: string[];
+                        } | null;
+                    };
+                };
+            };
+        };
+    };
+    CatalogController_property_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        brand: string | null;
+                        starRating: number;
+                        address: string;
+                        city: string;
+                        countryCode: string;
+                        lat: number;
+                        lng: number;
+                        amenities: string[];
+                        description: string;
+                        photos: string[];
+                    };
+                };
+            };
+        };
+    };
     LearningController_list_v1: {
         parameters: {
             query?: never;
@@ -2936,6 +3517,1714 @@ export interface operations {
             };
         };
     };
+    TripsController_list_v1: {
+        parameters: {
+            query?: {
+                status?: "planning" | "proposed" | "approved" | "cancelled";
+                clientId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        status: string;
+                        currency: string;
+                    }[];
+                };
+            };
+        };
+    };
+    TripsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    clientId: string;
+                    title: string;
+                    /** Format: date */
+                    startDate: string;
+                    /** Format: date */
+                    endDate: string;
+                    adults: number;
+                    /** @default [] */
+                    childrenAges?: number[];
+                    /** @default USD */
+                    currency?: string;
+                    planningFeeMinor?: string;
+                    notes?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    title?: string;
+                    /** Format: date */
+                    startDate?: string;
+                    /** Format: date */
+                    endDate?: string;
+                    adults?: number;
+                    /** @default [] */
+                    childrenAges?: number[];
+                    planningFeeMinor?: string;
+                    notes?: string;
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_addItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    kind: "activity" | "transfer" | "note";
+                    /** Format: date */
+                    day: string;
+                    title: string;
+                    details?: string;
+                    startTime?: string | null;
+                    location?: string | null;
+                    priceMinor?: string | null;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_addHotel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    rateKey: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_removeItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_updateItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: date */
+                    day?: string;
+                    title?: string;
+                    details?: string;
+                    startTime?: string | null;
+                    location?: string | null;
+                    priceMinor?: string | null;
+                    position?: number;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        clientId: string;
+                        clientName: string;
+                        clientEmail: string | null;
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        adults: number;
+                        childrenAges: number[];
+                        currency: string;
+                        planningFee: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        notes: string;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        version: number;
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            position: number;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: string | null;
+                            hotel: {
+                                rate: {
+                                    rateKey: string;
+                                    supplier: string;
+                                    /** Format: uuid */
+                                    propertyId: string;
+                                    /** Format: date */
+                                    checkIn: string;
+                                    /** Format: date */
+                                    checkOut: string;
+                                    nights: number;
+                                    occupancy: {
+                                        adults: number;
+                                        childrenAges: number[];
+                                    };
+                                    roomName: string;
+                                    maxOccupancy: number;
+                                    /** @enum {string} */
+                                    board: "room_only" | "breakfast" | "half_board" | "all_inclusive";
+                                    refundable: boolean;
+                                    freeCancellationUntil: string | null;
+                                    cancellationPolicy: string;
+                                    total: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    taxes: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    feesAtHotel: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionable: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    commissionBps: number;
+                                    paymentModes: ("pay_at_hotel" | "prepay" | "deposit")[];
+                                    rateCodes: string[];
+                                    nightlyAverage: {
+                                        amountMinor: string;
+                                        currency: string;
+                                    };
+                                    partnerEligible: boolean;
+                                    checkedAt: string;
+                                };
+                                property: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    name: string;
+                                    brand: string | null;
+                                    starRating: number;
+                                    address: string;
+                                    city: string;
+                                    countryCode: string;
+                                    lat: number;
+                                    lng: number;
+                                    amenities: string[];
+                                    description: string;
+                                    photos: string[];
+                                };
+                                preferred: {
+                                    /** Format: uuid */
+                                    programId: string;
+                                    programName: string;
+                                    tier: string;
+                                    perks: {
+                                        kind: string;
+                                        description: string;
+                                    }[];
+                                    rateCodes: string[];
+                                } | null;
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        proposals: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_publish_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @default false */
+                    sendEmail?: boolean;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        proposal: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        };
+                        priceChanges: {
+                            itemId: string;
+                            title: string;
+                            before: string;
+                            after: string;
+                        }[];
+                        republished?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    TripsController_refresh_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        proposal: {
+                            /** Format: uuid */
+                            id: string;
+                            version: number;
+                            /** @enum {string} */
+                            status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            url: string | null;
+                            publishedAt: string;
+                            ratesCheckedAt: string;
+                            ratesExpireAt: string;
+                            linkExpiresAt: string;
+                            firstViewedAt: string | null;
+                            decidedAt: string | null;
+                            decidedByName: string | null;
+                            decisionNote: string | null;
+                        };
+                        priceChanges: {
+                            itemId: string;
+                            title: string;
+                            before: string;
+                            after: string;
+                        }[];
+                        republished?: boolean;
+                    };
+                };
+            };
+        };
+    };
+    ProposalLinkController_view_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        version: number;
+                        /** @enum {string} */
+                        status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        travelers: {
+                            adults: number;
+                            childrenAges: number[];
+                        };
+                        clientFirstName: string;
+                        advisorName: string;
+                        items: {
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            } | null;
+                            hotel: {
+                                name: string;
+                                address: string;
+                                starRating: number;
+                                photo: string | null;
+                                amenities: string[];
+                                /** Format: date */
+                                checkIn: string;
+                                /** Format: date */
+                                checkOut: string;
+                                nights: number;
+                                roomName: string;
+                                board: string;
+                                refundable: boolean;
+                                cancellationPolicy: string;
+                                total: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                taxes: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                feesAtHotel: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                perks: {
+                                    kind: string;
+                                    description: string;
+                                }[];
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        ratesCheckedAt: string;
+                        ratesExpireAt: string;
+                        ratesExpired: boolean;
+                        decidedAt: string | null;
+                        decidedByName: string | null;
+                        decisionNote: string | null;
+                    };
+                };
+            };
+        };
+    };
+    ProposalLinkController_decide_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    decision: "approve" | "request_changes" | "decline";
+                    name: string;
+                    note?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        version: number;
+                        /** @enum {string} */
+                        status: "published" | "approved" | "changes_requested" | "declined" | "superseded";
+                        title: string;
+                        /** Format: date */
+                        startDate: string;
+                        /** Format: date */
+                        endDate: string;
+                        travelers: {
+                            adults: number;
+                            childrenAges: number[];
+                        };
+                        clientFirstName: string;
+                        advisorName: string;
+                        items: {
+                            id: string;
+                            /** @enum {string} */
+                            kind: "hotel" | "activity" | "transfer" | "note";
+                            /** Format: date */
+                            day: string;
+                            title: string;
+                            details: string;
+                            startTime: string | null;
+                            location: string | null;
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            } | null;
+                            hotel: {
+                                name: string;
+                                address: string;
+                                starRating: number;
+                                photo: string | null;
+                                amenities: string[];
+                                /** Format: date */
+                                checkIn: string;
+                                /** Format: date */
+                                checkOut: string;
+                                nights: number;
+                                roomName: string;
+                                board: string;
+                                refundable: boolean;
+                                cancellationPolicy: string;
+                                total: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                taxes: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                feesAtHotel: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                perks: {
+                                    kind: string;
+                                    description: string;
+                                }[];
+                            } | null;
+                        }[];
+                        totals: {
+                            currency: string;
+                            lines: {
+                                itemId: string;
+                                label: string;
+                                amount: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                            taxesIncluded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            planningFee: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payableAtProperty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        ratesCheckedAt: string;
+                        ratesExpireAt: string;
+                        ratesExpired: boolean;
+                        decidedAt: string | null;
+                        decidedByName: string | null;
+                        decisionNote: string | null;
+                    };
+                };
+            };
+        };
+    };
     AdminController_list_v1: {
         parameters: {
             query?: {
@@ -3206,6 +5495,288 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AdminController_ingest_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        suppliers: string[];
+                    };
+                };
+            };
+        };
+    };
+    AdminController_findProperties_v1: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        brand: string | null;
+                        starRating: number;
+                        address: string;
+                        city: string;
+                        countryCode: string;
+                        lat: number;
+                        lng: number;
+                        amenities: string[];
+                        description: string;
+                        photos: string[];
+                        suppliers: string[];
+                    }[];
+                };
+            };
+        };
+    };
+    AdminController_suppliers_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        type: string;
+                        commissionTerms: string;
+                        payoutTerms: string;
+                    }[];
+                };
+            };
+        };
+    };
+    AdminController_createSupplier_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    /** @enum {string} */
+                    type: "hotel" | "hotel_group" | "cruise_line" | "tour_operator";
+                    commissionTerms?: string;
+                    payoutTerms?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                    };
+                };
+            };
+        };
+    };
+    AdminController_programs_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        supplierId: string;
+                        supplierName: string;
+                        name: string;
+                        /** @enum {string} */
+                        tier: "preferred" | "luxury" | "exclusive";
+                        description: string;
+                        perks: {
+                            kind: string;
+                            description: string;
+                        }[];
+                        rateCodes: string[];
+                        propertyIds: string[];
+                        active: boolean;
+                        effective: boolean;
+                        validFrom: string | null;
+                        validTo: string | null;
+                        version: number;
+                    }[];
+                };
+            };
+        };
+    };
+    AdminController_createProgram_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    supplierId: string;
+                    name: string;
+                    /** @enum {string} */
+                    tier: "preferred" | "luxury" | "exclusive";
+                    description?: string;
+                    perks: {
+                        /** @enum {string} */
+                        kind: "upgrade" | "breakfast" | "credit" | "early_check_in" | "late_check_out" | "amenity" | "other";
+                        description: string;
+                    }[];
+                    rateCodes?: string[];
+                    propertyIds: string[];
+                    active?: boolean;
+                    /** Format: date */
+                    validFrom?: string | null;
+                    /** Format: date */
+                    validTo?: string | null;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        supplierId: string;
+                        supplierName: string;
+                        name: string;
+                        /** @enum {string} */
+                        tier: "preferred" | "luxury" | "exclusive";
+                        description: string;
+                        perks: {
+                            kind: string;
+                            description: string;
+                        }[];
+                        rateCodes: string[];
+                        propertyIds: string[];
+                        active: boolean;
+                        effective: boolean;
+                        validFrom: string | null;
+                        validTo: string | null;
+                        version: number;
+                    };
+                };
+            };
+        };
+    };
+    AdminController_updateProgram_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name?: string;
+                    /** @enum {string} */
+                    tier?: "preferred" | "luxury" | "exclusive";
+                    description?: string;
+                    perks?: {
+                        /** @enum {string} */
+                        kind: "upgrade" | "breakfast" | "credit" | "early_check_in" | "late_check_out" | "amenity" | "other";
+                        description: string;
+                    }[];
+                    rateCodes?: string[];
+                    propertyIds?: string[];
+                    active?: boolean;
+                    /** Format: date */
+                    validFrom?: string | null;
+                    /** Format: date */
+                    validTo?: string | null;
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        supplierId: string;
+                        supplierName: string;
+                        name: string;
+                        /** @enum {string} */
+                        tier: "preferred" | "luxury" | "exclusive";
+                        description: string;
+                        perks: {
+                            kind: string;
+                            description: string;
+                        }[];
+                        rateCodes: string[];
+                        propertyIds: string[];
+                        active: boolean;
+                        effective: boolean;
+                        validFrom: string | null;
+                        validTo: string | null;
+                        version: number;
+                    };
+                };
             };
         };
     };

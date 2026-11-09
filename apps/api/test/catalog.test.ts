@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { IngestionService } from '../src/modules/catalog/application/ingestion.service.js';
 import { inDays, startApp, type TestApp } from './app-harness.js';
 
 describe('catalog: ingestion, search and rates (FR-INV-01/02/04/05/06)', () => {
@@ -51,6 +52,23 @@ describe('catalog: ingestion, search and rates (FR-INV-01/02/04/05/06)', () => {
     expect(
       (await t.admin.query('SELECT count(*)::int AS n FROM catalog.properties')).rows[0].n,
     ).toBe(48);
+  });
+
+  it('merges correctly when both suppliers ingest at the same time', async () => {
+    await t.admin.query(
+      'TRUNCATE catalog.property_sources, catalog.properties, catalog.ingestion_runs',
+    );
+    const ingestion = t.app.get(IngestionService);
+    await Promise.all([
+      ingestion.ingest('fake-wholesaler-a'),
+      ingestion.ingest('fake-wholesaler-b'),
+    ]);
+    expect(
+      (await t.admin.query('SELECT count(*)::int AS n FROM catalog.properties')).rows[0].n,
+    ).toBe(48);
+    expect(
+      (await t.admin.query('SELECT count(*)::int AS n FROM catalog.property_sources')).rows[0].n,
+    ).toBe(72);
   });
 
   it('searches a destination and returns live rates with taxes, fees, policy and commission', async () => {
