@@ -66,7 +66,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
         Back to applications
       </Link>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{app.legalName}</h1>
+        <h1 className="text-3xl font-normal tracking-tight">{app.legalName}</h1>
         <StatusBadge status={app.status} />
         {app.acceptedAt && app.status === 'under_review' && (
           <span className="text-sm text-muted">Accepted, waiting for membership payment</span>
@@ -149,7 +149,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
             onChange={(e) => setNote(e.target.value)}
             rows={3}
             maxLength={2000}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+            className="mt-1.5 w-full rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
           />
           <div className="mt-3 flex flex-wrap gap-3">
             <Button

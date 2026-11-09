@@ -7621,6 +7621,9 @@
                         "format": "uuid",
                         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                       },
+                      "clientName": {
+                        "type": "string"
+                      },
                       "title": {
                         "type": "string"
                       },
@@ -7634,21 +7637,73 @@
                         "format": "date",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
                       },
+                      "nights": {
+                        "type": "number"
+                      },
+                      "travelers": {
+                        "type": "number"
+                      },
                       "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "planning",
+                          "proposed",
+                          "approved",
+                          "cancelled"
+                        ]
                       },
                       "currency": {
                         "type": "string"
+                      },
+                      "destination": {
+                        "nullable": true,
+                        "type": "object",
+                        "properties": {
+                          "city": {
+                            "type": "string"
+                          },
+                          "countryCode": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "city",
+                          "countryCode"
+                        ]
+                      },
+                      "total": {
+                        "type": "object",
+                        "properties": {
+                          "amountMinor": {
+                            "type": "string"
+                          },
+                          "currency": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "amountMinor",
+                          "currency"
+                        ]
+                      },
+                      "itemCount": {
+                        "type": "number"
                       }
                     },
                     "required": [
                       "id",
                       "clientId",
+                      "clientName",
                       "title",
                       "startDate",
                       "endDate",
+                      "nights",
+                      "travelers",
                       "status",
-                      "currency"
+                      "currency",
+                      "destination",
+                      "total",
+                      "itemCount"
                     ]
                   }
                 }
@@ -8408,6 +8463,249 @@
                     "items",
                     "totals",
                     "proposals"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "trips"
+        ]
+      }
+    },
+    "/v1/trips/summary": {
+      "get": {
+        "operationId": "TripsController_summary_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "counts": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number"
+                        },
+                        "planning": {
+                          "type": "number"
+                        },
+                        "proposed": {
+                          "type": "number"
+                        },
+                        "approved": {
+                          "type": "number"
+                        },
+                        "upcoming": {
+                          "type": "number"
+                        },
+                        "travelingNow": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "planning",
+                        "proposed",
+                        "approved",
+                        "upcoming",
+                        "travelingNow"
+                      ]
+                    },
+                    "clients": {
+                      "type": "number"
+                    },
+                    "pipelineValue": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "approvedValue": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "proposalsLast7Days": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "proposals": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "proposals"
+                        ]
+                      }
+                    },
+                    "destinations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "countryCode": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "trips": {
+                            "type": "number"
+                          },
+                          "travelers": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "countryCode",
+                          "city",
+                          "trips",
+                          "travelers"
+                        ]
+                      }
+                    },
+                    "upcoming": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "clientId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "clientName": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "startDate": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "endDate": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "nights": {
+                            "type": "number"
+                          },
+                          "travelers": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "planning",
+                              "proposed",
+                              "approved",
+                              "cancelled"
+                            ]
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "destination": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "city": {
+                                "type": "string"
+                              },
+                              "countryCode": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "city",
+                              "countryCode"
+                            ]
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "itemCount": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "clientId",
+                          "clientName",
+                          "title",
+                          "startDate",
+                          "endDate",
+                          "nights",
+                          "travelers",
+                          "status",
+                          "currency",
+                          "destination",
+                          "total",
+                          "itemCount"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "counts",
+                    "clients",
+                    "pipelineValue",
+                    "approvedValue",
+                    "proposalsLast7Days",
+                    "destinations",
+                    "upcoming"
                   ]
                 }
               }

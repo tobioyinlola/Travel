@@ -107,7 +107,7 @@ export function ClientForm({
     <form onSubmit={handle} className="flex flex-col gap-6" noValidate>
       {error && <Alert>{error}</Alert>}
       <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-2 font-semibold">Contact</legend>
+        <legend className="mb-2 font-medium">Contact</legend>
         <Field
           label="First name"
           name="firstName"
@@ -146,7 +146,7 @@ export function ClientForm({
         <Field label="Home city" name="homeCity" defaultValue={initial?.homeCity ?? ''} />
       </fieldset>
       <fieldset className="grid gap-4 sm:grid-cols-3">
-        <legend className="mb-2 font-semibold">Budget per night</legend>
+        <legend className="mb-2 font-medium">Budget per night</legend>
         <Field
           label="Minimum"
           name="budgetMin"
@@ -166,7 +166,7 @@ export function ClientForm({
         <Field label="Currency" name="currency" maxLength={3} defaultValue={budgetCurrency} />
       </fieldset>
       <fieldset>
-        <legend className="mb-2 font-semibold">Hotel style</legend>
+        <legend className="mb-2 font-medium">Hotel style</legend>
         <div className="flex flex-wrap gap-4">
           {STYLES.map((x) => (
             <label key={x} className="flex items-center gap-2 text-sm">
@@ -181,7 +181,7 @@ export function ClientForm({
         </div>
       </fieldset>
       <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-2 font-semibold">Needs</legend>
+        <legend className="mb-2 font-medium">Needs</legend>
         <Field
           label="Dietary needs"
           name="dietary"
@@ -196,7 +196,7 @@ export function ClientForm({
             id="travelPace"
             name="travelPace"
             defaultValue={p.travelPace ?? ''}
-            className="rounded-md border border-gray-300 bg-surface px-3 py-2"
+            className="rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="">Not set</option>
             <option value="relaxed">Relaxed</option>
@@ -212,7 +212,7 @@ export function ClientForm({
         <Field label="Other preferences" name="other" defaultValue={p.other ?? ''} />
       </fieldset>
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 font-semibold">Loyalty programmes</legend>
+        <legend className="mb-2 font-medium">Loyalty programmes</legend>
         {loyalty.map((l, i) => (
           <div key={i} className="grid grid-cols-[1fr_1fr_auto] items-end gap-3">
             <Field
@@ -257,7 +257,7 @@ export function ClientForm({
           rows={4}
           defaultValue={initial?.notes ?? ''}
           maxLength={10000}
-          className="rounded-md border border-gray-300 px-3 py-2"
+          className="rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
         />
       </div>
       <Button type="submit" disabled={busy} className="self-start">

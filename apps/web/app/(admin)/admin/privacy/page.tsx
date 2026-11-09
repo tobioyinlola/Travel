@@ -46,7 +46,7 @@ export default function PrivacyPage() {
   if (q.isError) return <Alert>Could not load privacy requests.</Alert>;
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Privacy requests</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Privacy requests</h1>
       {error && <Alert>{error}</Alert>}
       {q.data.length === 0 && <p className="text-muted">No requests.</p>}
       {q.data.map((r) => (
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
               <textarea
                 id={`n-${r.id}`}
                 rows={2}
-                className="rounded-md border border-gray-300 px-3 py-2"
+                className="rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
                 value={notes[r.id] ?? ''}
                 onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })}
               />

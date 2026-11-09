@@ -23,6 +23,7 @@ import {
   tripCreateSchema,
   tripListSchema,
   tripSchema,
+  tripSummarySchema,
   tripUpdateSchema,
 } from './schemas.js';
 
@@ -46,6 +47,12 @@ export class TripsController {
   @ZResponse(200, tripListSchema)
   async list(@CurrentUser() user: AuthUser, @ZQuery(listQuery) q: z.infer<typeof listQuery>) {
     return this.trips.list(await this.advisorId(user), q);
+  }
+
+  @Get('summary')
+  @ZResponse(200, tripSummarySchema)
+  async summary(@CurrentUser() user: AuthUser) {
+    return this.trips.summary(await this.advisorId(user));
   }
 
   @Post()

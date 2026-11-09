@@ -157,6 +157,30 @@ export class ClientsService implements OnModuleInit {
     });
   }
 
+  /** Display names for a set of this advisor's clients (lists in other modules). Erased clients are omitted. */
+  async names(
+    advisorId: string,
+    ids: string[],
+  ): Promise<Map<string, { firstName: string; lastName: string }>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.asAdvisor(advisorId, (tx) =>
+      tx.query<{ id: string; first_name: string; last_name: string }>(
+        `SELECT id, first_name, last_name FROM clients.clients WHERE id = ANY($1::uuid[]) AND status <> 'erased'`,
+        [ids],
+      ),
+    );
+    return new Map(rows.map((r) => [r.id, { firstName: r.first_name, lastName: r.last_name }]));
+  }
+
+  async count(advisorId: string): Promise<number> {
+    const [r] = await this.asAdvisor(advisorId, (tx) =>
+      tx.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM clients.clients WHERE status = 'active'`,
+      ),
+    );
+    return r?.n ?? 0;
+  }
+
   advisorFor(userId: string): Promise<AdvisorSummary> {
     return this.identity.requireAdvisor(userId, CRM_STATUSES);
   }

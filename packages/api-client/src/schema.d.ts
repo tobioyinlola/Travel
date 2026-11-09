@@ -724,6 +724,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TripsController_summary_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/{id}": {
         parameters: {
             query?: never;
@@ -3539,13 +3555,26 @@ export interface operations {
                         id: string;
                         /** Format: uuid */
                         clientId: string;
+                        clientName: string;
                         title: string;
                         /** Format: date */
                         startDate: string;
                         /** Format: date */
                         endDate: string;
-                        status: string;
+                        nights: number;
+                        travelers: number;
+                        /** @enum {string} */
+                        status: "planning" | "proposed" | "approved" | "cancelled";
                         currency: string;
+                        destination: {
+                            city: string;
+                            countryCode: string;
+                        } | null;
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        itemCount: number;
                     }[];
                 };
             };
@@ -3742,6 +3771,80 @@ export interface operations {
                             decidedAt: string | null;
                             decidedByName: string | null;
                             decisionNote: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    TripsController_summary_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        counts: {
+                            total: number;
+                            planning: number;
+                            proposed: number;
+                            approved: number;
+                            upcoming: number;
+                            travelingNow: number;
+                        };
+                        clients: number;
+                        pipelineValue: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        approvedValue: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        proposalsLast7Days: {
+                            /** Format: date */
+                            day: string;
+                            proposals: number;
+                        }[];
+                        destinations: {
+                            countryCode: string;
+                            city: string;
+                            trips: number;
+                            travelers: number;
+                        }[];
+                        upcoming: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            clientId: string;
+                            clientName: string;
+                            title: string;
+                            /** Format: date */
+                            startDate: string;
+                            /** Format: date */
+                            endDate: string;
+                            nights: number;
+                            travelers: number;
+                            /** @enum {string} */
+                            status: "planning" | "proposed" | "approved" | "cancelled";
+                            currency: string;
+                            destination: {
+                                city: string;
+                                countryCode: string;
+                            } | null;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            itemCount: number;
                         }[];
                     };
                 };

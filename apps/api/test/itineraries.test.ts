@@ -377,3 +377,56 @@ describe('itineraries and proposals (FR-ITN-01..06, FR-TRV-01..03, AC-02)', () =
       .expect(410);
   });
 });
+
+describe('trip list rows and the advisor dashboard summary', () => {
+  let t: TestApp;
+
+  beforeAll(async () => {
+    t = await startApp();
+    await t.reset();
+    await t.ingestCatalog();
+  });
+  afterAll(() => t.close());
+
+  it('lists trips with client, destination, nights and total, and summarises them', async () => {
+    const ada = await t.onboardAdvisor('sum@example.com', { essentials: true });
+    const clientId = (
+      await ada.agent
+        .post('/v1/clients')
+        .send({ firstName: 'Grace', lastName: 'Hopper' })
+        .expect(201)
+    ).body.id;
+    const trip = (
+      await ada.agent
+        .post('/v1/trips')
+        .send({ clientId, title: 'Lisbon', startDate: inDays(60), endDate: inDays(64), adults: 2 })
+        .expect(201)
+    ).body;
+    const rate = (
+      await ada.agent
+        .get('/v1/catalog/search')
+        .query({ destination: 'lisbon', checkIn: inDays(60), checkOut: inDays(63), adults: 2 })
+        .expect(200)
+    ).body.results[0].rates[0];
+    await ada.agent.post(`/v1/trips/${trip.id}/hotels`).send({ rateKey: rate.rateKey }).expect(201);
+    await ada.agent.post(`/v1/trips/${trip.id}/proposals`).send({}).expect(201);
+
+    const [row] = (await ada.agent.get('/v1/trips').expect(200)).body;
+    expect(row).toMatchObject({
+      clientName: 'Grace Hopper',
+      nights: 4,
+      travelers: 2,
+      status: 'proposed',
+      destination: { city: 'Lisbon', countryCode: 'PT' },
+      total: rate.total,
+    });
+
+    const s = (await ada.agent.get('/v1/trips/summary').expect(200)).body;
+    expect(s.counts).toMatchObject({ total: 1, proposed: 1, upcoming: 1 });
+    expect(s.clients).toBe(1);
+    expect(s.pipelineValue).toEqual(rate.total);
+    expect(s.destinations).toEqual([{ countryCode: 'PT', city: 'Lisbon', trips: 1, travelers: 2 }]);
+    expect(s.proposalsLast7Days).toHaveLength(7);
+    expect(s.proposalsLast7Days[6].proposals).toBe(1);
+  });
+});

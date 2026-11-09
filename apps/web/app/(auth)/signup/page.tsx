@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
-import { Alert, Button, Field } from '@/components/ui';
+import { Alert, Button, Field, Segmented } from '@/components/ui';
 import { api, ApiError, call } from '@/lib/api';
 
 export default function SignupPage() {
@@ -36,25 +36,20 @@ export default function SignupPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">Become an advisor</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Become an advisor</h1>
       <p className="mt-1 text-muted">
         Create your account. You will verify it with a one-time code.
       </p>
-      <div className="mt-4 flex gap-2" role="group" aria-label="Sign up with">
-        <Button
-          type="button"
-          variant={mode === 'email' ? 'primary' : 'secondary'}
-          onClick={() => setMode('email')}
-        >
-          Email
-        </Button>
-        <Button
-          type="button"
-          variant={mode === 'phone' ? 'primary' : 'secondary'}
-          onClick={() => setMode('phone')}
-        >
-          Phone
-        </Button>
+      <div className="mt-6">
+        <Segmented
+          label="Sign up with"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: 'email', label: 'Email' },
+            { value: 'phone', label: 'Phone' },
+          ]}
+        />
       </div>
       <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-4" noValidate>
         {error && <Alert>{error.message}</Alert>}

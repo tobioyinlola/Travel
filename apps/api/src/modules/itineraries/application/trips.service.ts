@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { newId } from '../../shared-kernel/index.js';
 import {
   CatalogApi,
+  nightsBetween,
   type RateView,
   type PropertySummary,
   type Preferred,
@@ -267,26 +268,107 @@ export class TripsService {
     return this.get(advisorId, id);
   }
 
+  /** Trip rows with what list screens show: client, destination, nights, party and current total. */
   async list(advisorId: string, f: { status?: string | undefined; clientId?: string | undefined }) {
-    return this.asAdvisor(advisorId, async (tx) => {
+    const rows = await this.asAdvisor(advisorId, async (tx) => {
       const params: unknown[] = [advisorId];
       const where = ['owner_advisor_id = $1'];
       if (f.status) where.push(`status = $${params.push(f.status)}`);
       if (f.clientId) where.push(`client_id = $${params.push(f.clientId)}`);
-      const rows = await tx.query<TripRow>(
+      const trips = await tx.query<TripRow>(
         `${TRIP_SELECT} WHERE ${where.join(' AND ')} ORDER BY trips.start_date, trips.id LIMIT 200`,
         params,
       );
-      return rows.map((t) => ({
+      const items = trips.length
+        ? await tx.query<ItemRow & { trip_id: string }>(
+            `SELECT trip_id, id, kind, to_char(day, 'YYYY-MM-DD') AS day, position, title, details, start_time, location,
+                    price_minor, rate
+               FROM itineraries.items WHERE trip_id = ANY($1::uuid[]) ORDER BY items.day, items.position`,
+            [trips.map((t) => t.id)],
+          )
+        : [];
+      return trips.map((t) => ({ t, items: items.filter((i) => i.trip_id === t.id) }));
+    });
+    const names = await this.clients.getNames(advisorId, [
+      ...new Set(rows.map((r) => r.t.client_id)),
+    ]);
+    return rows.map(({ t, items }) => {
+      const hotel = items.find((i) => i.kind === 'hotel' && i.rate)?.rate ?? null;
+      const n = names.get(t.client_id);
+      return {
         id: t.id,
         clientId: t.client_id,
+        clientName: n ? `${n.firstName} ${n.lastName}` : 'Erased client',
         title: t.title,
         startDate: t.start_date,
         endDate: t.end_date,
+        nights: nightsBetween(t.start_date, t.end_date),
+        travelers: t.adults + t.children_ages.length,
         status: t.status,
         currency: t.currency,
-      }));
+        destination: hotel
+          ? { city: hotel.property.city, countryCode: hotel.property.countryCode }
+          : null,
+        total: proposalTotals(t.currency, priced(items, t.currency), BigInt(t.planning_fee_minor))
+          .total,
+        itemCount: items.length,
+      };
     });
+  }
+
+  /** Advisor dashboard figures from this advisor's own trips (FR-RPT-01 preview; full reporting in Sprint 8). */
+  async summary(advisorId: string) {
+    const trips = await this.list(advisorId, {});
+    const today = new Date().toISOString().slice(0, 10);
+    const proposals = await this.asAdvisor(advisorId, (tx) =>
+      tx.query<{ day: string; n: number }>(
+        `SELECT to_char(published_at, 'YYYY-MM-DD') AS day, count(*)::int AS n FROM itineraries.proposals
+          WHERE owner_advisor_id = $1 AND published_at > now() - interval '7 days' GROUP BY 1`,
+        [advisorId],
+      ),
+    );
+    const last7 = Array.from({ length: 7 }, (_, k) => {
+      const d = new Date(Date.now() - (6 - k) * 86_400_000).toISOString().slice(0, 10);
+      return { day: d, proposals: proposals.find((p) => p.day === d)?.n ?? 0 };
+    });
+    const currency = trips[0]?.currency ?? 'USD';
+    const sum = (list: typeof trips) => ({
+      amountMinor: String(
+        list
+          .filter((t) => t.total.currency === currency)
+          .reduce((acc, t) => acc + BigInt(t.total.amountMinor), 0n),
+      ),
+      currency,
+    });
+    const destinations = new Map<
+      string,
+      { countryCode: string; city: string; trips: number; travelers: number }
+    >();
+    for (const t of trips) {
+      if (!t.destination || t.status === 'cancelled') continue;
+      const key = `${t.destination.countryCode}:${t.destination.city}`;
+      const d = destinations.get(key) ?? { ...t.destination, trips: 0, travelers: 0 };
+      d.trips += 1;
+      d.travelers += t.travelers;
+      destinations.set(key, d);
+    }
+    const active = trips.filter((t) => t.status !== 'cancelled');
+    return {
+      counts: {
+        total: active.length,
+        planning: trips.filter((t) => t.status === 'planning').length,
+        proposed: trips.filter((t) => t.status === 'proposed').length,
+        approved: trips.filter((t) => t.status === 'approved').length,
+        upcoming: active.filter((t) => t.startDate >= today).length,
+        travelingNow: active.filter((t) => t.startDate <= today && t.endDate >= today).length,
+      },
+      clients: await this.clients.countActive(advisorId),
+      pipelineValue: sum(trips.filter((t) => t.status === 'proposed')),
+      approvedValue: sum(trips.filter((t) => t.status === 'approved')),
+      proposalsLast7Days: last7,
+      destinations: [...destinations.values()].sort((a, b) => b.trips - a.trips),
+      upcoming: active.filter((t) => t.endDate >= today).slice(0, 5),
+    };
   }
 
   async get(advisorId: string, tripId: string) {

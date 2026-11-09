@@ -26,7 +26,7 @@ export function useRefreshMe() {
 export function nextPath(me: NonNullable<Me>): string {
   if (me.next === 'mfa_enroll') return '/mfa/setup';
   if (me.next === 'mfa_challenge') return '/mfa';
-  return me.role === 'advisor' ? '/application' : '/admin/applications';
+  return me.role === 'advisor' ? '/dashboard' : '/admin/applications';
 }
 
 /** Client-side redirect guard. The API enforces every rule; this only keeps people on the right page. */

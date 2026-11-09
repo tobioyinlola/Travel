@@ -1,5 +1,15 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import {
+  BedDouble,
+  CalendarDays,
+  Car,
+  Gift,
+  StickyNote,
+  Ticket,
+  UsersRound,
+  type LucideIcon,
+} from 'lucide-react';
 import { Decision } from './decision';
 
 // Proposal links carry a secret token: never index them, never cache them publicly.
@@ -19,6 +29,7 @@ type Proposal = {
   title: string;
   startDate: string;
   endDate: string;
+  travelers: { adults: number; childrenAges: number[] };
   clientFirstName: string;
   advisorName: string;
   items: Array<{
@@ -33,7 +44,6 @@ type Proposal = {
       name: string;
       address: string;
       starRating: number;
-      photo: string | null;
       checkIn: string;
       checkOut: string;
       nights: number;
@@ -70,12 +80,32 @@ const longDate = (d: string) =>
     month: 'long',
     timeZone: 'UTC',
   });
+const short = (d: string) =>
+  new Date(`${d}T00:00:00Z`).toLocaleDateString('en', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
 const BOARD: Record<string, string> = {
   room_only: 'Room only',
   breakfast: 'Breakfast included',
   half_board: 'Half board',
   all_inclusive: 'All inclusive',
 };
+const ICONS: Record<string, LucideIcon> = {
+  hotel: BedDouble,
+  activity: Ticket,
+  transfer: Car,
+  note: StickyNote,
+};
+
+function Tile({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-canvas">
+      <Icon size={20} strokeWidth={1.5} aria-hidden />
+    </span>
+  );
+}
 
 async function load(token: string): Promise<{ proposal: Proposal } | { error: number }> {
   const h = await headers();
@@ -94,86 +124,124 @@ export default async function ProposalPage({ params }: { params: Promise<{ token
   const result = await load(token);
   if ('error' in result) {
     return (
-      <>
-        <h1 className="text-2xl font-semibold">Trip proposal</h1>
+      <div className="rounded-[28px] bg-surface p-8">
+        <h1 className="text-3xl font-normal tracking-tight">Trip proposal</h1>
         <p className="mt-2 text-muted">
           {result.error === 410
             ? 'This link has expired. Please ask your advisor for a new one.'
             : 'This link is not valid. Please ask your advisor for a new one.'}
         </p>
-      </>
+      </div>
     );
   }
   const p = result.proposal;
   const byDay = new Map<string, Proposal['items']>();
   for (const it of p.items) byDay.set(it.day, [...(byDay.get(it.day) ?? []), it]);
+  const people = p.travelers.adults + p.travelers.childrenAges.length;
 
   return (
-    <article className="flex flex-col gap-6">
-      <header>
+    <article className="flex flex-col gap-4">
+      <header className="rounded-[28px] bg-surface p-6 sm:p-8">
         <p className="text-sm text-muted">
           Prepared for {p.clientFirstName} by {p.advisorName}
         </p>
-        <h1 className="text-3xl font-semibold">{p.title}</h1>
-        <p className="mt-1 text-muted">
-          {longDate(p.startDate)} to {longDate(p.endDate)}
-        </p>
+        <h1 className="mt-1 text-4xl font-normal tracking-tight">{p.title}</h1>
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="flex items-center gap-3 rounded-[20px] bg-canvas p-2.5">
+            <Tile icon={CalendarDays} />
+            <div>
+              <p className="text-xs text-muted">Dates</p>
+              <p>
+                {short(p.startDate)} – {short(p.endDate)}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-[20px] bg-canvas p-2.5">
+            <Tile icon={UsersRound} />
+            <div>
+              <p className="text-xs text-muted">Travelers</p>
+              <p>
+                {people} {people === 1 ? 'person' : 'people'}
+              </p>
+            </div>
+          </div>
+          <div className="col-span-2 rounded-[20px] bg-accent-strong p-4 text-white sm:col-span-1">
+            <p className="text-xs">Total</p>
+            <p className="text-3xl font-light">{money(p.totals.total)}</p>
+          </div>
+        </div>
       </header>
 
       {[...byDay.entries()].map(([day, items]) => (
-        <section key={day} aria-label={longDate(day)} className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">{longDate(day)}</h2>
-          {items.map((it) => (
-            <div key={it.id} className="rounded-lg border border-gray-200 bg-surface p-4">
-              {it.hotel ? (
-                <div className="flex flex-col gap-1">
-                  <p className="text-lg font-medium">
-                    {it.hotel.name}{' '}
-                    <span
-                      className="text-sm text-muted"
-                      aria-label={`${it.hotel.starRating} stars`}
-                    >
-                      {'★'.repeat(Math.round(it.hotel.starRating))}
-                    </span>
-                  </p>
-                  <p className="text-sm text-muted">{it.hotel.address}</p>
-                  <p className="text-sm">
-                    {it.hotel.roomName} · {BOARD[it.hotel.board] ?? it.hotel.board} ·{' '}
-                    {it.hotel.nights} night{it.hotel.nights === 1 ? '' : 's'} ({it.hotel.checkIn} to{' '}
-                    {it.hotel.checkOut})
-                  </p>
-                  {it.hotel.perks.length > 0 && (
-                    <p className="text-sm text-green-900">
-                      Included with this booking:{' '}
-                      {it.hotel.perks.map((x) => x.description).join(' · ')}
-                    </p>
-                  )}
-                  <p className="text-sm">
-                    <strong>{money(it.hotel.total)}</strong> including {money(it.hotel.taxes)} taxes
-                    {it.hotel.feesAtHotel.amountMinor !== '0' && (
-                      <>; plus {money(it.hotel.feesAtHotel)} paid at the hotel</>
-                    )}
-                  </p>
-                  <p className="text-xs text-muted">{it.hotel.cancellationPolicy}</p>
-                </div>
-              ) : (
-                <div>
-                  <p className="font-medium">
-                    {it.startTime && <span className="mr-2 text-muted">{it.startTime}</span>}
-                    {it.title}
-                  </p>
-                  {it.details && <p className="text-sm text-muted">{it.details}</p>}
-                  {it.price && <p className="text-sm">{money(it.price)}</p>}
-                </div>
-              )}
-            </div>
-          ))}
+        <section
+          key={day}
+          aria-label={longDate(day)}
+          className="rounded-[28px] bg-surface p-5 sm:p-6"
+        >
+          <h2 className="mb-3 text-sm text-muted">{longDate(day)}</h2>
+          <ul className="flex flex-col gap-2">
+            {items.map((it) => (
+              <li key={it.id} className="rounded-[22px] bg-canvas p-2.5 pr-4">
+                {it.hotel ? (
+                  <div className="flex gap-3">
+                    <Tile icon={BedDouble} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-lg">
+                        {it.hotel.name}{' '}
+                        <span
+                          className="text-sm text-muted"
+                          aria-label={`${it.hotel.starRating} stars`}
+                        >
+                          {'★'.repeat(Math.round(it.hotel.starRating))}
+                        </span>
+                      </p>
+                      <p className="text-sm text-muted">{it.hotel.address}</p>
+                      <p className="mt-2 text-sm">
+                        {it.hotel.roomName} · {BOARD[it.hotel.board] ?? it.hotel.board} ·{' '}
+                        {it.hotel.nights} night{it.hotel.nights === 1 ? '' : 's'},{' '}
+                        {short(it.hotel.checkIn)} to {short(it.hotel.checkOut)}
+                      </p>
+                      {it.hotel.perks.length > 0 && (
+                        <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-sm text-accent-deep">
+                          <Gift size={16} strokeWidth={1.5} aria-hidden />{' '}
+                          {it.hotel.perks.map((x) => x.description).join(' · ')}
+                        </p>
+                      )}
+                      <p className="mt-2 text-sm">
+                        <span className="text-lg">{money(it.hotel.total)}</span>{' '}
+                        <span className="text-muted">
+                          including {money(it.hotel.taxes)} taxes
+                          {it.hotel.feesAtHotel.amountMinor !== '0' && (
+                            <>, plus {money(it.hotel.feesAtHotel)} paid at the hotel</>
+                          )}
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-muted">{it.hotel.cancellationPolicy}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Tile icon={ICONS[it.kind] ?? StickyNote} />
+                    <div className="min-w-0 flex-1">
+                      <p>
+                        {it.startTime && <span className="mr-2 text-muted">{it.startTime}</span>}
+                        {it.title}
+                      </p>
+                      {it.details && <p className="text-sm text-muted">{it.details}</p>}
+                    </div>
+                    {it.price && <p>{money(it.price)}</p>}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       ))}
 
-      <section aria-label="Price" className="rounded-lg border border-gray-200 bg-surface p-5">
-        <h2 className="text-lg font-semibold">Total {money(p.totals.total)}</h2>
-        <p className="text-sm text-muted">
+      <section aria-label="Price" className="rounded-[28px] bg-surface p-6">
+        <p className="text-sm text-muted">Total</p>
+        <p className="text-4xl font-light">{money(p.totals.total)}</p>
+        <p className="mt-2 text-sm text-muted">
           Includes {money(p.totals.taxesIncluded)} taxes
           {p.totals.planningFee.amountMinor !== '0' && (
             <> and a {money(p.totals.planningFee)} planning fee</>
@@ -183,7 +251,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ token
             <> {money(p.totals.payableAtProperty)} is paid directly at the hotels.</>
           )}
         </p>
-        <p className="mt-2 text-xs text-muted">
+        <p className="mt-3 text-xs text-muted">
           Prices last checked {new Date(p.ratesCheckedAt).toUTCString()}.
         </p>
       </section>

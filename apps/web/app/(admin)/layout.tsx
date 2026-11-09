@@ -1,23 +1,20 @@
 'use client';
 
+import { ClipboardList, Handshake, LockKeyhole, ShieldCheck, Ticket } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Shell } from '@/components/shell';
+import { AppShell, type NavItem } from '@/components/shell';
 import { useRequireRole } from '@/lib/session';
 
-const NAV = [
-  { href: '/admin/applications', label: 'Applications' },
-  { href: '/admin/partners', label: 'Partners' },
-  { href: '/admin/moderation', label: 'Moderation' },
-  { href: '/admin/privacy', label: 'Privacy requests' },
-  { href: '/admin/promo-codes', label: 'Promo codes' },
+const TABS: NavItem[] = [
+  { href: '/admin/applications', label: 'Applications', icon: ClipboardList },
+  { href: '/admin/partners', label: 'Partners', icon: Handshake },
+  { href: '/admin/moderation', label: 'Moderation', icon: ShieldCheck },
+  { href: '/admin/privacy', label: 'Privacy', icon: LockKeyhole },
+  { href: '/admin/promo-codes', label: 'Promo codes', icon: Ticket },
 ];
 
 /** Admin console: role-scoped, MFA required (enforced by the API). */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { me } = useRequireRole('admin');
-  return (
-    <Shell area="Admin console" nav={NAV}>
-      {me ? children : <p className="text-muted">Loading…</p>}
-    </Shell>
-  );
+  return <AppShell tabs={TABS}>{me ? children : <p className="text-muted">Loading…</p>}</AppShell>;
 }

@@ -102,17 +102,45 @@ export const tripSchema = z.object({
   totals,
   proposals: z.array(proposalSummarySchema),
 });
-export const tripListSchema = z.array(
-  z.object({
-    id: z.uuid(),
-    clientId: z.uuid(),
-    title: z.string(),
-    startDate: date,
-    endDate: date,
-    status: z.string(),
-    currency: z.string(),
+const tripRow = z.object({
+  id: z.uuid(),
+  clientId: z.uuid(),
+  clientName: z.string(),
+  title: z.string(),
+  startDate: date,
+  endDate: date,
+  nights: z.number(),
+  travelers: z.number(),
+  status: z.enum(['planning', 'proposed', 'approved', 'cancelled']),
+  currency: z.string(),
+  destination: z.object({ city: z.string(), countryCode: z.string() }).nullable(),
+  total: money,
+  itemCount: z.number(),
+});
+export const tripListSchema = z.array(tripRow);
+export const tripSummarySchema = z.object({
+  counts: z.object({
+    total: z.number(),
+    planning: z.number(),
+    proposed: z.number(),
+    approved: z.number(),
+    upcoming: z.number(),
+    travelingNow: z.number(),
   }),
-);
+  clients: z.number(),
+  pipelineValue: money,
+  approvedValue: money,
+  proposalsLast7Days: z.array(z.object({ day: date, proposals: z.number() })),
+  destinations: z.array(
+    z.object({
+      countryCode: z.string(),
+      city: z.string(),
+      trips: z.number(),
+      travelers: z.number(),
+    }),
+  ),
+  upcoming: z.array(tripRow),
+});
 export const publishResultSchema = z.object({
   proposal: proposalSummarySchema,
   priceChanges: z.array(

@@ -2,7 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
-import { Alert, Button, Card, Field, Select, StatusBadge } from '@/components/ui';
+import { BadgeCheck, FileSignature, IdCard } from 'lucide-react';
+import { Alert, Button, Card, Field, ListRow, Select, StatusBadge } from '@/components/ui';
 import { api, ApiError, call, formatMoney, newKey } from '@/lib/api';
 
 type Application = Awaited<ReturnType<typeof loadApplication>>;
@@ -46,7 +47,7 @@ export default function ApplicationPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Your application</h1>
+        <h1 className="text-3xl font-normal tracking-tight sm:text-4xl">Account and membership</h1>
         {app && (
           <p className="mt-2 flex flex-wrap items-center gap-2 text-muted">
             <StatusBadge status={app.status} /> {STATUS_COPY[app.status]}
@@ -220,41 +221,67 @@ function ApplicationForm({
 }
 
 function Checks({ app, onEdit }: { app: AppData; onEdit?: (() => void) | undefined }) {
+  const link = (href: string | null, label: string) =>
+    href ? (
+      <a
+        href={href}
+        className="inline-flex h-10 items-center rounded-full bg-accent-strong px-4 text-sm font-medium text-white hover:bg-accent-deep"
+      >
+        {label}
+      </a>
+    ) : null;
   return (
     <Card title="Steps">
-      <ol className="flex flex-col gap-4">
-        <li className="flex flex-wrap items-center justify-between gap-3">
-          <span>1. Application submitted</span>
-          <span className="flex items-center gap-3">
-            <StatusBadge status="passed" />
-            {onEdit && (
-              <Button variant="secondary" onClick={onEdit}>
-                Edit
-              </Button>
-            )}
-          </span>
+      <ol className="flex flex-col gap-2">
+        <li>
+          <ListRow
+            tone="canvas"
+            icon={IdCard}
+            title="Application"
+            subtitle="Submitted"
+            trailing={
+              <span className="flex items-center gap-2">
+                <StatusBadge status="passed" />
+                {onEdit && (
+                  <Button variant="secondary" className="h-10 px-4 text-sm" onClick={onEdit}>
+                    Edit
+                  </Button>
+                )}
+              </span>
+            }
+          />
         </li>
-        <li className="flex flex-wrap items-center justify-between gap-3">
-          <span>2. Verify your identity</span>
-          <span className="flex items-center gap-3">
-            <StatusBadge status={app.kyc.status} />
-            {app.kyc.redirectUrl && (
-              <a className="text-brand-700 underline" href={app.kyc.redirectUrl}>
-                Start verification
-              </a>
-            )}
-          </span>
+        <li>
+          <ListRow
+            tone="canvas"
+            icon={BadgeCheck}
+            title="Verify your identity"
+            subtitle="With our identity-verification partner"
+            trailing={
+              <span className="flex items-center gap-2">
+                <StatusBadge status={app.kyc.status} />
+                {link(app.kyc.redirectUrl, 'Start')}
+              </span>
+            }
+          />
         </li>
-        <li className="flex flex-wrap items-center justify-between gap-3">
-          <span>3. Sign the independent contractor agreement</span>
-          <span className="flex items-center gap-3">
-            <StatusBadge status={app.agreement.status} />
-            {app.agreement.signingUrl && (
-              <a className="text-brand-700 underline" href={app.agreement.signingUrl}>
-                Review and sign
-              </a>
-            )}
-          </span>
+        <li>
+          <ListRow
+            tone="canvas"
+            icon={FileSignature}
+            title="Independent contractor agreement"
+            subtitle={
+              app.agreement.version
+                ? `Version ${app.agreement.version}`
+                : 'Sent once your application is in'
+            }
+            trailing={
+              <span className="flex items-center gap-2">
+                <StatusBadge status={app.agreement.status} />
+                {link(app.agreement.signingUrl, 'Review and sign')}
+              </span>
+            }
+          />
         </li>
       </ol>
       {app.kyc.status === 'not_started' && (
@@ -392,7 +419,7 @@ function MembershipSection() {
             <table className="w-full text-left text-sm">
               <caption className="sr-only">Invoices</caption>
               <thead>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-line">
                   <th className="py-2">Invoice</th>
                   <th>Total</th>
                   <th>Status</th>
@@ -400,7 +427,7 @@ function MembershipSection() {
               </thead>
               <tbody>
                 {m.invoices.map((i) => (
-                  <tr key={i.id} className="border-b border-gray-100">
+                  <tr key={i.id} className="border-b border-line">
                     <td className="py-2 font-mono">{i.number}</td>
                     <td>{formatMoney(i.total)}</td>
                     <td>

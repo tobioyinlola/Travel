@@ -73,7 +73,7 @@ export default function TopicPage({ params }: { params: Promise<{ id: string }> 
           </button>
         )}
       </div>
-      {p.hidden && <p className="mt-2 text-xs text-red-700">Hidden from members</p>}
+      {p.hidden && <p className="mt-2 text-xs text-danger">Hidden from members</p>}
       {/* Plain text only: whitespace kept, no HTML or markdown rendering. */}
       <p className="mt-2 whitespace-pre-wrap break-words">{p.body}</p>
     </Card>
@@ -85,7 +85,7 @@ export default function TopicPage({ params }: { params: Promise<{ id: string }> 
         Community
       </Link>
       <p className="text-sm text-muted">{t.categoryName}</p>
-      <h1 className="text-2xl font-semibold">{t.title}</h1>
+      <h1 className="text-3xl font-normal tracking-tight">{t.title}</h1>
       {error && <Alert>{error}</Alert>}
       {notice && <Alert kind="success">{notice}</Alert>}
       {renderPost(t.opening, 'topic')}
@@ -111,7 +111,7 @@ export default function TopicPage({ params }: { params: Promise<{ id: string }> 
             rows={4}
             required
             maxLength={10000}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
           />
           <Button type="submit" disabled={send.isPending || !reply.trim()}>
             Reply

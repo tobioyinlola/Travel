@@ -42,11 +42,11 @@ export default function MfaSetupPage() {
   if (recovery) {
     return (
       <>
-        <h1 className="text-2xl font-semibold">Save your recovery codes</h1>
+        <h1 className="text-3xl font-normal tracking-tight">Save your recovery codes</h1>
         <p className="mt-1 text-muted">
           Each code works once if you lose your phone. They will not be shown again.
         </p>
-        <ul className="mt-4 grid grid-cols-2 gap-2 rounded-md border border-gray-200 bg-surface p-4 font-mono text-sm">
+        <ul className="mt-4 grid grid-cols-2 gap-2 rounded-[20px] bg-canvas bg-surface p-4 font-mono text-sm">
           {recovery.map((c) => (
             <li key={c}>{c}</li>
           ))}
@@ -63,7 +63,7 @@ export default function MfaSetupPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">Set up two-step sign-in</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Set up two-step sign-in</h1>
       <p className="mt-1 text-muted">
         Use an authenticator app such as Google Authenticator, 1Password or Authy.
       </p>

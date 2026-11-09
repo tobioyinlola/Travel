@@ -31,7 +31,7 @@ export default function MfaChallengePage() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">Two-step sign-in</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Two-step sign-in</h1>
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
         {error && <Alert>{error}</Alert>}
         {useRecovery ? (

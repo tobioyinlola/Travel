@@ -23,7 +23,7 @@ export default function CoursePage({ params }: { params: Promise<{ slug: string 
         All courses
       </Link>
       <div>
-        <h1 className="text-2xl font-semibold">{c.title}</h1>
+        <h1 className="text-3xl font-normal tracking-tight">{c.title}</h1>
         <p className="mt-1 text-muted">{c.summary}</p>
       </div>
       {c.passed && (
@@ -33,7 +33,7 @@ export default function CoursePage({ params }: { params: Promise<{ slug: string 
         </Alert>
       )}
       <Card title="Lessons">
-        <ol className="flex flex-col divide-y divide-gray-100">
+        <ol className="flex flex-col divide-y divide-line">
           {c.lessons.map((l) => (
             <li key={l.id} className="flex items-center justify-between gap-3 py-2">
               <Link
@@ -58,7 +58,7 @@ export default function CoursePage({ params }: { params: Promise<{ slug: string 
           {c.quiz.unlocked ? (
             <Link
               href={`/learn/${slug}/quiz`}
-              className="inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+              className="inline-block inline-flex h-12 items-center rounded-full bg-accent-strong px-6 text-[15px] font-medium text-white hover:bg-accent-deep"
             >
               {c.passed ? 'Retake the quiz' : 'Take the quiz'}
             </Link>

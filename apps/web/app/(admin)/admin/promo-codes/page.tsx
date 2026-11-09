@@ -48,7 +48,7 @@ export default function PromoCodesPage() {
 
   return (
     <div className="flex max-w-xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Promo codes</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Promo codes</h1>
       <Card title="New promo code">
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           {error && <Alert>{error.message}</Alert>}

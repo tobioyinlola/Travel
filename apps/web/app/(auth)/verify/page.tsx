@@ -40,7 +40,7 @@ function Verify() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">Check your {channel}</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Check your {channel}</h1>
       <p className="mt-1 text-muted">
         Enter the 6-digit code we sent you. It expires in 10 minutes.
       </p>

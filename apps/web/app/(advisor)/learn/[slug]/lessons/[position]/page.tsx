@@ -54,10 +54,10 @@ export default function LessonPage({
         <p className="text-sm text-muted">
           Lesson {l.position} of {l.lessonCount} · {l.estMinutes} min
         </p>
-        <h1 className="text-2xl font-semibold">{l.title}</h1>
+        <h1 className="text-3xl font-normal tracking-tight">{l.title}</h1>
       </header>
       {/* react-markdown renders no raw HTML, so lesson content cannot inject markup. */}
-      <div className="prose-lesson flex flex-col gap-3 leading-relaxed [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc">
+      <div className="prose-lesson flex flex-col gap-3 leading-relaxed [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-medium [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc">
         <Markdown>{l.bodyMarkdown}</Markdown>
       </div>
       <Button onClick={() => complete.mutate()} disabled={complete.isPending}>

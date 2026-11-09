@@ -1,8 +1,10 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
-import { Alert, Button, Card, Field, Select } from './ui';
+import { Plus, Search, Star } from 'lucide-react';
+import { useState } from 'react';
+import { DateRange } from './date-range';
+import { Alert, Button, Card, Flag, Select } from './ui';
 import { api, ApiError, call, formatMoney } from '@/lib/api';
 
 type SearchParams = {
@@ -38,7 +40,12 @@ export function HotelSearch({
   onAdd: (rateKey: string) => Promise<void>;
 }) {
   const [params, setParams] = useState<SearchParams | null>(null);
+  const [destination, setDestination] = useState('');
+  const [stay, setStay] = useState({ start: trip.startDate, end: trip.endDate });
+  const [minStars, setMinStars] = useState('');
+  const [preferredOnly, setPreferredOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [adding, setAdding] = useState<string | null>(null);
   const dests = useQuery({
     queryKey: ['destinations'],
     queryFn: () => call(api.GET('/v1/catalog/destinations')),
@@ -50,80 +57,91 @@ export function HotelSearch({
     retry: false,
   });
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function search() {
     setError(null);
-    const f = new FormData(e.currentTarget);
-    const s = (k: string) => String(f.get(k) ?? '');
     setParams({
-      destination: s('destination'),
-      checkIn: s('checkIn'),
-      checkOut: s('checkOut'),
+      destination: destination || dests.data?.[0]?.slug || '',
+      checkIn: stay.start,
+      checkOut: stay.end,
       adults: trip.adults,
       ...(trip.childrenAges.length ? { childrenAges: trip.childrenAges.join(',') } : {}),
       currency: trip.currency,
-      ...(s('minStars') ? { minStars: Number(s('minStars')) } : {}),
-      ...(f.get('preferredOnly') === 'on' ? { preferredOnly: 'true' as const } : {}),
+      ...(minStars ? { minStars: Number(minStars) } : {}),
+      ...(preferredOnly ? { preferredOnly: 'true' as const } : {}),
     });
   }
 
   async function add(rateKey: string) {
     setError(null);
+    setAdding(rateKey);
     try {
       await onAdd(rateKey);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Could not add this room');
+    } finally {
+      setAdding(null);
     }
   }
 
   const party = `${trip.adults} adult${trip.adults === 1 ? '' : 's'}${trip.childrenAges.length ? `, children aged ${trip.childrenAges.join(', ')}` : ''}`;
   return (
     <Card title="Add a hotel">
-      <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-5 sm:items-end">
-        <Select label="Destination" name="destination">
-          {dests.data?.map((d) => (
-            <option key={d.slug} value={d.slug}>
-              {d.name}
-            </option>
-          ))}
-        </Select>
-        <Field
-          label="Check-in"
-          name="checkIn"
-          type="date"
-          defaultValue={trip.startDate}
+      <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
+        <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+          <Select
+            label="Destination"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+          >
+            {dests.data?.map((d) => (
+              <option key={d.slug} value={d.slug}>
+                {d.name}
+              </option>
+            ))}
+          </Select>
+          <Select label="Stars" value={minStars} onChange={(e) => setMinStars(e.target.value)}>
+            <option value="">Any</option>
+            <option value="4">4+</option>
+            <option value="5">5</option>
+          </Select>
+        </div>
+        <DateRange
+          label="Stay"
+          start={stay.start}
+          end={stay.end}
           min={trip.startDate}
           max={trip.endDate}
-          required
+          onChange={(start, end) => setStay({ start, end })}
         />
-        <Field
-          label="Check-out"
-          name="checkOut"
-          type="date"
-          defaultValue={trip.endDate}
-          min={trip.startDate}
-          max={trip.endDate}
-          required
-        />
-        <Select label="Stars" name="minStars" defaultValue="">
-          <option value="">Any</option>
-          <option value="4">4+</option>
-          <option value="5">5</option>
-        </Select>
-        <Button type="submit">Search</Button>
-        <label className="flex items-center gap-2 text-sm sm:col-span-5">
-          <input type="checkbox" name="preferredOnly" /> Preferred partners only
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={preferredOnly}
+            onChange={(e) => setPreferredOnly(e.target.checked)}
+            className="h-4 w-4 accent-[#1472d6]"
+          />{' '}
+          Preferred partners only
         </label>
-      </form>
+        <Button icon={Search} variant="dark" onClick={search}>
+          Search hotels
+        </Button>
+      </div>
       <p className="mt-2 text-xs text-muted">
         For {party}, priced in {trip.currency}.
       </p>
+
       {error && (
         <div className="mt-3">
           <Alert>{error}</Alert>
         </div>
       )}
-      {results.isFetching && <p className="mt-4 text-muted">Searching suppliers…</p>}
+      {results.isFetching && (
+        <p className="mt-4 text-muted" aria-live="polite">
+          Searching suppliers…
+        </p>
+      )}
       {results.isError && (
         <div className="mt-3">
           <Alert>
@@ -132,7 +150,7 @@ export function HotelSearch({
         </div>
       )}
       {results.data && (
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-6 flex flex-col gap-4">
           {results.data.warnings.length > 0 && (
             <Alert kind="info">
               Some suppliers did not respond, so results may be incomplete. Try again shortly.
@@ -140,74 +158,82 @@ export function HotelSearch({
           )}
           {results.data.results.length === 0 && <p className="text-muted">No rooms match.</p>}
           {results.data.results.map((r) => (
-            <div key={r.property.id} className="rounded-md border border-gray-200 p-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <div>
-                  <p className="font-medium">
-                    {r.property.name}{' '}
-                    <span className="text-sm text-muted">
-                      {'★'.repeat(Math.round(r.property.starRating))}
-                    </span>
-                  </p>
-                  <p className="text-xs text-muted">{r.property.address}</p>
+            <article key={r.property.id} className="rounded-[24px] bg-canvas p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-surface text-xl">
+                    <Flag code={r.property.countryCode} />
+                  </span>
+                  <div>
+                    <h3 className="text-lg">{r.property.name}</h3>
+                    <p className="flex items-center gap-1 text-xs text-muted">
+                      <span aria-label={`${r.property.starRating} stars`} className="inline-flex">
+                        {Array.from({ length: Math.round(r.property.starRating) }, (_, i) => (
+                          <Star
+                            key={i}
+                            size={12}
+                            strokeWidth={1.5}
+                            className="fill-ink text-ink"
+                            aria-hidden
+                          />
+                        ))}
+                      </span>
+                      {r.property.address}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm">
-                  from <strong>{formatMoney(r.fromNightly)}</strong> / night
+                <p className="text-right text-sm text-muted">
+                  from{' '}
+                  <span className="text-2xl font-light text-ink">{formatMoney(r.fromNightly)}</span>{' '}
+                  / night
                 </p>
               </div>
               {r.preferred && (
-                <p className="mt-2 text-sm text-green-900">
-                  <span className="mr-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium">
+                <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-white">
                     {r.preferred.programName}
                   </span>
-                  {r.preferred.perks.map((p) => p.description).join(' · ')}
+                  <span className="text-muted">
+                    {r.preferred.perks.map((p) => p.description).join(' · ')}
+                  </span>
                 </p>
               )}
-              <table className="mt-3 w-full text-left text-sm">
-                <caption className="sr-only">Rooms at {r.property.name}</caption>
-                <thead>
-                  <tr className="text-xs text-muted">
-                    <th className="py-1">Room</th>
-                    <th>Terms</th>
-                    <th>Total</th>
-                    <th>Commission</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {r.rates.map((rate) => (
-                    <tr key={rate.rateKey} className="border-t border-gray-100">
-                      <td className="py-2">
-                        {rate.roomName}
-                        <br />
-                        <span className="text-xs text-muted">{BOARD[rate.board]}</span>
-                      </td>
-                      <td className="text-xs">
-                        {rate.refundable
-                          ? `Free cancellation until ${rate.freeCancellationUntil?.slice(0, 10)}`
-                          : 'Non-refundable'}
-                        {rate.partnerEligible && (
-                          <span className="ml-1 text-green-900">· perks</span>
-                        )}
-                      </td>
-                      <td>
-                        {formatMoney(rate.total)}
-                        <br />
-                        <span className="text-xs text-muted">
-                          incl. {formatMoney(rate.taxes)} taxes
-                        </span>
-                      </td>
-                      <td className="text-xs">~{(rate.commissionBps / 100).toFixed(0)}%</td>
-                      <td className="text-right">
-                        <Button variant="secondary" onClick={() => add(rate.rateKey)}>
-                          Add
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              <ul className="mt-3 flex flex-col gap-2">
+                {r.rates.map((rate) => (
+                  <li
+                    key={rate.rateKey}
+                    className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-[18px] bg-surface p-3 sm:grid-cols-[1.4fr_1.4fr_1fr_auto]"
+                  >
+                    <span>
+                      <span className="block text-sm">{rate.roomName}</span>
+                      <span className="block text-xs text-muted">{BOARD[rate.board]}</span>
+                    </span>
+                    <span className="hidden text-xs text-muted sm:block">
+                      {rate.refundable
+                        ? `Free cancellation until ${rate.freeCancellationUntil?.slice(0, 10)}`
+                        : 'Non-refundable'}
+                      {rate.partnerEligible && <span className="text-accent-deep"> · perks</span>}
+                    </span>
+                    <span className="hidden sm:block">
+                      <span className="block text-sm">{formatMoney(rate.total)}</span>
+                      <span className="block text-xs text-muted">
+                        ~{(rate.commissionBps / 100).toFixed(0)}% commission
+                      </span>
+                    </span>
+                    <Button
+                      variant="secondary"
+                      icon={Plus}
+                      className="h-10 px-4 text-sm"
+                      disabled={adding !== null}
+                      onClick={() => add(rate.rateKey)}
+                      aria-label={`Add ${rate.roomName}, ${BOARD[rate.board]}, ${formatMoney(rate.total)}`}
+                    >
+                      {adding === rate.rateKey ? 'Adding…' : 'Add'}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </article>
           ))}
         </div>
       )}

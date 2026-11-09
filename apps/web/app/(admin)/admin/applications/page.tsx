@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Button, Select, StatusBadge } from '@/components/ui';
+import { Button, PageHeader, StatusBadge } from '@/components/ui';
 import { api, call } from '@/lib/api';
 
 const STATUSES = [
@@ -41,37 +41,43 @@ export default function ApplicationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Applications</h1>
-        <Select
-          label="Status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as Status | '')}
-        >
-          <option value="">All</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s.replace(/_/g, ' ')}
-            </option>
-          ))}
-        </Select>
-      </div>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-surface">
+      <PageHeader
+        title="Applications"
+        subtitle="Review applicants once identity and agreement checks are complete"
+      />
+      <nav aria-label="Filter by status" className="scrollbar-none flex gap-2 overflow-x-auto">
+        {(
+          [
+            ['', 'All'],
+            ...STATUSES.map((x) => [x, x.charAt(0).toUpperCase() + x.slice(1).replace(/_/g, ' ')]),
+          ] as Array<[Status | '', string]>
+        ).map(([value, label]) => (
+          <button
+            key={value || 'all'}
+            onClick={() => setStatus(value)}
+            aria-pressed={status === value}
+            className={`inline-flex h-12 shrink-0 items-center rounded-full px-5 text-sm ${status === value ? 'bg-ink text-white' : 'bg-surface text-ink hover:bg-white/70'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      <div className="overflow-x-auto rounded-[28px] bg-surface p-3">
         <table className="w-full text-left text-sm">
           <caption className="sr-only">Advisor applications</caption>
-          <thead className="border-b border-gray-200 bg-gray-50">
+          <thead className="text-xs text-muted">
             <tr>
-              <th className="px-4 py-2">Applicant</th>
-              <th className="px-4 py-2">Country</th>
-              <th className="px-4 py-2">Submitted</th>
-              <th className="px-4 py-2">Identity</th>
-              <th className="px-4 py-2">Agreement</th>
-              <th className="px-4 py-2">Status</th>
+              <th className="px-4 py-3 font-normal">Applicant</th>
+              <th className="px-4 py-3 font-normal">Country</th>
+              <th className="px-4 py-3 font-normal">Submitted</th>
+              <th className="px-4 py-3 font-normal">Identity</th>
+              <th className="px-4 py-3 font-normal">Agreement</th>
+              <th className="px-4 py-3 font-normal">Status</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-b border-gray-100">
+              <tr key={r.id} className="border-b border-line">
                 <td className="px-4 py-2">
                   <Link className="text-brand-700 underline" href={`/admin/applications/${r.id}`}>
                     {r.legalName}

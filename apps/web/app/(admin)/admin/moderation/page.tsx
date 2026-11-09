@@ -30,7 +30,7 @@ export default function ModerationPage() {
   if (q.isError) return <Alert>Could not load reports.</Alert>;
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Moderation</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Moderation</h1>
       {q.data.length === 0 && <p className="text-muted">Nothing to review.</p>}
       {q.data.map((r) => (
         <Card key={r.targetId}>
@@ -46,7 +46,7 @@ export default function ModerationPage() {
               {r.hidden && ' · hidden'}
             </span>
           </div>
-          <p className="mt-3 whitespace-pre-wrap break-words rounded-md bg-gray-50 p-3 text-sm">
+          <p className="mt-3 whitespace-pre-wrap break-words rounded-[18px] bg-canvas p-3 text-sm">
             {r.body}
           </p>
           <div className="mt-3 flex gap-3">

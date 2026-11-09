@@ -115,7 +115,7 @@ export default function PartnersPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Partners</h1>
+        <h1 className="text-3xl font-normal tracking-tight">Partners</h1>
         <Button variant="secondary" onClick={() => ingest.mutate()}>
           Refresh hotel content
         </Button>
@@ -124,7 +124,7 @@ export default function PartnersPage() {
       {notice && <Alert kind="success">{notice}</Alert>}
 
       <Card title="Programs">
-        <ul className="flex flex-col divide-y divide-gray-100 text-sm">
+        <ul className="flex flex-col divide-y divide-line text-sm">
           {programs.data?.map((p) => (
             <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
               <span>
@@ -206,7 +206,7 @@ export default function PartnersPage() {
                 <div key={i} className="grid grid-cols-[140px_1fr] gap-2">
                   <select
                     aria-label="Perk type"
-                    className="rounded-md border border-gray-300 bg-surface px-2"
+                    className="rounded-[18px] bg-canvas px-3 outline-none focus:ring-2 focus:ring-accent"
                     value={p.kind}
                     onChange={(e) =>
                       setPerks(
@@ -224,7 +224,7 @@ export default function PartnersPage() {
                   </select>
                   <input
                     aria-label="Perk description"
-                    className="rounded-md border border-gray-300 px-3 py-2"
+                    className="rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
                     value={p.description}
                     onChange={(e) =>
                       setPerks(

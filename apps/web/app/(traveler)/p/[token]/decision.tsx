@@ -70,11 +70,8 @@ export function Decision({
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-surface p-5"
-    >
-      <h2 className="text-lg font-semibold">Your answer</h2>
+    <form onSubmit={onSubmit} className="flex flex-col gap-4 rounded-[28px] bg-surface p-5">
+      <h2 className="text-lg font-normal">Your answer</h2>
       {ratesExpired && (
         <Alert kind="info">
           These prices have expired. You can ask for changes now; {advisorName} will re-check the
@@ -118,7 +115,7 @@ export function Decision({
             rows={4}
             required={choice === 'request_changes'}
             maxLength={2000}
-            className="rounded-md border border-gray-300 px-3 py-2"
+            className="rounded-[18px] bg-canvas px-4 py-3 outline-none focus:ring-2 focus:ring-accent"
           />
         </div>
       )}

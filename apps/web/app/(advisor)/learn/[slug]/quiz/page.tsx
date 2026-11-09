@@ -47,7 +47,7 @@ export default function QuizPage({ params }: { params: Promise<{ slug: string }>
       <Link href={`/learn/${slug}`} className="text-sm text-brand-700 underline">
         Back to course
       </Link>
-      <h1 className="text-2xl font-semibold">Final quiz</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Final quiz</h1>
       {submit.error && (
         <Alert>
           {submit.error instanceof ApiError ? submit.error.message : 'Something went wrong'}
@@ -86,7 +86,7 @@ export default function QuizPage({ params }: { params: Promise<{ slug: string }>
                   </label>
                 ))}
               </div>
-              {wrong.has(question.id) && <p className="mt-2 text-sm text-red-700">Not quite.</p>}
+              {wrong.has(question.id) && <p className="mt-2 text-sm text-danger">Not quite.</p>}
               {review.get(question.id) && (
                 <p className="mt-2 text-sm text-muted">{review.get(question.id)!.explanation}</p>
               )}

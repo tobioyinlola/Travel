@@ -16,7 +16,7 @@ export default function LearnPage() {
   if (q.isError) return <AccessNotice error={q.error} />;
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Learn</h1>
+      <h1 className="text-3xl font-normal tracking-tight">Learn</h1>
       <ul className="grid gap-4 sm:grid-cols-2">
         {q.data.map((c) => (
           <li key={c.slug}>
@@ -32,7 +32,7 @@ export default function LearnPage() {
                   <StatusBadge status="passed" />
                 ) : (
                   c.isEssentials && (
-                    <span className="text-xs font-medium text-amber-900">Required to book</span>
+                    <span className="text-xs font-medium text-warn">Required to book</span>
                   )
                 )}
               </div>
@@ -41,9 +41,9 @@ export default function LearnPage() {
                 className="mt-3"
                 aria-label={`${c.lessonsCompleted} of ${c.lessonCount} lessons complete`}
               >
-                <div className="h-2 w-full rounded-full bg-gray-200">
+                <div className="h-2 w-full rounded-full hatch">
                   <div
-                    className="h-2 rounded-full bg-brand-600"
+                    className="h-2 rounded-full bg-accent"
                     style={{ width: `${(c.lessonsCompleted / Math.max(1, c.lessonCount)) * 100}%` }}
                   />
                 </div>

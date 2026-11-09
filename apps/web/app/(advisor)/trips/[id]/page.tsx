@@ -1,11 +1,39 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BedDouble,
+  CalendarDays,
+  Car,
+  ChevronLeft,
+  CircleDashed,
+  Copy,
+  CreditCard,
+  MapPin,
+  RefreshCw,
+  Send,
+  StickyNote,
+  Ticket,
+  Trash2,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, use, useState, type FormEvent } from 'react';
 import { AccessNotice } from '@/components/gate';
 import { HotelSearch } from '@/components/hotel-search';
-import { Alert, Button, Card, Field, Select, StatusBadge } from '@/components/ui';
+import {
+  Alert,
+  Avatar,
+  Button,
+  Card,
+  Field,
+  ICON,
+  IconButton,
+  ListRow,
+  Select,
+  StatusBadge,
+} from '@/components/ui';
 import { api, ApiError, call, formatMoney, toMinor } from '@/lib/api';
 
 function days(start: string, end: string): string[] {
@@ -18,14 +46,32 @@ function days(start: string, end: string): string[] {
     out.push(new Date(d).toISOString().slice(0, 10));
   return out;
 }
-
 const longDate = (d: string) =>
-  new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, {
+  new Date(`${d}T00:00:00Z`).toLocaleDateString('en', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     timeZone: 'UTC',
   });
+const shortDate = (d: string) =>
+  new Date(`${d}T00:00:00Z`).toLocaleDateString('en', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+const KIND_ICON: Record<string, LucideIcon> = {
+  hotel: BedDouble,
+  activity: Ticket,
+  transfer: Car,
+  note: StickyNote,
+};
+const BOARD: Record<string, string> = {
+  room_only: 'room only',
+  breakfast: 'breakfast',
+  half_board: 'half board',
+  all_inclusive: 'all inclusive',
+};
 
 export default function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -114,86 +160,115 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
   const t = q.data;
   const editable = t.status === 'planning' || t.status === 'proposed';
   const current = t.proposals.find((p) => p.status !== 'superseded');
+  const hotels = t.items.filter((i) => i.kind === 'hotel');
+  const party = `${t.adults} adult${t.adults === 1 ? '' : 's'}${t.childrenAges.length ? `, ${t.childrenAges.length} child${t.childrenAges.length === 1 ? '' : 'ren'}` : ''}`;
 
   return (
-    <div className="flex flex-col gap-6">
-      <Link href="/trips" className="text-sm text-brand-700 underline">
-        All trips
-      </Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{t.title}</h1>
-        <StatusBadge status={t.status} />
+    <div className="flex flex-col gap-4">
+      {/* Header bar: back, key facts, client. */}
+      <div className="flex flex-wrap items-center gap-x-10 gap-y-4 rounded-[var(--radius-card)] bg-surface p-4 pr-6">
+        <Link
+          href="/trips"
+          aria-label="Back to trips"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-canvas hover:bg-line"
+        >
+          <ChevronLeft {...ICON} aria-hidden />
+        </Link>
+        <div>
+          <p className="text-xs text-muted">Trip</p>
+          <h1 className="text-2xl font-normal">{t.title}</h1>
+        </div>
+        <div className="hidden sm:block">
+          <p className="text-xs text-muted">Dates</p>
+          <p className="text-lg">
+            {shortDate(t.startDate)} – {shortDate(t.endDate)}
+          </p>
+        </div>
+        <div className="hidden md:block">
+          <p className="text-xs text-muted">Status</p>
+          <StatusBadge status={t.status} />
+        </div>
+        <Link href={`/clients/${t.clientId}`} className="ml-auto flex items-center gap-3">
+          <span className="text-right">
+            <span className="block text-lg">{t.clientName}</span>
+            <span className="block text-xs text-muted">Primary client</span>
+          </span>
+          <Avatar name={t.clientName} size="lg" />
+        </Link>
       </div>
-      <p className="text-muted">
-        For{' '}
-        <Link className="underline" href={`/clients/${t.clientId}`}>
-          {t.clientName}
-        </Link>{' '}
-        · {t.startDate} to {t.endDate} · {t.adults} adult{t.adults === 1 ? '' : 's'}
-        {t.childrenAges.length ? `, children ${t.childrenAges.join(', ')}` : ''}
-      </p>
+
       {error && <Alert>{error}</Alert>}
       {notice && <Alert kind="success">{notice}</Alert>}
       {!editable && (
-        <Alert kind="info">This trip is {t.status}; the approved proposal is locked.</Alert>
+        <Alert kind="info">
+          This trip is {t.status}; the approved proposal is locked. Booking arrives in the next
+          release.
+        </Alert>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="flex flex-col gap-6">
+      <div className="grid gap-4 xl:grid-cols-[1fr_380px]">
+        <div className="flex min-w-0 flex-col gap-4">
           <Card title="Itinerary">
-            <ol className="flex flex-col gap-5">
+            <ol className="flex flex-col gap-6">
               {days(t.startDate, t.endDate).map((day, i) => {
                 const items = t.items.filter((x) => x.day === day);
                 return (
                   <li key={day}>
-                    <h3 className="text-sm font-semibold">
-                      Day {i + 1} · {longDate(day)}
+                    <h3 className="mb-2 flex items-baseline gap-3 text-sm">
+                      <span className="rounded-full bg-canvas px-3 py-1 text-xs">Day {i + 1}</span>
+                      <span className="text-muted">{longDate(day)}</span>
                     </h3>
                     {items.length === 0 ? (
-                      <p className="text-sm text-muted">Free day</p>
+                      <p className="pl-1 text-sm text-muted">Free day</p>
                     ) : (
-                      <ul className="mt-2 flex flex-col gap-2">
+                      <ul className="flex flex-col gap-2">
                         {items.map((it) => (
-                          <li
-                            key={it.id}
-                            className="flex items-start justify-between gap-3 rounded-md border border-gray-100 p-3"
-                          >
-                            <div className="text-sm">
-                              <p className="font-medium">
-                                {it.startTime && (
-                                  <span className="mr-2 text-muted">{it.startTime}</span>
-                                )}
-                                {it.title}
-                                <span className="ml-2 text-xs uppercase text-muted">{it.kind}</span>
-                              </p>
-                              {it.details && <p className="text-muted">{it.details}</p>}
-                              {it.hotel && (
-                                <p className="text-muted">
-                                  {it.hotel.rate.checkIn} to {it.hotel.rate.checkOut} ·{' '}
-                                  {formatMoney(it.hotel.rate.total)} ·{' '}
-                                  {it.hotel.rate.refundable ? 'refundable' : 'non-refundable'}
-                                  {it.hotel.preferred && it.hotel.rate.partnerEligible && (
-                                    <span className="text-green-900">
-                                      {' '}
-                                      · {it.hotel.preferred.programName} perks
+                          <li key={it.id}>
+                            <ListRow
+                              tone="canvas"
+                              icon={KIND_ICON[it.kind]}
+                              title={
+                                <span>
+                                  {it.startTime && (
+                                    <span className="mr-2 text-muted">{it.startTime}</span>
+                                  )}
+                                  {it.title}
+                                </span>
+                              }
+                              subtitle={
+                                it.hotel
+                                  ? `${it.hotel.rate.roomName}, ${BOARD[it.hotel.rate.board]} · ${it.hotel.rate.nights} nights · ${formatMoney(it.hotel.rate.total)} · ${it.hotel.rate.refundable ? 'refundable' : 'non-refundable'}`
+                                  : [
+                                      it.details,
+                                      it.price
+                                        ? formatMoney({
+                                            amountMinor: it.price,
+                                            currency: t.currency,
+                                          })
+                                        : null,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(' · ') || undefined
+                              }
+                              trailing={
+                                <span className="flex items-center gap-2">
+                                  {it.hotel?.preferred && it.hotel.rate.partnerEligible && (
+                                    <span className="hidden rounded-full bg-accent-soft px-3 py-1 text-xs text-accent-deep sm:inline">
+                                      {it.hotel.preferred.programName} perks
                                     </span>
                                   )}
-                                </p>
-                              )}
-                              {it.price && (
-                                <p className="text-muted">
-                                  {formatMoney({ amountMinor: it.price, currency: t.currency })}
-                                </p>
-                              )}
-                            </div>
-                            {editable && (
-                              <button
-                                className="text-xs text-brand-700 underline"
-                                onClick={() => remove.mutate(it.id)}
-                              >
-                                Remove
-                              </button>
-                            )}
+                                  {editable && (
+                                    <IconButton
+                                      icon={Trash2}
+                                      label={`Remove ${it.title}`}
+                                      size="sm"
+                                      className="bg-canvas"
+                                      onClick={() => remove.mutate(it.id)}
+                                    />
+                                  )}
+                                </span>
+                              }
+                            />
                           </li>
                         ))}
                       </ul>
@@ -220,7 +295,7 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
                 }}
               />
               <Card title="Add an activity, transfer or note">
-                <form onSubmit={addItem} className="grid gap-3 sm:grid-cols-2">
+                <form onSubmit={addItem} className="grid gap-4 sm:grid-cols-2">
                   <Select label="Type" name="kind">
                     <option value="activity">Activity</option>
                     <option value="transfer">Transfer</option>
@@ -229,7 +304,7 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
                   <Select label="Day" name="day">
                     {days(t.startDate, t.endDate).map((d, i) => (
                       <option key={d} value={d}>
-                        Day {i + 1} · {d}
+                        Day {i + 1} · {shortDate(d)}
                       </option>
                     ))}
                   </Select>
@@ -242,8 +317,8 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
                     inputMode="decimal"
                   />
                   <div className="sm:col-span-2">
-                    <Button type="submit" variant="secondary">
-                      Add
+                    <Button type="submit" variant="dark">
+                      Add to itinerary
                     </Button>
                   </div>
                 </form>
@@ -252,50 +327,61 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
+        <aside className="flex flex-col gap-4">
+          <Card title="Trip details">
+            <ul className="flex flex-col gap-2">
+              <li>
+                <ListRow
+                  tone="canvas"
+                  icon={CalendarDays}
+                  title="Travel dates"
+                  subtitle={`${shortDate(t.startDate)} – ${shortDate(t.endDate)}`}
+                />
+              </li>
+              <li>
+                <ListRow tone="canvas" icon={UserRound} title="Travelers" subtitle={party} />
+              </li>
+              <li>
+                <ListRow
+                  tone="canvas"
+                  icon={MapPin}
+                  title="Hotels"
+                  subtitle={hotels.length ? hotels.map((h) => h.title).join(', ') : 'None yet'}
+                />
+              </li>
+              <li>
+                <ListRow
+                  tone="canvas"
+                  icon={CircleDashed}
+                  title="Status"
+                  subtitle={<StatusBadge status={t.status} />}
+                />
+              </li>
+            </ul>
+          </Card>
+
           <Card title="Total">
-            <dl className="grid grid-cols-[1fr_auto] gap-y-1 text-sm">
+            <p className="text-4xl font-light">{formatMoney(t.totals.total)}</p>
+            <dl className="mt-4 grid grid-cols-[1fr_auto] gap-y-1.5 text-sm">
               {t.totals.lines.map((l) => (
                 <Fragment key={l.itemId}>
-                  <dt className="text-muted">{l.label}</dt>
+                  <dt className="truncate pr-2 text-muted">{l.label}</dt>
                   <dd>{formatMoney(l.amount)}</dd>
                 </Fragment>
               ))}
               <dt className="text-muted">Planning fee</dt>
               <dd>{formatMoney(t.totals.planningFee)}</dd>
-              <dt className="border-t border-gray-200 pt-1 font-semibold">Total</dt>
-              <dd className="border-t border-gray-200 pt-1 font-semibold">
-                {formatMoney(t.totals.total)}
-              </dd>
             </dl>
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-3 text-xs text-muted">
               Includes {formatMoney(t.totals.taxesIncluded)} taxes. Paid at hotels:{' '}
               {formatMoney(t.totals.payableAtProperty)}.
             </p>
           </Card>
 
-          <Card title="Proposal">
-            {editable && (
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => publish.mutate(Boolean(t.clientEmail))}
-                  disabled={publish.isPending || t.items.length === 0}
-                >
-                  {current ? 'Publish an update' : 'Publish proposal'}
-                  {t.clientEmail ? ' and email client' : ''}
-                </Button>
-                {!t.clientEmail && (
-                  <p className="text-xs text-muted">
-                    This client has no email address: copy the link and send it yourself.
-                  </p>
-                )}
-              </div>
-            )}
-            {current && (
-              <div className="mt-4 flex flex-col gap-2 text-sm">
-                <p>
-                  Version {current.version} · <StatusBadge status={current.status} />
-                </p>
+          <Card title="Proposal" action={current && <StatusBadge status={current.status} />}>
+            {current ? (
+              <div className="flex flex-col gap-2 text-sm">
+                <p className="text-lg">Version {current.version}</p>
                 <p className="text-muted">
                   Prices checked {new Date(current.ratesCheckedAt).toLocaleString()}; valid until{' '}
                   {new Date(current.ratesExpireAt).toLocaleString()}.
@@ -306,34 +392,79 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
                   </p>
                 )}
                 {current.decisionNote && (
-                  <p>
+                  <p className="rounded-[14px] bg-canvas p-3">
                     “{current.decisionNote}” · {current.decidedByName}
                   </p>
                 )}
-                {current.url && (
-                  <Button
-                    variant="secondary"
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(current.url!);
-                      setCopied(true);
-                    }}
-                  >
-                    {copied ? 'Link copied' : 'Copy client link'}
-                  </Button>
-                )}
-                {current.status === 'published' && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => refresh.mutate()}
-                    disabled={refresh.isPending}
-                  >
-                    Re-check prices
-                  </Button>
-                )}
               </div>
+            ) : (
+              <p className="text-sm text-muted">
+                Publish to share a priced proposal your client can approve from a link.
+              </p>
             )}
+            <div className="mt-4 flex flex-col gap-2">
+              {editable && (
+                <Button
+                  icon={Send}
+                  onClick={() => publish.mutate(Boolean(t.clientEmail))}
+                  disabled={publish.isPending || t.items.length === 0}
+                >
+                  {current ? 'Publish an update' : 'Publish proposal'}
+                  {t.clientEmail ? ' and email' : ''}
+                </Button>
+              )}
+              {current?.url && (
+                <Button
+                  variant="secondary"
+                  icon={Copy}
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(current.url!);
+                    setCopied(true);
+                  }}
+                >
+                  {copied ? 'Link copied' : 'Copy client link'}
+                </Button>
+              )}
+              {current?.status === 'published' && (
+                <Button
+                  variant="secondary"
+                  icon={RefreshCw}
+                  onClick={() => refresh.mutate()}
+                  disabled={refresh.isPending}
+                >
+                  Re-check prices
+                </Button>
+              )}
+              {editable && !t.clientEmail && (
+                <p className="text-xs text-muted">
+                  This client has no email address: copy the link and send it yourself.
+                </p>
+              )}
+            </div>
           </Card>
-        </div>
+
+          {t.proposals.length > 1 && (
+            <Card title="Proposal history">
+              <ul className="flex flex-col gap-2 text-sm">
+                {t.proposals.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between rounded-[14px] bg-canvas px-3 py-2"
+                  >
+                    <span>
+                      Version {p.version} · {formatMoney(p.total)}
+                    </span>
+                    <StatusBadge status={p.status} />
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+          <p className="flex items-center gap-2 px-2 text-xs text-muted">
+            <CreditCard {...ICON} size={14} aria-hidden /> Payment and booking arrive in the next
+            release.
+          </p>
+        </aside>
       </div>
     </div>
   );
