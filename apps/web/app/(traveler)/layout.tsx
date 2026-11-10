@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Logo } from '@/components/shell';
 
@@ -11,6 +12,15 @@ export default function TravelerLayout({ children }: { children: ReactNode }) {
       <main id="main" className="mx-auto max-w-3xl py-8">
         {children}
       </main>
+      <footer className="mx-auto max-w-3xl pb-6 text-xs text-muted">
+        <Link className="underline" href="/privacy">
+          Privacy
+        </Link>{' '}
+        ·{' '}
+        <Link className="underline" href="/terms">
+          Terms
+        </Link>
+      </footer>
     </div>
   );
 }

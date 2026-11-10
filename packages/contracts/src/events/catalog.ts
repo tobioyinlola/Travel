@@ -263,6 +263,32 @@ export const eventCatalog = {
       note: z.string(),
     }),
   },
+  /** A traveler wrote in the trip thread (FR-TRV-06). No message text: the advisor reads it in the app. */
+  'TripMessageReceived.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      messageId: id,
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+      tripTitle: z.string(),
+      senderName: z.string(),
+    }),
+  },
+  /** The advisor replied; the traveler is emailed a pointer to their private link (secret, so stored redacted). */
+  'TripMessageReplied.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      messageId: id,
+      tripId: id,
+      advisorId: id,
+      advisorName: z.string(),
+      recipientEmail: z.string(),
+      recipientName: z.string(),
+      tripTitle: z.string(),
+      url: z.string(),
+    }),
+  },
   /** Trip summary for the CRM's trip history (FR-CRM-03). */
   'TripUpdated.v1': {
     producer: 'itineraries',

@@ -1204,6 +1204,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/messages/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TripsController_unreadMessages_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/trips/summary": {
         parameters: {
             query?: never;
@@ -1316,6 +1332,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TripsController_thread_v1"];
+        put?: never;
+        post: operations["TripsController_reply_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/messages/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TripsController_markRead_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/proposal-links/{token}": {
         parameters: {
             query?: never;
@@ -1342,6 +1390,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["ProposalLinkController_decide_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/proposal-links/{token}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProposalLinkController_thread_v1"];
+        put?: never;
+        post: operations["ProposalLinkController_post_v1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6207,6 +6271,27 @@ export interface operations {
             };
         };
     };
+    TripsController_unreadMessages_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        unread: number;
+                    };
+                };
+            };
+        };
+    };
     TripsController_summary_v1: {
         parameters: {
             query?: never;
@@ -7518,6 +7603,99 @@ export interface operations {
             };
         };
     };
+    TripsController_thread_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            sender: "traveler" | "advisor";
+                            senderName: string;
+                            body: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            read: boolean;
+                        }[];
+                        unread: number;
+                    };
+                };
+            };
+        };
+    };
+    TripsController_reply_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            sender: "traveler" | "advisor";
+                            senderName: string;
+                            body: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            read: boolean;
+                        }[];
+                        unread: number;
+                    };
+                };
+            };
+        };
+    };
+    TripsController_markRead_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ProposalLinkController_view_v1: {
         parameters: {
             query?: never;
@@ -7754,6 +7932,81 @@ export interface operations {
                         decidedAt: string | null;
                         decidedByName: string | null;
                         decisionNote: string | null;
+                    };
+                };
+            };
+        };
+    };
+    ProposalLinkController_thread_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            sender: "traveler" | "advisor";
+                            senderName: string;
+                            body: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            read: boolean;
+                        }[];
+                        unread: number;
+                    };
+                };
+            };
+        };
+    };
+    ProposalLinkController_post_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            sender: "traveler" | "advisor";
+                            senderName: string;
+                            body: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            read: boolean;
+                        }[];
+                        unread: number;
                     };
                 };
             };

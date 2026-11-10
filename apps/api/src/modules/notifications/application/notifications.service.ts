@@ -150,6 +150,16 @@ const RULES: Rule[] = [
     vars: (p) => ({ endsAt: String(p.endsAt).slice(0, 10) }),
   },
   {
+    event: 'TripMessageReceived',
+    template: 'trip_message_received',
+    recipient: 'advisorUserId',
+    vars: (p) => ({
+      tripId: String(p.tripId),
+      title: String(p.tripTitle),
+      sender: String(p.senderName),
+    }),
+  },
+  {
     event: 'ProposalApproved',
     template: 'proposal_approved',
     recipient: 'advisorUserId',
@@ -265,6 +275,40 @@ export class NotificationsService implements OnModuleInit {
           tx,
           e,
           'proposal_sent',
+          null,
+          'email',
+          e.payload.recipientEmail,
+          r.subject,
+          r.text,
+          true,
+          true,
+        );
+      },
+    });
+
+    // The advisor's reply: the traveler has no account, so send to the address on the event (link is secret).
+    this.bus.subscribe<{
+      advisorName: string;
+      recipientEmail: string;
+      recipientName: string;
+      tripTitle: string;
+      url: string;
+    }>({
+      module: 'notifications',
+      handler: 'notifications.sendTripMessageReplied',
+      event: 'TripMessageReplied',
+      version: 1,
+      handle: async (e, tx) => {
+        const r = templates.trip_message_traveler!({
+          name: e.payload.recipientName,
+          advisorName: e.payload.advisorName,
+          title: e.payload.tripTitle,
+          url: e.payload.url,
+        });
+        await this.queue(
+          tx,
+          e,
+          'trip_message_traveler',
           null,
           'email',
           e.payload.recipientEmail,

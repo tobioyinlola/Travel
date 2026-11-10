@@ -28,6 +28,8 @@ const PUBLIC_ROUTES = [
   'GET /v1/proposal-links/{token}',
   'POST /v1/proposal-links/{token}/decision',
   'GET /v1/checkout/{token}',
+  'GET /v1/proposal-links/{token}/messages',
+  'POST /v1/proposal-links/{token}/messages',
   'POST /v1/checkout/{token}/confirm',
   // Development stand-ins for provider pages (the app refuses to start in production with them)
   'POST /v1/dev/fake-kyc/{reference}/{outcome}',

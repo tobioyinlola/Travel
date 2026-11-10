@@ -209,3 +209,22 @@ export const decisionSchema = z
     message: 'Tell your advisor what to change',
     path: ['note'],
   });
+
+// ---------- Trip message thread (FR-TRV-06) ----------
+export const messageSchema = z.object({
+  id: z.uuid(),
+  sender: z.enum(['traveler', 'advisor']),
+  senderName: z.string(),
+  body: z.string(),
+  createdAt: z.iso.datetime(),
+  read: z.boolean(),
+});
+export const messageListSchema = z.object({
+  items: z.array(messageSchema),
+  unread: z.number().int(),
+});
+export const travelerMessageSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  body: z.string().trim().min(1).max(4000),
+});
+export const advisorMessageSchema = z.object({ body: z.string().trim().min(1).max(4000) });

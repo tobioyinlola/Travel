@@ -49,6 +49,15 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
     text: `Hi ${v.name},\n\n${v.advisorName} has put together a trip proposal for you. Review it, ask for changes or approve it here:\n${v.url}\n\nThis link is personal to you; please do not forward it.`,
     sensitive: true,
   }),
+  trip_message_received: (v) => ({
+    subject: `New message from ${v.sender}: ${v.title}`,
+    text: `Hi ${v.name},\n\n${v.sender} sent you a message about "${v.title}". Read and reply here: ${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  trip_message_traveler: (v) => ({
+    subject: `${v.advisorName} replied about ${v.title}`,
+    text: `Hi ${v.name},\n\n${v.advisorName} replied to your message about "${v.title}". Read it and answer here:\n${v.url}\n\nThis link is personal to you; please do not forward it.`,
+    sensitive: true,
+  }),
   proposal_approved: (v) => ({
     subject: `Proposal approved: ${v.title}`,
     text: `Hi ${v.name},\n\n${v.decidedBy} approved your proposal. They can now complete the booking from the same link (details and payment). We will email you when it is confirmed.\nTrip: ${v.webBaseUrl}/trips/${v.tripId}`,

@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { Fragment, use, useState, type FormEvent } from 'react';
 import { AccessNotice } from '@/components/gate';
 import { BookingCard } from '@/components/booking-card';
+import { Thread } from '@/components/thread';
 import { HotelSearch } from '@/components/hotel-search';
 import {
   Alert,
@@ -446,6 +447,10 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
             </div>
           </Card>
 
+          <Card title="Messages with your client">
+            <TripMessages tripId={id} onError={onError} />
+          </Card>
+
           {t.proposals.length > 1 && (
             <Card title="Proposal history">
               <ul className="flex flex-col gap-2 text-sm">
@@ -466,5 +471,48 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
         </aside>
       </div>
     </div>
+  );
+}
+
+/** FR-TRV-06: the conversation the traveler starts from their proposal link. */
+function TripMessages({ tripId, onError }: { tripId: string; onError: (e: unknown) => void }) {
+  const qc = useQueryClient();
+  const key = ['trip-thread', tripId];
+  const q = useQuery({
+    queryKey: key,
+    queryFn: () => call(api.GET('/v1/trips/{id}/messages', { params: { path: { id: tripId } } })),
+    refetchInterval: 15_000,
+  });
+  const read = useMutation({
+    mutationFn: () =>
+      call(api.POST('/v1/trips/{id}/messages/read', { params: { path: { id: tripId } } })),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['unread-messages'] }),
+  });
+  const send = useMutation({
+    mutationFn: (body: string) =>
+      call(
+        api.POST('/v1/trips/{id}/messages', { params: { path: { id: tripId } }, body: { body } }),
+      ),
+    onSuccess: (data) => qc.setQueryData(key, data),
+    onError,
+  });
+  const unread = q.data?.unread ?? 0;
+  return (
+    <Thread
+      items={q.data?.items ?? []}
+      mine="advisor"
+      busy={send.isPending}
+      onSend={(b) => send.mutateAsync(b).catch(() => undefined)}
+      placeholder="Reply to your client. They are also emailed."
+    >
+      {unread > 0 && (
+        <Button
+          variant="ghost"
+          onClick={() => read.mutate(undefined, { onSuccess: () => q.refetch() })}
+        >
+          Mark {unread} new message{unread === 1 ? '' : 's'} as read
+        </Button>
+      )}
+    </Thread>
   );
 }

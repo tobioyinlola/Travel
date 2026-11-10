@@ -43,9 +43,9 @@ container scanning; an email domain with SPF/DKIM; provider sandboxes and produc
 3. ~~Finance and support have no web sign-in~~ Fixed: the staff console shows each role only its own pages
    (finance: Finance and Reports; support: Privacy and Stuck bookings; admin: everything).
 4. USD only: tiers, payouts and reports assume one currency; local-currency payouts are not built.
-5. Contractor agreement PDF is not stored (needs the real e-sign provider); privacy policy and terms pages are not
-   written; tax identifier collection with field encryption is available but not yet wired into onboarding.
-6. Date and room changes on a confirmed booking (guest changes only today); traveler messaging thread (FR-TRV-06).
+5. Contractor agreement PDF is not stored (needs the real e-sign provider); privacy policy and terms pages exist as drafts and need legal review; tax identifier collection with field encryption is available but not yet wired into onboarding.
+6. Date and room changes on a confirmed booking (guest changes only today; cancel and rebook instead); message
+   attachments (the traveler message thread itself is built, ADR-22).
 7. Load target of 1,000 concurrent users is unproven on real infrastructure (see `docs/ops/LOAD_TEST.md`).
 8. Reporting facts start at deployment; earlier history needs an outbox replay.
 
@@ -53,4 +53,4 @@ container scanning; an email domain with SPF/DKIM; provider sandboxes and produc
 
 External penetration test; legal review of the agreement and policies; real-provider sandbox contract runs;
 a restore drill on production infrastructure; a game-day for the supplier-outage and ledger-variance runbooks;
-decide the pilot fee waiver (promo code `waiver` exists, FR-MEM-04) and its cap.
+decide the pilot fee waiver cap (promo codes support `maxRedemptions` and an expiry, FR-MEM-04).

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Checkout, type CheckoutView } from './checkout';
 import { Decision } from './decision';
+import { Messages } from './messages';
 
 // Proposal links carry a secret token: never index them, never cache them publicly.
 export const metadata: Metadata = {
@@ -282,6 +283,11 @@ export default async function ProposalPage({ params }: { params: Promise<{ token
         ratesExpired={p.ratesExpired}
         advisorName={p.advisorName}
         decidedByName={p.decidedByName}
+      />
+      <Messages
+        token={token}
+        advisorName={p.advisorName}
+        suggestedName={p.decidedByName ?? p.clientFirstName}
       />
     </article>
   );

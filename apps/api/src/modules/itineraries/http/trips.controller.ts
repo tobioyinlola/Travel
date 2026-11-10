@@ -13,9 +13,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { CurrentUser, Roles, type AuthUser } from '../../../platform/http/auth.js';
 import { ZBody, ZQuery, ZResponse } from '../../../platform/http/zod.js';
+import { MessagesService } from '../application/messages.service.js';
 import { TripsService } from '../application/trips.service.js';
 import {
   addHotelSchema,
+  advisorMessageSchema,
+  messageListSchema,
   itemCreateSchema,
   itemUpdateSchema,
   publishResultSchema,
@@ -37,7 +40,10 @@ const listQuery = z.object({
 @Controller({ path: 'trips', version: '1' })
 @Roles('advisor')
 export class TripsController {
-  constructor(private readonly trips: TripsService) {}
+  constructor(
+    private readonly trips: TripsService,
+    private readonly messages: MessagesService,
+  ) {}
 
   private async advisorId(user: AuthUser) {
     return (await this.trips.planner(user.id)).id;
@@ -47,6 +53,13 @@ export class TripsController {
   @ZResponse(200, tripListSchema)
   async list(@CurrentUser() user: AuthUser, @ZQuery(listQuery) q: z.infer<typeof listQuery>) {
     return this.trips.list(await this.advisorId(user), q);
+  }
+
+  /** Unread traveler messages across all of the advisor's trips (for the sidebar badge). */
+  @Get('messages/unread')
+  @ZResponse(200, z.object({ unread: z.number().int() }))
+  async unreadMessages(@CurrentUser() user: AuthUser) {
+    return { unread: await this.messages.unreadTotal(await this.advisorId(user)) };
   }
 
   @Get('summary')
@@ -137,5 +150,27 @@ export class TripsController {
   @ZResponse(200, publishResultSchema)
   async refresh(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.trips.refreshPrices(await this.trips.planner(user.id), id);
+  }
+
+  @Get(':id/messages')
+  @ZResponse(200, messageListSchema)
+  async thread(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.messages.advisorThread(await this.advisorId(user), id);
+  }
+
+  @Post(':id/messages')
+  @ZResponse(201, messageListSchema)
+  async reply(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZBody(advisorMessageSchema) body: z.infer<typeof advisorMessageSchema>,
+  ) {
+    return this.messages.advisorPost(await this.messages.planner(user.id), id, body.body);
+  }
+
+  @Post(':id/messages/read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async markRead(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
+    await this.messages.markRead(await this.advisorId(user), id);
   }
 }
