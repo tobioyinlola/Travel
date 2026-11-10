@@ -156,7 +156,7 @@ function SideLink({
       aria-label={compact ? item.label : undefined}
       title={compact ? item.label : undefined}
       className={`flex h-12 items-center gap-3 rounded-full text-[15px] transition-colors ${compact ? 'w-12 justify-center' : 'px-4'} ${
-        active ? 'bg-ink text-white' : 'text-ink hover:bg-surface'
+        active ? 'bg-accent-strong text-white' : 'text-ink hover:bg-surface'
       }`}
     >
       <item.icon {...ICON} className="shrink-0" aria-hidden />
@@ -311,7 +311,7 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside
         aria-label="Sidebar"
-        className={`sticky top-0 hidden h-screen shrink-0 border-r border-line/70 py-5 transition-[width] duration-200 md:block ${compact ? 'w-[88px] px-4' : 'w-64 px-4'}`}
+        className={`sticky top-0 hidden h-screen shrink-0 border-r border-line/70 py-8 transition-[width] duration-200 md:block ${compact ? 'w-[88px] px-4' : 'w-64 px-4'}`}
       >
         <SidebarBody
           tabs={tabs}
