@@ -8,17 +8,23 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Res,
+  Body,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import { CurrentUser, Roles, type AuthUser } from '../../../platform/http/auth.js';
 import { ZBody, ZQuery, ZResponse } from '../../../platform/http/zod.js';
+import { sendFile } from './proposal-link.controller.js';
 import { MessagesService } from '../application/messages.service.js';
 import { TripsService } from '../application/trips.service.js';
 import {
   addHotelSchema,
   advisorMessageSchema,
   messageListSchema,
+  uploadQuery,
+  uploadedFileSchema,
   itemCreateSchema,
   itemUpdateSchema,
   publishResultSchema,
@@ -165,12 +171,38 @@ export class TripsController {
     @Param('id', ParseUUIDPipe) id: string,
     @ZBody(advisorMessageSchema) body: z.infer<typeof advisorMessageSchema>,
   ) {
-    return this.messages.advisorPost(await this.messages.planner(user.id), id, body.body);
+    return this.messages.advisorPost(
+      await this.messages.planner(user.id),
+      id,
+      body.body,
+      body.attachmentIds,
+    );
   }
 
   @Post(':id/messages/read')
   @HttpCode(HttpStatus.NO_CONTENT)
   async markRead(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
     await this.messages.markRead(await this.advisorId(user), id);
+  }
+
+  @Post(':id/attachments')
+  @ZResponse(201, uploadedFileSchema)
+  async uploadFile(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZQuery(uploadQuery) q: z.infer<typeof uploadQuery>,
+    @Body() bytes: unknown,
+  ) {
+    return this.messages.advisorUpload(await this.messages.planner(user.id), id, q.filename, bytes);
+  }
+
+  @Get(':id/attachments/:fileId')
+  async downloadFile(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('fileId', ParseUUIDPipe) fileId: string,
+    @Res() res: Response,
+  ) {
+    sendFile(res, await this.messages.advisorDownload(await this.advisorId(user), id, fileId));
   }
 }

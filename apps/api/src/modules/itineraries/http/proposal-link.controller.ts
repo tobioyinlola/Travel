@@ -1,9 +1,20 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { Public } from '../../../platform/http/auth.js';
-import { ZBody, ZResponse } from '../../../platform/http/zod.js';
+import { ZBody, ZQuery, ZResponse } from '../../../platform/http/zod.js';
 import { MessagesService } from '../application/messages.service.js';
 import { ProposalLinkService } from '../application/proposal-link.service.js';
 import {
@@ -11,6 +22,8 @@ import {
   messageListSchema,
   travelerMessageSchema,
   travelerProposalSchema,
+  uploadQuery,
+  uploadedFileSchema,
 } from './schemas.js';
 
 /** The traveler's proposal link: no account, the token is the credential (FR-ITN-04/06, FR-TRV-01..03). */
@@ -60,4 +73,44 @@ export class ProposalLinkController {
     await this.links.rateLimit(req.ip ?? 'unknown');
     return this.messages.travelerPost(token, body);
   }
+
+  /** Raw file bytes (Content-Type: application/pdf, image/png or image/jpeg); attach by id when sending a message. */
+  @Post(':token/attachments')
+  @ZResponse(201, uploadedFileSchema)
+  async upload(
+    @Param('token') token: string,
+    @ZQuery(uploadQuery) q: z.infer<typeof uploadQuery>,
+    @Body() bytes: unknown,
+    @Req() req: Request,
+  ) {
+    await this.links.rateLimit(req.ip ?? 'unknown');
+    return this.messages.travelerUpload(token, q.filename, bytes);
+  }
+
+  @Get(':token/attachments/:id')
+  async download(
+    @Param('token') token: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    await this.links.rateLimit(req.ip ?? 'unknown');
+    sendFile(res, await this.messages.travelerDownload(token, id));
+  }
+}
+
+/** Always a download, never rendered in our origin. */
+export function sendFile(
+  res: Response,
+  f: { filename: string; contentType: string; data: Buffer },
+) {
+  res
+    .status(200)
+    .type(f.contentType)
+    .setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(f.filename)}`,
+    )
+    .setHeader('Content-Length', f.data.length)
+    .end(f.data);
 }

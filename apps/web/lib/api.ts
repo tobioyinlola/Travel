@@ -71,3 +71,37 @@ export function toMajor(amountMinor: string, currency: string): string {
   const s = amountMinor.padStart(digits + 1, '0');
   return `${s.slice(0, -digits)}.${s.slice(-digits)}`;
 }
+
+export interface UploadedFile {
+  id: string;
+  filename: string;
+  contentType: string;
+  sizeBytes: number;
+}
+
+/** Sends one file as raw bytes (the API takes PDF, PNG and JPEG up to 5 MB and checks the content itself). */
+export async function uploadFile(path: string, file: File): Promise<UploadedFile> {
+  const res = await fetch(`${API_BASE_URL}${path}?filename=${encodeURIComponent(file.name)}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': file.type || 'application/octet-stream' },
+    body: file,
+  });
+  if (!res.ok) {
+    const problem = (await res.json().catch(() => ({}))) as Partial<ProblemDetails>;
+    throw new ApiError({
+      type: problem.type ?? 'about:blank',
+      title: problem.title ?? res.statusText,
+      status: res.status,
+      ...(problem.detail ? { detail: problem.detail } : {}),
+    });
+  }
+  return (await res.json()) as UploadedFile;
+}
+
+export const formatBytes = (n: number) =>
+  n < 1024
+    ? `${n} B`
+    : n < 1_048_576
+      ? `${Math.round(n / 1024)} KB`
+      : `${(n / 1_048_576).toFixed(1)} MB`;

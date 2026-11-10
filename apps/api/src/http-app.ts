@@ -44,6 +44,11 @@ export function configureHttpApp(
   app.use(securityHeaders({ production: config.NODE_ENV === 'production' }));
   // Statement imports and CSV pastes are larger than Express's 100 kb default, but never need more than this.
   (app as unknown as NestExpressApplication).useBodyParser('json', { limit: '1mb' });
+  // Message attachments arrive as raw file bytes (PDF, PNG, JPEG only), capped a little above the 5 MB file limit.
+  (app as unknown as NestExpressApplication).useBodyParser('raw', {
+    limit: '5600kb',
+    type: ['application/pdf', 'image/png', 'image/jpeg'],
+  });
   app.use(app.get(MetricsRegistry).middleware());
   app.use(correlationMiddleware);
   app.use(cookieParser());

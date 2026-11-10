@@ -35,7 +35,7 @@ import {
   Select,
   StatusBadge,
 } from '@/components/ui';
-import { api, ApiError, call, formatMoney, toMinor } from '@/lib/api';
+import { api, API_BASE_URL, ApiError, call, formatMoney, toMinor, uploadFile } from '@/lib/api';
 
 function days(start: string, end: string): string[] {
   const out: string[] = [];
@@ -489,9 +489,12 @@ function TripMessages({ tripId, onError }: { tripId: string; onError: (e: unknow
     onSuccess: () => qc.invalidateQueries({ queryKey: ['unread-messages'] }),
   });
   const send = useMutation({
-    mutationFn: (body: string) =>
+    mutationFn: ({ body, ids }: { body: string; ids: string[] }) =>
       call(
-        api.POST('/v1/trips/{id}/messages', { params: { path: { id: tripId } }, body: { body } }),
+        api.POST('/v1/trips/{id}/messages', {
+          params: { path: { id: tripId } },
+          body: { body, ...(ids.length ? { attachmentIds: ids } : {}) },
+        }),
       ),
     onSuccess: (data) => qc.setQueryData(key, data),
     onError,
@@ -502,7 +505,9 @@ function TripMessages({ tripId, onError }: { tripId: string; onError: (e: unknow
       items={q.data?.items ?? []}
       mine="advisor"
       busy={send.isPending}
-      onSend={(b) => send.mutateAsync(b).catch(() => undefined)}
+      onSend={(b, ids) => send.mutateAsync({ body: b, ids }).catch(() => undefined)}
+      onUpload={(f) => uploadFile(`/v1/trips/${tripId}/attachments`, f)}
+      fileHref={(id) => `${API_BASE_URL}/v1/trips/${tripId}/attachments/${id}`}
       placeholder="Reply to your client. They are also emailed."
     >
       {unread > 0 && (

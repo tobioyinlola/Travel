@@ -28,6 +28,8 @@ const PUBLIC_ROUTES = [
   'GET /v1/proposal-links/{token}',
   'POST /v1/proposal-links/{token}/decision',
   'GET /v1/checkout/{token}',
+  'GET /v1/proposal-links/{token}/attachments/{id}',
+  'POST /v1/proposal-links/{token}/attachments',
   'GET /v1/proposal-links/{token}/messages',
   'POST /v1/proposal-links/{token}/messages',
   'POST /v1/checkout/{token}/confirm',

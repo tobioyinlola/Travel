@@ -215,7 +215,7 @@ Status: Sprint 8 done, see ADR-19 (AI assistant with retrieval, sources, flags, 
 
 ### Sprint 10-12: Real providers, hardening, launch readiness
 
-Status: Sprint 10 done as the provider-independent part, see ADR-21 and docs/GO_LIVE_READINESS.md (security audit and headers, SLO metrics, runbooks, restore drill, load test, accessibility sweep, adapter contract suites). Sprint 12 done, see ADR-23 (tax identifier at application, unread badge). Sprint 11 done, see ADR-22 (traveler message thread, password reset, session revocation, staff web access, draft legal pages). Still to do: the real adapters themselves (need D2-D5, D8), external penetration test, load test on production-like infrastructure.
+Status: Sprint 10 done as the provider-independent part, see ADR-21 and docs/GO_LIVE_READINESS.md (security audit and headers, SLO metrics, runbooks, restore drill, load test, accessibility sweep, adapter contract suites). Sprint 14 done, see ADR-24 (message attachments). Sprint 12 done, see ADR-23 (tax identifier at application, unread badge). Sprint 11 done, see ADR-22 (traveler message thread, password reset, session revocation, staff web access, draft legal pages). Still to do: the real adapters themselves (need D2-D5, D8), external penetration test, load test on production-like infrastructure.
 
 - Swap fakes for contracted providers (hotel aggregator, payments, payouts, KYC, e-sign, email). Each adapter gets a contract test suite shared with its fake.
 - Load test: 1,000 concurrent users, 10,000 advisors seeded (NFR-03); search p95 < 3 s (NFR-01); portal p95 < 2 s on 4G (NFR-02).

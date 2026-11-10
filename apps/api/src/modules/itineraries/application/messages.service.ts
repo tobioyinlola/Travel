@@ -10,6 +10,9 @@ import type { Tx } from '../../../platform/db/tx.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
 import { FieldCrypto } from '../../../platform/security/field-crypto.js';
 import { REDIS } from '../../../platform/tokens.js';
+import { createHash } from 'node:crypto';
+import { MAX_ATTACHMENT_BYTES, safeFilename, sniffType } from '../domain/file-type.js';
+import { ATTACHMENT_SCANNER, type AttachmentScannerPort } from './attachment-scan.port.js';
 import { tokenHash } from './trips.service.js';
 
 const problem = (status: HttpStatus, slug: string, title: string, detail?: string) =>
@@ -28,13 +31,32 @@ interface MessageRow {
   read_at: Date | null;
 }
 
-const view = (m: MessageRow) => ({
+const MAX_ATTACHMENTS_PER_MESSAGE = 5;
+const MAX_ATTACHMENTS_PER_TRIP = 25;
+const TRAVELER_UPLOADS_PER_HOUR = 10;
+
+interface AttachmentMeta {
+  id: string;
+  message_id: string | null;
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+}
+const attachmentView = (a: AttachmentMeta) => ({
+  id: a.id,
+  filename: a.filename,
+  contentType: a.content_type,
+  sizeBytes: a.size_bytes,
+});
+
+const view = (m: MessageRow, files: AttachmentMeta[] = []) => ({
   id: m.id,
   sender: m.sender,
   senderName: m.sender_name,
   body: m.body,
   createdAt: m.created_at.toISOString(),
   read: m.sender === 'advisor' || m.read_at !== null,
+  attachments: files.filter((a) => a.message_id === m.id).map(attachmentView),
 });
 
 /** The conversation between a traveler (no account, proposal link) and their advisor (FR-TRV-06). */
@@ -48,6 +70,7 @@ export class MessagesService {
     private readonly crypto: FieldCrypto,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(REDIS) private readonly redis: Redis,
+    @Inject(ATTACHMENT_SCANNER) private readonly scanner: AttachmentScannerPort,
   ) {}
 
   planner(userId: string): Promise<AdvisorSummary> {
@@ -103,8 +126,13 @@ export class MessagesService {
         WHERE trip_id = $1 ORDER BY created_at, id`,
       [tripId],
     );
+    const files = await tx.query<AttachmentMeta>(
+      `SELECT id, message_id, filename, content_type, size_bytes FROM itineraries.attachments
+        WHERE trip_id = $1 AND message_id IS NOT NULL`,
+      [tripId],
+    );
     return {
-      items: rows.map(view),
+      items: rows.map((m) => view(m, files)),
       unread: rows.filter((m) => m.sender === 'traveler' && !m.read_at).length,
     };
   }
@@ -118,7 +146,10 @@ export class MessagesService {
     });
   }
 
-  async travelerPost(token: string, input: { name: string; body: string }) {
+  async travelerPost(
+    token: string,
+    input: { name: string; body: string; attachmentIds?: string[] | undefined },
+  ) {
     if (this.redis.status === 'wait') await this.redis.connect();
     const key = `rl:trip-message:${tokenHash(token)}`;
     const [[, n]] = (await this.redis.multi().incr(key).expire(key, 3600, 'NX').exec()) as [
@@ -139,6 +170,7 @@ export class MessagesService {
          VALUES ($1, $2, $3, 'traveler', $4, $5)`,
         [id, p.trip_id, p.owner_advisor_id, input.name, input.body],
       );
+      await this.attach(tx, p.trip_id, id, 'traveler', input.attachmentIds);
       await tx.publish({
         type: 'TripMessageReceived',
         version: 1,
@@ -196,7 +228,12 @@ export class MessagesService {
     return t;
   }
 
-  async advisorPost(advisor: AdvisorSummary, tripId: string, body: string) {
+  async advisorPost(
+    advisor: AdvisorSummary,
+    tripId: string,
+    body: string,
+    attachmentIds?: string[] | undefined,
+  ) {
     const advisorName = await this.identity.getDisplayName(advisor.userId);
     const trip = await this.asAdvisor(advisor.id, (tx) => this.assertOwnTrip(tx, tripId));
     const contact = await this.clients.getContact(advisor.id, trip.client_id);
@@ -207,6 +244,7 @@ export class MessagesService {
          VALUES ($1, $2, $3, 'advisor', $4, $5, now())`,
         [id, tripId, advisor.id, advisorName, body],
       );
+      await this.attach(tx, tripId, id, 'advisor', attachmentIds);
       // Email the traveler a pointer to their private page, when there is a live link and an address.
       const [current] = await tx.query<{ token_enc: string | null; token_expires_at: Date }>(
         `SELECT token_enc, token_expires_at FROM itineraries.proposals
@@ -239,6 +277,163 @@ export class MessagesService {
         metadata: { messageId: id },
       });
       return this.thread(tx, tripId);
+    });
+  }
+
+  // ---------- Attachments (FR-TRV-06) ----------
+
+  /** Links files this side uploaded earlier to the message being sent. Files must be unattached and on this trip. */
+  private async attach(
+    tx: Tx,
+    tripId: string,
+    messageId: string,
+    uploader: 'traveler' | 'advisor',
+    ids: string[] | undefined,
+  ) {
+    const unique = [...new Set(ids ?? [])];
+    if (unique.length === 0) return;
+    if (unique.length > MAX_ATTACHMENTS_PER_MESSAGE)
+      throw problem(HttpStatus.BAD_REQUEST, 'too-many-files', 'Attach at most 5 files per message');
+    const res = await tx.query(
+      `UPDATE itineraries.attachments SET message_id = $3
+        WHERE id = ANY($1::uuid[]) AND trip_id = $2 AND uploader = $4 AND message_id IS NULL RETURNING id`,
+      [unique, tripId, messageId, uploader],
+    );
+    if (res.length !== unique.length)
+      throw problem(
+        HttpStatus.BAD_REQUEST,
+        'bad-attachment',
+        'One of the files cannot be attached',
+        'Upload it again and retry.',
+      );
+  }
+
+  /** The raw body parser only produces a Buffer for PDF, PNG and JPEG content types. */
+  private asBytes(raw: unknown): Buffer {
+    if (!Buffer.isBuffer(raw))
+      throw problem(
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+        'file-type-not-allowed',
+        'Only PDF, PNG and JPEG files can be attached',
+      );
+    return raw;
+  }
+
+  /** Validates by content, scans, and stores. Returns the file's public details. */
+  private async store(
+    tx: Tx,
+    trip: { id: string; owner: string },
+    uploader: 'traveler' | 'advisor',
+    filename: string,
+    bytes: Buffer,
+  ) {
+    if (bytes.length === 0 || bytes.length > MAX_ATTACHMENT_BYTES)
+      throw problem(
+        HttpStatus.PAYLOAD_TOO_LARGE,
+        'file-too-large',
+        'The file must be between 1 byte and 5 MB',
+      );
+    const type = sniffType(bytes);
+    if (!type)
+      throw problem(
+        HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+        'file-type-not-allowed',
+        'Only PDF, PNG and JPEG files can be attached',
+      );
+    const [{ n } = { n: '0' }] = await tx.query<{ n: string }>(
+      `SELECT count(*) AS n FROM itineraries.attachments WHERE trip_id = $1`,
+      [trip.id],
+    );
+    if (Number(n) >= MAX_ATTACHMENTS_PER_TRIP)
+      throw problem(
+        HttpStatus.CONFLICT,
+        'attachment-limit',
+        'This trip has reached its file limit',
+      );
+    const scan = await this.scanner.scan(bytes);
+    if (!scan.clean)
+      throw problem(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'file-rejected',
+        'This file was rejected by the safety scan',
+      );
+    const id = newId();
+    const name = safeFilename(filename);
+    await tx.query(
+      `INSERT INTO itineraries.attachments (id, trip_id, owner_advisor_id, uploader, filename, content_type,
+                                            size_bytes, sha256, scanner, data)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        id,
+        trip.id,
+        trip.owner,
+        uploader,
+        name,
+        type,
+        bytes.length,
+        createHash('sha256').update(bytes).digest('hex'),
+        this.scanner.name,
+        bytes,
+      ],
+    );
+    return { id, filename: name, contentType: type, sizeBytes: bytes.length };
+  }
+
+  async travelerUpload(token: string, filename: string, raw: unknown) {
+    const bytes = this.asBytes(raw);
+    if (this.redis.status === 'wait') await this.redis.connect();
+    const key = `rl:trip-upload:${tokenHash(token)}`;
+    const [[, n]] = (await this.redis.multi().incr(key).expire(key, 3600, 'NX').exec()) as [
+      [unknown, number],
+    ];
+    if (n > TRAVELER_UPLOADS_PER_HOUR)
+      throw problem(
+        HttpStatus.TOO_MANY_REQUESTS,
+        'rate-limited',
+        'Too many files',
+        'Please wait a while.',
+      );
+    return this.system(async (tx) => {
+      const p = await this.tripOfToken(tx, token);
+      return this.store(
+        tx,
+        { id: p.trip_id, owner: p.owner_advisor_id },
+        'traveler',
+        filename,
+        bytes,
+      );
+    });
+  }
+
+  async advisorUpload(advisor: AdvisorSummary, tripId: string, filename: string, raw: unknown) {
+    const bytes = this.asBytes(raw);
+    return this.asAdvisor(advisor.id, async (tx) => {
+      await this.assertOwnTrip(tx, tripId);
+      return this.store(tx, { id: tripId, owner: advisor.id }, 'advisor', filename, bytes);
+    });
+  }
+
+  private async load(tx: Tx, tripId: string, id: string) {
+    const [a] = await tx.query<{ filename: string; content_type: string; data: Buffer }>(
+      `SELECT filename, content_type, data FROM itineraries.attachments
+        WHERE id = $1 AND trip_id = $2 AND message_id IS NOT NULL`,
+      [id, tripId],
+    );
+    if (!a) throw problem(HttpStatus.NOT_FOUND, 'not-found', 'File not found');
+    return { filename: a.filename, contentType: a.content_type, data: a.data };
+  }
+
+  async travelerDownload(token: string, id: string) {
+    return this.system(async (tx) => {
+      const p = await this.tripOfToken(tx, token);
+      return this.load(tx, p.trip_id, id);
+    });
+  }
+
+  async advisorDownload(advisorId: string, tripId: string, id: string) {
+    return this.asAdvisor(advisorId, async (tx) => {
+      await this.assertOwnTrip(tx, tripId);
+      return this.load(tx, tripId, id);
     });
   }
 }

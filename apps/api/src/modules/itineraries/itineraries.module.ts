@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { BookingOutcomes } from './application/booking-outcomes.service.js';
+import { ATTACHMENT_SCANNER, FakeAttachmentScanner } from './application/attachment-scan.port.js';
+import { APP_CONFIG, type AppConfig } from '../../config.js';
+import { ErasureService } from './application/erasure.service.js';
 import { MessagesService } from './application/messages.service.js';
 import { ProposalLinkService } from './application/proposal-link.service.js';
 import { TripsService } from './application/trips.service.js';
@@ -13,6 +16,21 @@ import { TripsController } from './http/trips.controller.js';
  */
 @Module({
   controllers: [TripsController, ProposalLinkController],
-  providers: [MessagesService, TripsService, ProposalLinkService, BookingOutcomes],
+  providers: [
+    {
+      provide: ATTACHMENT_SCANNER,
+      inject: [APP_CONFIG],
+      useFactory: (config: AppConfig) => {
+        if (config.PROVIDERS_MODE !== 'fake')
+          throw new Error('Live attachment scanner not implemented yet');
+        return new FakeAttachmentScanner();
+      },
+    },
+    ErasureService,
+    MessagesService,
+    TripsService,
+    ProposalLinkService,
+    BookingOutcomes,
+  ],
 })
 export class ItinerariesModule {}

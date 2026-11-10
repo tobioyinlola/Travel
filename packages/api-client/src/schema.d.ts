@@ -1364,6 +1364,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/trips/{id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TripsController_uploadFile_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/trips/{id}/attachments/{fileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TripsController_downloadFile_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/proposal-links/{token}": {
         parameters: {
             query?: never;
@@ -1406,6 +1438,38 @@ export interface paths {
         get: operations["ProposalLinkController_thread_v1"];
         put?: never;
         post: operations["ProposalLinkController_post_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/proposal-links/{token}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProposalLinkController_upload_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/proposal-links/{token}/attachments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProposalLinkController_download_v1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7639,6 +7703,13 @@ export interface operations {
                             /** Format: date-time */
                             createdAt: string;
                             read: boolean;
+                            attachments: {
+                                /** Format: uuid */
+                                id: string;
+                                filename: string;
+                                contentType: string;
+                                sizeBytes: number;
+                            }[];
                         }[];
                         unread: number;
                     };
@@ -7659,6 +7730,7 @@ export interface operations {
             content: {
                 "application/json": {
                     body: string;
+                    attachmentIds?: string[];
                 };
             };
         };
@@ -7679,6 +7751,13 @@ export interface operations {
                             /** Format: date-time */
                             createdAt: string;
                             read: boolean;
+                            attachments: {
+                                /** Format: uuid */
+                                id: string;
+                                filename: string;
+                                contentType: string;
+                                sizeBytes: number;
+                            }[];
                         }[];
                         unread: number;
                     };
@@ -7698,6 +7777,55 @@ export interface operations {
         requestBody?: never;
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TripsController_uploadFile_v1: {
+        parameters: {
+            query: {
+                filename: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        filename: string;
+                        contentType: string;
+                        sizeBytes: number;
+                    };
+                };
+            };
+        };
+    };
+    TripsController_downloadFile_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7973,6 +8101,13 @@ export interface operations {
                             /** Format: date-time */
                             createdAt: string;
                             read: boolean;
+                            attachments: {
+                                /** Format: uuid */
+                                id: string;
+                                filename: string;
+                                contentType: string;
+                                sizeBytes: number;
+                            }[];
                         }[];
                         unread: number;
                     };
@@ -7994,6 +8129,7 @@ export interface operations {
                 "application/json": {
                     name: string;
                     body: string;
+                    attachmentIds?: string[];
                 };
             };
         };
@@ -8014,10 +8150,66 @@ export interface operations {
                             /** Format: date-time */
                             createdAt: string;
                             read: boolean;
+                            attachments: {
+                                /** Format: uuid */
+                                id: string;
+                                filename: string;
+                                contentType: string;
+                                sizeBytes: number;
+                            }[];
                         }[];
                         unread: number;
                     };
                 };
+            };
+        };
+    };
+    ProposalLinkController_upload_v1: {
+        parameters: {
+            query: {
+                filename: string;
+            };
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        filename: string;
+                        contentType: string;
+                        sizeBytes: number;
+                    };
+                };
+            };
+        };
+    };
+    ProposalLinkController_download_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

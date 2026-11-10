@@ -218,6 +218,14 @@ export const messageSchema = z.object({
   body: z.string(),
   createdAt: z.iso.datetime(),
   read: z.boolean(),
+  attachments: z.array(
+    z.object({
+      id: z.uuid(),
+      filename: z.string(),
+      contentType: z.string(),
+      sizeBytes: z.number().int(),
+    }),
+  ),
 });
 export const messageListSchema = z.object({
   items: z.array(messageSchema),
@@ -226,5 +234,16 @@ export const messageListSchema = z.object({
 export const travelerMessageSchema = z.object({
   name: z.string().trim().min(2).max(120),
   body: z.string().trim().min(1).max(4000),
+  attachmentIds: z.array(z.uuid()).max(5).optional(),
 });
-export const advisorMessageSchema = z.object({ body: z.string().trim().min(1).max(4000) });
+export const advisorMessageSchema = z.object({
+  body: z.string().trim().min(1).max(4000),
+  attachmentIds: z.array(z.uuid()).max(5).optional(),
+});
+export const uploadedFileSchema = z.object({
+  id: z.uuid(),
+  filename: z.string(),
+  contentType: z.string(),
+  sizeBytes: z.number().int(),
+});
+export const uploadQuery = z.object({ filename: z.string().trim().min(1).max(200) });

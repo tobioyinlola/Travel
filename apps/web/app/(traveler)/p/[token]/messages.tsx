@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Alert, Field } from '@/components/ui';
 import { Thread } from '@/components/thread';
-import { api, ApiError, call } from '@/lib/api';
+import { api, API_BASE_URL, ApiError, call, uploadFile } from '@/lib/api';
 
 /** FR-TRV-06: ask the advisor a question from the same private link. */
 export function Messages({
@@ -27,11 +27,11 @@ export function Messages({
     refetchInterval: 20_000,
   });
   const send = useMutation({
-    mutationFn: (body: string) =>
+    mutationFn: ({ body, ids }: { body: string; ids: string[] }) =>
       call(
         api.POST('/v1/proposal-links/{token}/messages', {
           params: { path: { token } },
-          body: { name: name.trim(), body },
+          body: { name: name.trim(), body, ...(ids.length ? { attachmentIds: ids } : {}) },
         }),
       ),
     onSuccess: (data) => {
@@ -59,7 +59,9 @@ export function Messages({
         items={q.data?.items ?? []}
         mine="traveler"
         busy={send.isPending || name.trim().length < 2}
-        onSend={(b) => send.mutateAsync(b).catch(() => undefined)}
+        onSend={(b, ids) => send.mutateAsync({ body: b, ids }).catch(() => undefined)}
+        onUpload={(f) => uploadFile(`/v1/proposal-links/${token}/attachments`, f)}
+        fileHref={(id) => `${API_BASE_URL}/v1/proposal-links/${token}/attachments/${id}`}
         placeholder="Is breakfast included? Can we add a night?"
       >
         <Field
