@@ -94,6 +94,8 @@ interface LineRow {
   failure_reason: string | null;
   penalty_minor: string;
   attempts: number;
+  property_id: string | null;
+  rate_codes: string[];
   guest_version: number;
   amend_failed: boolean;
 }
@@ -115,7 +117,7 @@ const LINE_SELECT = `SELECT id, booking_id, position, status, supplier, rate_key
   to_char(check_in, 'YYYY-MM-DD') AS check_in, to_char(check_out, 'YYYY-MM-DD') AS check_out, nights, room_name, board,
   adults, children_ages, total_minor, fees_at_hotel_minor, commissionable_minor, commission_bps, payment_modes,
   refundable, free_cancellation_until, cancellation_policy, supplier_ref, confirmation_code, failure_reason,
-  penalty_minor, attempts, guest_version, amend_failed FROM booking.lines`;
+  penalty_minor, attempts, property_id, rate_codes, guest_version, amend_failed FROM booking.lines`;
 
 const m = (minor: string | bigint, currency: string) => ({
   amountMinor: String(minor),
@@ -349,8 +351,8 @@ export class BookingService implements OnModuleInit {
         `INSERT INTO booking.lines (id, booking_id, owner_advisor_id, item_id, position, supplier, rate_key, property_name,
                                     city, check_in, check_out, nights, room_name, board, adults, children_ages, total_minor,
                                     fees_at_hotel_minor, commissionable_minor, commission_bps, payment_modes, refundable,
-                                    free_cancellation_until, cancellation_policy)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)`,
+                                    free_cancellation_until, cancellation_policy, property_id, rate_codes)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)`,
         [
           newId(),
           id,
@@ -376,6 +378,8 @@ export class BookingService implements OnModuleInit {
           h.refundable,
           h.freeCancellationUntil,
           h.cancellationPolicy,
+          h.propertyId ?? null,
+          h.rateCodes ?? [],
         ],
       );
     }
@@ -930,6 +934,9 @@ export class BookingService implements OnModuleInit {
             advisorId: b.owner_advisor_id,
             total: m(b.total_minor, b.currency),
             lines: lines.map((l) => ({
+              lineId: l.id,
+              ...(l.property_id ? { propertyId: l.property_id } : {}),
+              rateCodes: l.rate_codes,
               supplier: l.supplier,
               propertyName: l.property_name,
               checkIn: l.check_in,

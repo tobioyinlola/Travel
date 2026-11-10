@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  BadgeDollarSign,
   GraduationCap,
   IdCard,
   LayoutGrid,
@@ -16,6 +17,7 @@ const TABS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { href: '/trips', label: 'Trips', icon: Luggage },
   { href: '/clients', label: 'Clients', icon: UserRound },
+  { href: '/earnings', label: 'Earnings', icon: BadgeDollarSign },
   { href: '/community', label: 'Community', icon: MessagesSquare },
 ];
 const RAIL: NavItem[] = [

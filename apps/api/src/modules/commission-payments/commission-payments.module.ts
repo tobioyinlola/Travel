@@ -1,7 +1,9 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import type { AppConfig } from '../../config.js';
 import { PAYMENT_PROVIDER } from './application/payment-provider.port.js';
+import { CommissionService } from './application/commission.service.js';
 import { PaymentsService } from './application/payments.service.js';
+import { CommissionsController, FinanceController } from './http/commission.controller.js';
 import { FakePaymentsController } from './http/fake-payments.controller.js';
 import { FakePaymentProvider } from './infrastructure/fake-payment-provider.js';
 
@@ -17,9 +19,10 @@ export class CommissionPaymentsModule {
       throw new Error('Live payment adapter not implemented yet (decision D4)');
     return {
       module: CommissionPaymentsModule,
-      controllers: [FakePaymentsController],
+      controllers: [FakePaymentsController, CommissionsController, FinanceController],
       providers: [
         PaymentsService,
+        CommissionService,
         { provide: PAYMENT_PROVIDER, useValue: new FakePaymentProvider() },
       ],
       exports: [PAYMENT_PROVIDER],

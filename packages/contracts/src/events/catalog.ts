@@ -190,6 +190,8 @@ export const eventCatalog = {
         .array(
           z.object({
             itemId: id,
+            propertyId: id.optional(),
+            rateCodes: z.array(z.string()).optional(),
             supplier: z.string(),
             rateKey: z.string(),
             propertyName: z.string(),
@@ -331,6 +333,9 @@ export const eventCatalog = {
       lines: z
         .array(
           z.object({
+            lineId: id.optional(),
+            propertyId: id.optional(),
+            rateCodes: z.array(z.string()).optional(),
             supplier: z.string(),
             propertyName: z.string(),
             checkIn: z.iso.date(),
@@ -405,6 +410,41 @@ export const eventCatalog = {
   'BookingCompleted.v1': {
     producer: 'booking',
     payload: z.object({ bookingId: id, advisorId: id }),
+  },
+  /** Commission earned on one hotel booking, split between advisor and platform at the moment of recognition. */
+  'CommissionRecognized.v1': {
+    producer: 'commission-payments',
+    payload: z.object({
+      commissionId: id,
+      bookingId: id,
+      advisorId: id,
+      supplier: z.string(),
+      commissionable: money,
+      expected: money,
+      advisorShare: money,
+      platformShare: money,
+      advisorShareBps: z.number().int(),
+      tierCode: z.string(),
+      recognizedAt: z.iso.datetime(),
+    }),
+  },
+  /** The supplier paid: the advisor's share is now payable (FR-COM-05). */
+  'CommissionReleased.v1': {
+    producer: 'commission-payments',
+    payload: z.object({ commissionId: id, bookingId: id, advisorId: id, amount: money }),
+  },
+  'CommissionReversed.v1': {
+    producer: 'commission-payments',
+    payload: z.object({
+      commissionId: id,
+      bookingId: id,
+      advisorId: id,
+      commissionable: money,
+      advisorShare: money,
+      reason: z.string(),
+      /** The advisor's share had already become payable: it is taken back from the next payout. */
+      wasPayable: z.boolean(),
+    }),
   },
   'SupplierPaymentReceived.v1': {
     producer: 'commission-payments',

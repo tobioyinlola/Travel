@@ -390,6 +390,10 @@ const STATUS: Record<
   awaiting: { tone: 'amber', label: 'Awaiting payment' },
   captured: { tone: 'green', label: 'Paid' },
   refunded: { tone: 'grey' },
+  expected: { tone: 'amber' },
+  payable: { tone: 'green' },
+  received: { tone: 'blue' },
+  reconciled: { tone: 'blue' },
   partially_refunded: { tone: 'grey', label: 'Partly refunded' },
 };
 

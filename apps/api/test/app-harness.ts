@@ -21,6 +21,8 @@ import { REDIS } from '../src/platform/tokens.js';
 /** Reference data loaded by migrations; never truncated between tests. */
 const SEED_TABLES = [
   'plans',
+  'split_tiers',
+  'accounts',
   'courses',
   'lessons',
   'quiz_questions',
@@ -82,7 +84,7 @@ export async function startApp() {
     adminAgent = null;
     const { rows } = await admin.query<{ t: string }>(
       `SELECT format('%I.%I', schemaname, tablename) AS t FROM pg_tables
-        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries', 'booking', 'payments')
+        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries', 'booking', 'payments', 'commission')
           AND tablename <> ALL ($1)`,
       [SEED_TABLES],
     );

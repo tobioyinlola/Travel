@@ -2,6 +2,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import type { AppConfig } from '../../config.js';
 import { BILLING_PORT } from './application/billing.port.js';
 import { MembershipApi } from './application/membership-api.js';
+import { TiersService } from './application/tiers.service.js';
 import { MembershipService } from './application/membership.service.js';
 import { MembershipController } from './http/membership.controller.js';
 import { FakeBilling } from './infrastructure/fake-billing.js';
@@ -21,6 +22,7 @@ export class MembershipModule {
       controllers: [MembershipController],
       providers: [
         MembershipService,
+        TiersService,
         MembershipApi,
         { provide: BILLING_PORT, useValue: new FakeBilling() },
       ],

@@ -60,6 +60,8 @@ function hotelForBooking(itemId: string, h: HotelSnapshot) {
   const r = h.rate;
   return {
     itemId,
+    propertyId: r.propertyId,
+    rateCodes: r.rateCodes,
     supplier: r.supplier,
     rateKey: r.rateKey,
     propertyName: h.property.name,

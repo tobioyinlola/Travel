@@ -340,6 +340,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/commissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommissionsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/commissions/tier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CommissionsController_tier_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/commissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/commissions/{id}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinanceController_release_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/ledger/trial-balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceController_trialBalance_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/clients": {
         parameters: {
             query?: never;
@@ -508,6 +588,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["CatalogController_property_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partners/booking-perks/{bookingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingPerksController_forBooking_v1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2226,6 +2322,266 @@ export interface operations {
             };
         };
     };
+    CommissionsController_list_v1: {
+        parameters: {
+            query?: {
+                status?: "expected" | "invoiced" | "received" | "reconciled" | "payable" | "paid" | "reversed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            bookingId: string;
+                            propertyName: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            commissionable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            rateBps: number;
+                            expected: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            tier: string;
+                            advisorShareBps: number;
+                            advisorShare: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            /** @enum {string} */
+                            status: "expected" | "invoiced" | "received" | "reconciled" | "payable" | "paid" | "reversed";
+                            reversalReason: string | null;
+                            /** Format: date-time */
+                            recognizedAt: string;
+                            /** Format: date-time */
+                            releasedAt: string | null;
+                        }[];
+                        totals: {
+                            pending: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            paid: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            reversed: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+    CommissionsController_tier_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        tier: string;
+                        tierName: string;
+                        advisorShareBps: number;
+                        year: number;
+                        currency: string;
+                        calendarYearSales: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        next: {
+                            code: string;
+                            name: string;
+                            advisorShareBps: number;
+                            remaining: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        } | null;
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_list_v1: {
+        parameters: {
+            query?: {
+                status?: "expected" | "invoiced" | "received" | "reconciled" | "payable" | "paid" | "reversed";
+                advisorId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            bookingId: string;
+                            propertyName: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            commissionable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            rateBps: number;
+                            expected: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            tier: string;
+                            advisorShareBps: number;
+                            advisorShare: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            /** @enum {string} */
+                            status: "expected" | "invoiced" | "received" | "reconciled" | "payable" | "paid" | "reversed";
+                            reversalReason: string | null;
+                            /** Format: date-time */
+                            recognizedAt: string;
+                            /** Format: date-time */
+                            releasedAt: string | null;
+                            /** Format: uuid */
+                            advisorId: string;
+                            supplier: string;
+                            platformShare: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_release_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        bookingId: string;
+                        propertyName: string;
+                        /** Format: date */
+                        checkIn: string;
+                        /** Format: date */
+                        checkOut: string;
+                        commissionable: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        rateBps: number;
+                        expected: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        tier: string;
+                        advisorShareBps: number;
+                        advisorShare: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        /** @enum {string} */
+                        status: "expected" | "invoiced" | "received" | "reconciled" | "payable" | "paid" | "reversed";
+                        reversalReason: string | null;
+                        /** Format: date-time */
+                        recognizedAt: string;
+                        /** Format: date-time */
+                        releasedAt: string | null;
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_trialBalance_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        accounts: {
+                            account: string;
+                            currency: string;
+                            debit: string;
+                            credit: string;
+                            balance: string;
+                        }[];
+                        totalDebit: string;
+                        totalCredit: string;
+                        balanced: boolean;
+                    };
+                };
+            };
+        };
+    };
     ClientsController_list_v1: {
         parameters: {
             query?: {
@@ -3270,6 +3626,38 @@ export interface operations {
                         amenities: string[];
                         description: string;
                         photos: string[];
+                    };
+                };
+            };
+        };
+    };
+    BookingPerksController_forBooking_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            lineId: string;
+                            programName: string;
+                            tier: string;
+                            perks: {
+                                kind: string;
+                                description: string;
+                            }[];
+                        }[];
                     };
                 };
             };

@@ -32,6 +32,18 @@ export function BookingCard({ tripId }: { tripId: string }) {
     },
   });
   const b = q.data?.items[0];
+  const perks = useQuery({
+    queryKey: ['booking-perks', b?.id],
+    enabled:
+      Boolean(b) &&
+      (b?.status === 'confirmed' || b?.status === 'modified' || b?.status === 'completed'),
+    queryFn: () =>
+      call(
+        api.GET('/v1/partners/booking-perks/{bookingId}', {
+          params: { path: { bookingId: b!.id } },
+        }),
+      ),
+  });
   const quote = useQuery({
     queryKey: ['booking-quote', b?.id],
     enabled: cancelling && Boolean(b),
@@ -130,6 +142,13 @@ export function BookingCard({ tripId }: { tripId: string }) {
                   This hotel did not accept the new guest details. Please contact them directly.
                 </p>
               )}
+              {perks.data?.items
+                .filter((p) => p.lineId === l.id)
+                .map((p) => (
+                  <p key={p.programName} className="text-accent-deep">
+                    {p.programName}: {p.perks.map((x) => x.description).join(' · ')}
+                  </p>
+                ))}
               {l.confirmationCode && (
                 <p>
                   Confirmation: <strong className="font-medium">{l.confirmationCode}</strong>
