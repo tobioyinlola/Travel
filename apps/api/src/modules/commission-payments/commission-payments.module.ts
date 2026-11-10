@@ -2,6 +2,11 @@ import { DynamicModule, Module } from '@nestjs/common';
 import type { AppConfig } from '../../config.js';
 import { PAYMENT_PROVIDER } from './application/payment-provider.port.js';
 import { CommissionService } from './application/commission.service.js';
+import { StatementsService } from './application/statements.service.js';
+import { PayoutsService } from './application/payouts.service.js';
+import { PAYOUT_PROVIDER } from './application/payout-provider.port.js';
+import { FakePayoutProvider } from './infrastructure/fake-payout-provider.js';
+import { FinancePayoutsController, PayoutsController } from './http/payouts.controller.js';
 import { PaymentsService } from './application/payments.service.js';
 import { CommissionsController, FinanceController } from './http/commission.controller.js';
 import { FakePaymentsController } from './http/fake-payments.controller.js';
@@ -19,13 +24,22 @@ export class CommissionPaymentsModule {
       throw new Error('Live payment adapter not implemented yet (decision D4)');
     return {
       module: CommissionPaymentsModule,
-      controllers: [FakePaymentsController, CommissionsController, FinanceController],
+      controllers: [
+        FakePaymentsController,
+        CommissionsController,
+        FinanceController,
+        PayoutsController,
+        FinancePayoutsController,
+      ],
       providers: [
         PaymentsService,
         CommissionService,
+        StatementsService,
+        PayoutsService,
+        { provide: PAYOUT_PROVIDER, useValue: new FakePayoutProvider() },
         { provide: PAYMENT_PROVIDER, useValue: new FakePaymentProvider() },
       ],
-      exports: [PAYMENT_PROVIDER],
+      exports: [PAYMENT_PROVIDER, PAYOUT_PROVIDER],
     };
   }
 }

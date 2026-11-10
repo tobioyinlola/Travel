@@ -81,6 +81,28 @@ describe('commission, ledger and tiers (FR-COM-01..03, 05, 06, FR-MEM-05, AC-05,
     return { booking, rate, tripId: trip.id as string };
   }
 
+  const major = (minor: string | bigint) => {
+    const v = BigInt(minor);
+    return `${v / 100n}.${String(v % 100n).padStart(2, '0')}`;
+  };
+  /** Finance imports a statement in which the supplier pays this booking's commission (default: exactly as expected). */
+  async function supplierPays(
+    booking: { lines: Array<{ supplier: string; confirmationCode: string }> },
+    expected: string,
+    paid = expected,
+  ) {
+    const adm = await t.admin1();
+    return await adm
+      .post('/v1/finance/statements')
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({
+        supplier: booking.lines[0]!.supplier,
+        reference: `ST-${Math.random().toString(36).slice(2, 8)}`,
+        lines: [{ confirmationCode: booking.lines[0]!.confirmationCode, amount: major(paid) }],
+      })
+      .expect(201);
+  }
+
   const earnings = async (agent: Agent = ada.agent) =>
     (await agent.get('/v1/commissions').expect(200)).body;
   const trial = async () => {
@@ -172,23 +194,21 @@ describe('commission, ledger and tiers (FR-COM-01..03, 05, 06, FR-MEM-05, AC-05,
     const bob = await t.onboardAdvisor('bob@example.com', { essentials: true });
     expect((await earnings(bob.agent)).items).toHaveLength(0);
     await bob.agent
-      .post('/v1/finance/commissions/00000000-0000-7000-8000-000000000000/release')
+      .post('/v1/finance/statements')
       .set('Idempotency-Key', crypto.randomUUID())
+      .send({ supplier: 'x', reference: 'y', lines: [{ confirmationCode: 'A', amount: '1' }] })
       .expect(403);
     await ada.agent.get('/v1/finance/ledger/trial-balance').expect(403);
   });
 
-  it('the advisor share becomes payable only when finance records the supplier payment (FR-COM-05)', async () => {
-    await confirmedBooking();
-    const adm = await t.admin1();
+  it('the advisor share becomes payable only when the supplier statement pays it (FR-COM-05)', async () => {
+    const { booking } = await confirmedBooking();
     const c = (await earnings()).items[0];
     expect((await earnings()).totals.payable.amountMinor).toBe('0');
 
-    const res = await adm
-      .post(`/v1/finance/commissions/${c.id}/release`)
-      .set('Idempotency-Key', crypto.randomUUID())
-      .expect(200);
-    expect(res.body.status).toBe('payable');
+    const res = await supplierPays(booking, c.expected.amountMinor);
+    expect(res.body).toMatchObject({ matched: 1, mismatch: 0, unmatched: 0 });
+    expect((await earnings()).items[0].status).toBe('payable');
     const after = await earnings();
     expect(after.totals).toMatchObject({ payable: c.advisorShare, pending: { amountMinor: '0' } });
 
@@ -198,22 +218,21 @@ describe('commission, ledger and tiers (FR-COM-01..03, 05, 06, FR-MEM-05, AC-05,
     expect(bal(tb, 'advisor_commission_pending')).toBe(0n);
     expect(bal(tb, 'advisor_payable')).toBe(-BigInt(c.advisorShare.amountMinor));
     expect(bal(tb, 'cash_clearing')).toBe(BigInt(c.expected.amountMinor));
-    await adm
-      .post(`/v1/finance/commissions/${c.id}/release`)
-      .set('Idempotency-Key', crypto.randomUUID())
-      .expect(409);
+    // The same payment cannot settle it twice: a second statement line for it is unmatched.
+    const again = await supplierPays(booking, c.expected.amountMinor);
+    expect(again.body).toMatchObject({ matched: 0, unmatched: 1 });
+    expect((await earnings()).totals.payable).toEqual(c.advisorShare);
   });
 
   it('cancelling reverses the commission with opposite entries, before or after the supplier paid (FR-COM-06)', async () => {
     const first = await confirmedBooking();
     const second = await confirmedBooking(ada.agent, clientId, 80);
-    const adm = await t.admin1();
-    const items = (await earnings()).items as Array<{ id: string; bookingId: string }>;
+    const items = (await earnings()).items as Array<{
+      bookingId: string;
+      expected: { amountMinor: string };
+    }>;
     const paidOne = items.find((i) => i.bookingId === second.booking.id)!;
-    await adm
-      .post(`/v1/finance/commissions/${paidOne.id}/release`)
-      .set('Idempotency-Key', crypto.randomUUID())
-      .expect(200);
+    await supplierPays(second.booking, paidOne.expected.amountMinor);
 
     for (const b of [first.booking, second.booking]) {
       await ada.agent
@@ -290,6 +309,106 @@ describe('commission, ledger and tiers (FR-COM-01..03, 05, 06, FR-MEM-05, AC-05,
       .expect(200);
     await t.settle();
     expect((await ada.agent.get('/v1/commissions/tier').expect(200)).body.tier).toBe('starter');
+  });
+
+  it('flags a variance, and finance decides: accept books the difference to the platform, reject leaves it open', async () => {
+    const a = await confirmedBooking();
+    const b = await confirmedBooking(ada.agent, clientId, 80);
+    const items = (await earnings()).items as Array<{
+      id: string;
+      bookingId: string;
+      expected: { amountMinor: string };
+      advisorShare: { amountMinor: string };
+    }>;
+    const ia = items.find((i) => i.bookingId === a.booking.id)!;
+    const ib = items.find((i) => i.bookingId === b.booking.id)!;
+    const underpaid = BigInt(ia.expected.amountMinor) - 500n;
+    const overpaid = BigInt(ib.expected.amountMinor) + 300n;
+    expect(
+      (await supplierPays(a.booking, ia.expected.amountMinor, String(underpaid))).body,
+    ).toMatchObject({ mismatch: 1 });
+    expect(
+      (await supplierPays(b.booking, ib.expected.amountMinor, String(overpaid))).body,
+    ).toMatchObject({ mismatch: 1 });
+    expect((await earnings()).items.every((i: { status: string }) => i.status === 'expected')).toBe(
+      true,
+    );
+
+    const adm = await t.admin1();
+    const lines = (
+      await adm.get('/v1/finance/statement-lines').query({ status: 'mismatch' }).expect(200)
+    ).body.items as Array<{ id: string; variance: { amountMinor: string }; commissionId: string }>;
+    expect(lines.map((l) => l.variance.amountMinor).sort()).toEqual(['-500', '300']);
+    const under = lines.find((l) => l.variance.amountMinor === '-500')!;
+    const over = lines.find((l) => l.variance.amountMinor === '300')!;
+    await adm
+      .post(`/v1/finance/statement-lines/${under.id}/resolve`)
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ decision: 'accept', note: 'Supplier fee' })
+      .expect(200);
+    await adm
+      .post(`/v1/finance/statement-lines/${over.id}/resolve`)
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ decision: 'reject', note: 'Query with supplier' })
+      .expect(200);
+
+    const after = (await earnings()).items as Array<{
+      id: string;
+      status: string;
+      advisorShare: { amountMinor: string };
+    }>;
+    expect(after.find((i) => i.id === ia.id)).toMatchObject({
+      status: 'payable',
+      advisorShare: ia.advisorShare,
+    });
+    expect(after.find((i) => i.id === ib.id)!.status).toBe('expected');
+    const tb = await trial();
+    expect(tb.balanced).toBe(true);
+    const rep = (await adm.get('/v1/finance/reconciliation').expect(200)).body;
+    expect(rep).toMatchObject({
+      ledgerBalanced: true,
+      receivableVarianceMinor: '0',
+      ok: true,
+      openMismatches: 0,
+    });
+    await adm
+      .post(`/v1/finance/statement-lines/${under.id}/resolve`)
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ decision: 'accept', note: 'again' })
+      .expect(409);
+  });
+
+  it('reports lines it cannot match, refuses a repeated statement and a malformed one', async () => {
+    const adm = await t.admin1();
+    const body = {
+      supplier: 'fake-wholesaler-a',
+      reference: 'ST-1',
+      lines: [{ confirmationCode: 'NOSUCH1', amount: '10.00' }],
+    };
+    const res = await adm
+      .post('/v1/finance/statements')
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send(body)
+      .expect(201);
+    expect(res.body).toMatchObject({ matched: 0, unmatched: 1 });
+    const unmatched = (
+      await adm.get('/v1/finance/statement-lines').query({ status: 'unmatched' }).expect(200)
+    ).body.items;
+    expect(unmatched[0]).toMatchObject({
+      confirmationCode: 'NOSUCH1',
+      note: expect.stringContaining('No booking'),
+    });
+    await adm
+      .post('/v1/finance/statements')
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send(body)
+      .expect(409);
+    await adm
+      .post('/v1/finance/statements')
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ ...body, reference: 'ST-2', lines: undefined, csv: 'AB,notmoney' })
+      .expect(422);
+    expect((await adm.get('/v1/finance/statements').expect(200)).body.items).toHaveLength(1);
   });
 
   it('the ledger is append-only and every transaction must balance', async () => {

@@ -13,7 +13,7 @@ const problem = (status: HttpStatus, slug: string, title: string, detail?: strin
   new ProblemException(status, problemType(slug), title, detail);
 
 type Dir = 'debit' | 'credit';
-interface Entry {
+export interface Entry {
   account: string;
   direction: Dir;
   amountMinor: bigint;
@@ -88,7 +88,7 @@ export class CommissionService implements OnModuleInit {
   // ---------- Ledger ----------
 
   /** Post one balanced transaction. Returns false when this cause was already posted (idempotent). */
-  private async post(
+  async post(
     tx: Tx,
     t: {
       kind: string;
@@ -140,8 +140,8 @@ export class CommissionService implements OnModuleInit {
       const inserted = await tx.query(
         `INSERT INTO commission.commissions (id, booking_id, line_id, advisor_id, supplier, property_name, check_in, check_out,
             currency, commissionable_minor, rate_bps, expected_minor, tier_code, advisor_share_bps, advisor_minor,
-            platform_minor, recognized_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+            platform_minor, recognized_at, confirmation_code, advisor_user_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
          ON CONFLICT (line_id) DO NOTHING RETURNING id`,
         [
           id,
@@ -161,6 +161,8 @@ export class CommissionService implements OnModuleInit {
           s.advisorMinor,
           s.platformMinor,
           occurredAt,
+          l.confirmationCode,
+          p.advisorUserId ?? null,
         ],
       );
       if (inserted.length === 0) continue; // redelivered
@@ -201,70 +203,94 @@ export class CommissionService implements OnModuleInit {
     }
   }
 
-  // ---------- Release (FR-COM-05) ----------
+  // ---------- Settlement (FR-COM-05) ----------
 
-  /** The supplier has paid this commission: the advisor's share becomes payable. */
-  async release(id: string, actorId: string) {
-    return this.db.transaction('commission-payments', async (tx) => {
-      await tx.setLocal('atp.scope', 'all');
-      const [c] = await tx.query<CommissionRow>(`${SELECT} WHERE id = $1 FOR UPDATE`, [id]);
-      if (!c) throw problem(HttpStatus.NOT_FOUND, 'not-found', 'Commission not found');
-      if (c.status !== 'expected' && c.status !== 'received' && c.status !== 'reconciled')
-        throw problem(
-          HttpStatus.CONFLICT,
-          'commission-not-releasable',
-          `A ${c.status} commission cannot be released`,
-        );
-      const expected = BigInt(c.expected_minor);
-      const advisor = BigInt(c.advisor_minor);
-      await this.post(tx, {
-        kind: 'release',
-        refType: 'commission',
-        refId: c.id,
-        description: `Supplier paid commission on ${c.property_name}`,
-        currency: c.currency,
-        entries: [
-          { account: 'cash_clearing', direction: 'debit', amountMinor: expected },
-          { account: 'supplier_receivable', direction: 'credit', amountMinor: expected },
-          {
-            account: 'advisor_commission_pending',
-            direction: 'debit',
-            amountMinor: advisor,
-            advisorId: c.advisor_id,
-          },
-          {
-            account: 'advisor_payable',
-            direction: 'credit',
-            amountMinor: advisor,
-            advisorId: c.advisor_id,
-          },
-        ],
-      });
-      await tx.query(
-        `UPDATE commission.commissions SET status = 'payable', received_at = now(), released_at = now(), updated_at = now() WHERE id = $1`,
-        [c.id],
+  /**
+   * The supplier paid this commission, so the advisor's share becomes payable. Called when a statement line
+   * matches (or finance accepts a variance). Cash is booked at what the supplier actually paid; a difference
+   * from the expected amount goes to platform revenue, because the advisor's share was fixed on the expected one.
+   */
+  async settle(tx: Tx, id: string, paidMinor: bigint, actorId: string | null, via: string) {
+    await tx.setLocal('atp.scope', 'all');
+    const [c] = await tx.query<CommissionRow>(`${SELECT} WHERE id = $1 FOR UPDATE`, [id]);
+    if (!c) throw problem(HttpStatus.NOT_FOUND, 'not-found', 'Commission not found');
+    if (c.status !== 'expected' && c.status !== 'invoiced' && c.status !== 'received')
+      throw problem(
+        HttpStatus.CONFLICT,
+        'commission-not-settleable',
+        `A ${c.status} commission cannot be settled`,
       );
-      await this.audit.record({
-        actorType: 'user',
-        actorId,
-        action: 'commission.released',
-        entityType: 'commission',
-        entityId: c.id,
-        module: 'commission-payments',
-        metadata: { bookingId: c.booking_id, advisorMinor: String(advisor), currency: c.currency },
-      });
-      await tx.publish({
-        type: 'CommissionReleased',
-        version: 1,
-        payload: {
-          commissionId: c.id,
-          bookingId: c.booking_id,
+    const expected = BigInt(c.expected_minor);
+    const advisor = BigInt(c.advisor_minor);
+    const variance = paidMinor - expected;
+    await this.post(tx, {
+      kind: 'release',
+      refType: 'commission',
+      refId: c.id,
+      description: `Supplier paid commission on ${c.property_name}`,
+      currency: c.currency,
+      entries: [
+        { account: 'cash_clearing', direction: 'debit', amountMinor: paidMinor },
+        { account: 'supplier_receivable', direction: 'credit', amountMinor: expected },
+        ...(variance < 0n
+          ? [{ account: 'platform_revenue', direction: 'debit' as Dir, amountMinor: -variance }]
+          : variance > 0n
+            ? [{ account: 'platform_revenue', direction: 'credit' as Dir, amountMinor: variance }]
+            : []),
+        {
+          account: 'advisor_commission_pending',
+          direction: 'debit',
+          amountMinor: advisor,
           advisorId: c.advisor_id,
-          amount: m(advisor, c.currency),
         },
-      });
-      return this.view({ ...c, status: 'payable' });
+        {
+          account: 'advisor_payable',
+          direction: 'credit',
+          amountMinor: advisor,
+          advisorId: c.advisor_id,
+        },
+      ],
     });
+    await tx.query(
+      `UPDATE commission.commissions SET status = 'payable', received_at = now(), released_at = now(), updated_at = now() WHERE id = $1`,
+      [c.id],
+    );
+    await this.audit.record({
+      actorType: actorId ? 'user' : 'system',
+      actorId,
+      action: 'commission.released',
+      entityType: 'commission',
+      entityId: c.id,
+      module: 'commission-payments',
+      metadata: {
+        bookingId: c.booking_id,
+        advisorMinor: String(advisor),
+        paidMinor: String(paidMinor),
+        varianceMinor: String(variance),
+        via,
+      },
+    });
+    await tx.publish({
+      type: 'CommissionReleased',
+      version: 1,
+      payload: {
+        commissionId: c.id,
+        bookingId: c.booking_id,
+        advisorId: c.advisor_id,
+        amount: m(advisor, c.currency),
+      },
+    });
+    return { ...c, status: 'payable' };
+  }
+
+  /** Find the open commission a statement line refers to (by supplier and the hotel's confirmation code). */
+  async findForStatement(tx: Tx, supplier: string, code: string) {
+    const [c] = await tx.query<CommissionRow & { confirmation_code: string }>(
+      `${SELECT.replace('FROM commission.commissions', ', confirmation_code FROM commission.commissions')}
+        WHERE supplier = $1 AND upper(confirmation_code) = upper($2) ORDER BY recognized_at DESC LIMIT 1 FOR UPDATE`,
+      [supplier, code],
+    );
+    return c ?? null;
   }
 
   // ---------- Reversal (FR-COM-06) ----------
@@ -282,15 +308,61 @@ export class CommissionService implements OnModuleInit {
     for (const c of rows) {
       if (c.status === 'reversed') continue;
       if (c.status === 'paid') {
-        // Already paid out: recovering it from the next payout is Sprint 8 (AC-08). Flag it for finance.
+        // Already paid out (AC-08): the platform returns the commission to the supplier, and the advisor's share
+        // becomes a debt that the next payout run deducts.
+        const expectedPaid = BigInt(c.expected_minor);
+        const advisorPaid = BigInt(c.advisor_minor);
+        await this.post(tx, {
+          kind: 'reversal',
+          refType: 'commission',
+          refId: c.id,
+          description: `Clawback of commission on ${c.property_name}`,
+          currency: c.currency,
+          entries: [
+            {
+              account: 'platform_revenue',
+              direction: 'debit',
+              amountMinor: BigInt(c.platform_minor),
+            },
+            {
+              account: 'advisor_receivable',
+              direction: 'debit',
+              amountMinor: advisorPaid,
+              advisorId: c.advisor_id,
+            },
+            { account: 'cash_clearing', direction: 'credit', amountMinor: expectedPaid },
+          ],
+        });
+        await tx.query(
+          `INSERT INTO commission.advisor_debts (id, advisor_id, commission_id, amount_minor, currency)
+           VALUES ($1, $2, $3, $4, $5) ON CONFLICT (commission_id) DO NOTHING`,
+          [newId(), c.advisor_id, c.id, advisorPaid, c.currency],
+        );
+        await tx.query(
+          `UPDATE commission.commissions SET status = 'reversed', reversal_reason = $2, reversed_at = now(), updated_at = now() WHERE id = $1`,
+          [c.id, reason],
+        );
         await this.audit.record({
           actorType: 'system',
           actorId: null,
-          action: 'commission.clawback_needed',
+          action: 'commission.clawback',
           entityType: 'commission',
           entityId: c.id,
           module: 'commission-payments',
-          metadata: { bookingId, reason },
+          metadata: { bookingId, reason, advisorMinor: String(advisorPaid) },
+        });
+        await tx.publish({
+          type: 'CommissionReversed',
+          version: 1,
+          payload: {
+            commissionId: c.id,
+            bookingId,
+            advisorId: c.advisor_id,
+            commissionable: m(c.commissionable_minor, c.currency),
+            advisorShare: m(advisorPaid, c.currency),
+            reason,
+            wasPayable: true,
+          },
         });
         continue;
       }

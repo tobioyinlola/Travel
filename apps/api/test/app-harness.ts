@@ -10,7 +10,12 @@ import { totp } from '../src/modules/identity/domain/totp.js';
 import { AuthService, IdentityApi } from '../src/modules/identity/index.js';
 import { CatalogApi, FakeHotelSupplier, HOTEL_SUPPLIERS } from '../src/modules/catalog/index.js';
 import { SearchService } from '../src/modules/catalog/application/search.service.js';
-import { FakePaymentProvider, PAYMENT_PROVIDER } from '../src/modules/commission-payments/index.js';
+import {
+  FakePaymentProvider,
+  FakePayoutProvider,
+  PAYMENT_PROVIDER,
+  PAYOUT_PROVIDER,
+} from '../src/modules/commission-payments/index.js';
 import { Database } from '../src/platform/db/database.js';
 import { EventBus } from '../src/platform/events/event-bus.js';
 import { OutboxRelay } from '../src/platform/events/outbox-relay.js';
@@ -107,6 +112,9 @@ export async function startApp() {
       s.rejectAmend = false;
       s.amendCalls.length = 0;
     }
+    const payout = app.get<FakePayoutProvider>(PAYOUT_PROVIDER);
+    payout.transportFailures = 0;
+    payout.calls.length = 0;
     const pay = app.get<FakePaymentProvider>(PAYMENT_PROVIDER);
     pay.failRefunds = null;
     pay.refundTransportFailures = 0;

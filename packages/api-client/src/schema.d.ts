@@ -388,7 +388,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/finance/commissions/{id}/release": {
+    "/v1/finance/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceController_listStatements_v1"];
+        put?: never;
+        post: operations["FinanceController_importStatement_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/statement-lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceController_lines_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/statement-lines/{id}/resolve": {
         parameters: {
             query?: never;
             header?: never;
@@ -397,7 +429,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["FinanceController_release_v1"];
+        post: operations["FinanceController_resolve_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinanceController_reconciliation_v1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -414,6 +462,150 @@ export interface paths {
         get: operations["FinanceController_trialBalance_v1"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PayoutsController_mine_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payouts/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["PayoutsController_setAccount_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/payout-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinancePayoutsController_list_v1"];
+        put?: never;
+        post: operations["FinancePayoutsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/payout-runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FinancePayoutsController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/payout-runs/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinancePayoutsController_approve_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/payout-runs/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinancePayoutsController_cancel_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/advisors/{advisorId}/hold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinancePayoutsController_hold_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/advisors/{advisorId}/hold/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinancePayoutsController_releaseHold_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FinancePayoutsController_adjust_v1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2496,7 +2688,136 @@ export interface operations {
             };
         };
     };
-    FinanceController_release_v1: {
+    FinanceController_listStatements_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            supplier: string;
+                            reference: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            /** Format: date-time */
+                            importedAt: string;
+                            matched: number;
+                            mismatches: number;
+                            unmatched: number;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_importStatement_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    supplier: string;
+                    reference: string;
+                    /** @default USD */
+                    currency?: string;
+                    csv?: string;
+                    lines?: {
+                        confirmationCode: string;
+                        amount: string;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        statementId: string;
+                        lines: number;
+                        matched: number;
+                        mismatch: number;
+                        unmatched: number;
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_lines_v1: {
+        parameters: {
+            query?: {
+                status?: "matched" | "mismatch" | "unmatched" | "resolved" | "rejected";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            statementId: string;
+                            supplier: string;
+                            confirmationCode: string;
+                            amount: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            /** @enum {string} */
+                            status: "matched" | "mismatch" | "unmatched" | "resolved" | "rejected";
+                            /** Format: uuid */
+                            commissionId: string | null;
+                            expected: {
+                                amountMinor: string;
+                                currency: string;
+                            } | null;
+                            variance: {
+                                amountMinor: string;
+                                currency: string;
+                            } | null;
+                            note: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_resolve_v1: {
         parameters: {
             query?: never;
             header: {
@@ -2508,7 +2829,15 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    decision: "accept" | "reject";
+                    note: string;
+                };
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -2519,34 +2848,52 @@ export interface operations {
                         /** Format: uuid */
                         id: string;
                         /** Format: uuid */
-                        bookingId: string;
-                        propertyName: string;
-                        /** Format: date */
-                        checkIn: string;
-                        /** Format: date */
-                        checkOut: string;
-                        commissionable: {
-                            amountMinor: string;
-                            currency: string;
-                        };
-                        rateBps: number;
-                        expected: {
-                            amountMinor: string;
-                            currency: string;
-                        };
-                        tier: string;
-                        advisorShareBps: number;
-                        advisorShare: {
+                        statementId: string;
+                        supplier: string;
+                        confirmationCode: string;
+                        amount: {
                             amountMinor: string;
                             currency: string;
                         };
                         /** @enum {string} */
-                        status: "expected" | "invoiced" | "received" | "reconciled" | "payable" | "paid" | "reversed";
-                        reversalReason: string | null;
-                        /** Format: date-time */
-                        recognizedAt: string;
-                        /** Format: date-time */
-                        releasedAt: string | null;
+                        status: "matched" | "mismatch" | "unmatched" | "resolved" | "rejected";
+                        /** Format: uuid */
+                        commissionId: string | null;
+                        expected: {
+                            amountMinor: string;
+                            currency: string;
+                        } | null;
+                        variance: {
+                            amountMinor: string;
+                            currency: string;
+                        } | null;
+                        note: string | null;
+                    };
+                };
+            };
+        };
+    };
+    FinanceController_reconciliation_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ledgerBalanced: boolean;
+                        receivableVarianceMinor: string;
+                        openMismatches: number;
+                        unmatchedLines: number;
+                        overdueCommissions: number;
+                        ok: boolean;
                     };
                 };
             };
@@ -2577,6 +2924,617 @@ export interface operations {
                         totalDebit: string;
                         totalCredit: string;
                         balanced: boolean;
+                    };
+                };
+            };
+        };
+    };
+    PayoutsController_mine_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        account: {
+                            accountRef: string;
+                            country: string;
+                        } | null;
+                        payable: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        openDebt: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        minimumPayout: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        eligible: boolean;
+                        blockers: string[];
+                        payouts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "paid" | "failed" | "skipped";
+                            gross: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            debtApplied: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            net: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            skipReason: string | null;
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            paidAt: string | null;
+                            lines: {
+                                /** Format: uuid */
+                                commissionId: string;
+                                propertyName: string;
+                                advisorShare: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    PayoutsController_setAccount_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    accountRef: string;
+                    country: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        account: {
+                            accountRef: string;
+                            country: string;
+                        } | null;
+                        payable: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        openDebt: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        minimumPayout: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        eligible: boolean;
+                        blockers: string[];
+                        payouts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "paid" | "failed" | "skipped";
+                            gross: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            debtApplied: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            net: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            skipReason: string | null;
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            paidAt: string | null;
+                            lines: {
+                                /** Format: uuid */
+                                commissionId: string;
+                                propertyName: string;
+                                advisorShare: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            status: "draft" | "approved" | "completed" | "cancelled";
+                            /** Format: uuid */
+                            createdBy: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                            approvedBy: string[];
+                            approvalsNeeded: number;
+                            /** Format: date-time */
+                            approvedAt: string | null;
+                            /** Format: date-time */
+                            completedAt: string | null;
+                            totalNet: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            totalPaid: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payouts: {
+                                /** Format: uuid */
+                                id: string;
+                                /** Format: uuid */
+                                runId: string;
+                                /** Format: uuid */
+                                advisorId: string;
+                                /** @enum {string} */
+                                status: "pending" | "paid" | "failed" | "skipped";
+                                gross: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                debtApplied: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                net: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                skipReason: string | null;
+                                failureReason: string | null;
+                                /** Format: date-time */
+                                paidAt: string | null;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_create_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "completed" | "cancelled";
+                        /** Format: uuid */
+                        createdBy: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        approvedBy: string[];
+                        approvalsNeeded: number;
+                        /** Format: date-time */
+                        approvedAt: string | null;
+                        /** Format: date-time */
+                        completedAt: string | null;
+                        totalNet: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        totalPaid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        payouts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "paid" | "failed" | "skipped";
+                            gross: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            debtApplied: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            net: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            skipReason: string | null;
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            paidAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "completed" | "cancelled";
+                        /** Format: uuid */
+                        createdBy: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        approvedBy: string[];
+                        approvalsNeeded: number;
+                        /** Format: date-time */
+                        approvedAt: string | null;
+                        /** Format: date-time */
+                        completedAt: string | null;
+                        totalNet: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        totalPaid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        payouts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "paid" | "failed" | "skipped";
+                            gross: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            debtApplied: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            net: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            skipReason: string | null;
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            paidAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_approve_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "completed" | "cancelled";
+                        /** Format: uuid */
+                        createdBy: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        approvedBy: string[];
+                        approvalsNeeded: number;
+                        /** Format: date-time */
+                        approvedAt: string | null;
+                        /** Format: date-time */
+                        completedAt: string | null;
+                        totalNet: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        totalPaid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        payouts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "paid" | "failed" | "skipped";
+                            gross: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            debtApplied: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            net: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            skipReason: string | null;
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            paidAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "completed" | "cancelled";
+                        /** Format: uuid */
+                        createdBy: string;
+                        /** Format: date-time */
+                        createdAt: string;
+                        approvedBy: string[];
+                        approvalsNeeded: number;
+                        /** Format: date-time */
+                        approvedAt: string | null;
+                        /** Format: date-time */
+                        completedAt: string | null;
+                        totalNet: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        totalPaid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        payouts: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            runId: string;
+                            /** Format: uuid */
+                            advisorId: string;
+                            /** @enum {string} */
+                            status: "pending" | "paid" | "failed" | "skipped";
+                            gross: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            debtApplied: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            net: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            skipReason: string | null;
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            paidAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_hold_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                advisorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        advisorId: string;
+                        onHold: boolean;
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_releaseHold_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                advisorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    note: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        advisorId: string;
+                        onHold: boolean;
+                    };
+                };
+            };
+        };
+    };
+    FinancePayoutsController_adjust_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    advisorId: string;
+                    amountMinor: string;
+                    /** @enum {string} */
+                    reasonCode: "goodwill" | "correction" | "fee" | "other";
+                    note: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        advisorId: string;
+                        amount: {
+                            amountMinor: string;
+                            currency: string;
+                        };
                     };
                 };
             };

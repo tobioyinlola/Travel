@@ -51,6 +51,17 @@ const hotelsText = (p: Record<string, unknown>) =>
 
 const RULES: Rule[] = [
   {
+    event: 'PayoutPaid',
+    template: 'payout_paid_advisor',
+    recipient: 'advisorUserId',
+    vars: (p) => ({
+      net: money(p.amount),
+      gross: money(p.gross ?? p.amount),
+      debt: money(p.debtApplied ?? { ...(p.amount as object), amountMinor: '0' }),
+      zero: money({ ...(p.amount as { currency: string }), amountMinor: '0' }),
+    }),
+  },
+  {
     event: 'BookingModificationFailed',
     template: 'booking_modification_failed_advisor',
     recipient: 'advisorUserId',

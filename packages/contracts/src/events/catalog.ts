@@ -446,18 +446,31 @@ export const eventCatalog = {
       wasPayable: z.boolean(),
     }),
   },
+  /** A supplier paid commission on a booking (from an imported statement line). */
   'SupplierPaymentReceived.v1': {
     producer: 'commission-payments',
     payload: z.object({
       statementLineId: id,
-      supplierId: id,
+      supplierId: id.optional(),
+      supplier: z.string().optional(),
       bookingId: id.nullable(),
       amount: money,
     }),
   },
   'PayoutPaid.v1': {
     producer: 'commission-payments',
-    payload: z.object({ payoutId: id, advisorId: id, amount: money }),
+    payload: z.object({
+      payoutId: id,
+      advisorId: id,
+      amount: money,
+      advisorUserId: id.optional(),
+      gross: money.optional(),
+      debtApplied: money.optional(),
+    }),
+  },
+  'PayoutFailed.v1': {
+    producer: 'commission-payments',
+    payload: z.object({ payoutId: id, advisorId: id, amount: money, reason: z.string() }),
   },
 } as const;
 
