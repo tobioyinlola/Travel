@@ -55,6 +55,7 @@ interface BookingRow {
   confirm_key: string | null;
   failure_reason: string | null;
   cancel_requested_at: Date | null;
+  guest_version: number;
   link_expires_at: Date;
   pending_since: Date | null;
   confirmed_at: Date | null;
@@ -93,6 +94,8 @@ interface LineRow {
   failure_reason: string | null;
   penalty_minor: string;
   attempts: number;
+  guest_version: number;
+  amend_failed: boolean;
 }
 
 interface Traveler {
@@ -112,7 +115,7 @@ const LINE_SELECT = `SELECT id, booking_id, position, status, supplier, rate_key
   to_char(check_in, 'YYYY-MM-DD') AS check_in, to_char(check_out, 'YYYY-MM-DD') AS check_out, nights, room_name, board,
   adults, children_ages, total_minor, fees_at_hotel_minor, commissionable_minor, commission_bps, payment_modes,
   refundable, free_cancellation_until, cancellation_policy, supplier_ref, confirmation_code, failure_reason,
-  penalty_minor, attempts FROM booking.lines`;
+  penalty_minor, attempts, guest_version, amend_failed FROM booking.lines`;
 
 const m = (minor: string | bigint, currency: string) => ({
   amountMinor: String(minor),
@@ -156,6 +159,13 @@ export class BookingService implements OnModuleInit {
       maxAttempts: RESERVE_ATTEMPTS,
       handle: (p) => this.cancelLine(p.lineId),
     });
+    this.jobs.register<{ lineId: string; version: number }>({
+      name: 'booking.amend-line',
+      module: 'booking',
+      queue: 'critical',
+      maxAttempts: RESERVE_ATTEMPTS,
+      handle: (p, ctx) => this.amendLine(p.lineId, p.version, ctx),
+    });
     this.jobs.register<Record<string, never>>({
       name: 'booking.alert-stuck',
       module: 'booking',
@@ -176,7 +186,10 @@ export class BookingService implements OnModuleInit {
       handler: 'booking.prepareCheckout',
       event: 'ProposalApproved',
       version: 1,
-      handle: (e, tx) => this.prepareCheckout(e.payload, tx),
+      handle: async (e, tx) => {
+        await this.prepareCheckout(e.payload, tx);
+        await this.touch(tx, 'proposal_id', e.payload.proposalId);
+      },
     });
     this.bus.subscribe<EventPayload<'PaymentIntentCreated.v1'>>({
       module: 'booking',
@@ -191,6 +204,7 @@ export class BookingService implements OnModuleInit {
             WHERE id = $1 AND status = 'draft' AND payment_state = 'awaiting'`,
           [e.payload.bookingId, e.payload.clientToken, e.payload.expiresAt],
         );
+        await this.touch(tx, 'id', e.payload.bookingId);
       },
     });
     this.bus.subscribe<EventPayload<'PaymentCaptured.v1'>>({
@@ -199,7 +213,10 @@ export class BookingService implements OnModuleInit {
       event: 'PaymentCaptured',
       version: 1,
       queue: 'critical',
-      handle: (e, tx) => this.onPaymentCaptured(e.payload, tx),
+      handle: async (e, tx) => {
+        await this.onPaymentCaptured(e.payload, tx);
+        if (e.payload.bookingId) await this.touch(tx, 'id', e.payload.bookingId);
+      },
     });
     this.bus.subscribe<EventPayload<'PaymentFailed.v1'>>({
       module: 'booking',
@@ -215,6 +232,7 @@ export class BookingService implements OnModuleInit {
             WHERE id = $1 AND status = 'draft' AND payment_state = 'awaiting'`,
           [e.payload.bookingId, e.payload.reason],
         );
+        await this.touch(tx, 'id', e.payload.bookingId);
       },
     });
     this.bus.subscribe<EventPayload<'RefundIssued.v1'>>({
@@ -232,6 +250,7 @@ export class BookingService implements OnModuleInit {
             WHERE id = $1 AND paid_minor > 0`,
           [e.payload.bookingId, e.payload.amount.amountMinor],
         );
+        await this.touch(tx, 'id', e.payload.bookingId);
       },
     });
     this.bus.subscribe<EventPayload<'PaymentDisputed.v1'>>({
@@ -552,6 +571,7 @@ export class BookingService implements OnModuleInit {
         });
       }
     });
+    await this.system((tx) => this.touch(tx, 'id', b.id));
     return this.view(token);
   }
 
@@ -808,6 +828,35 @@ export class BookingService implements OnModuleInit {
    * hotels already confirmed are cancelled again (compensation). All cancelled after a request -> cancelled.
    */
   private async evaluate(tx: Tx, bookingId: string): Promise<void> {
+    await this.evaluateInner(tx, bookingId);
+    await this.touch(tx, 'id', bookingId);
+  }
+
+  /** Announce a change so the advisor's live stream can refresh (delivered after commit, via the outbox). */
+  private async touch(tx: Tx, column: 'id' | 'proposal_id', value: string): Promise<void> {
+    await tx.setLocal('atp.scope', 'all');
+    const [b] = await tx.query<{
+      id: string;
+      trip_id: string;
+      owner_advisor_id: string;
+      status: string;
+    }>(`SELECT id, trip_id, owner_advisor_id, status FROM booking.bookings WHERE ${column} = $1`, [
+      value,
+    ]);
+    if (!b) return;
+    await tx.publish({
+      type: 'BookingUpdated',
+      version: 1,
+      payload: {
+        bookingId: b.id,
+        tripId: b.trip_id,
+        advisorId: b.owner_advisor_id,
+        status: b.status,
+      },
+    });
+  }
+
+  private async evaluateInner(tx: Tx, bookingId: string): Promise<void> {
     const b = await this.lockBooking(tx, bookingId);
     const lines = await this.lines(tx, bookingId);
     const traveler = this.traveler(b);
@@ -905,6 +954,57 @@ export class BookingService implements OnModuleInit {
       return;
     }
 
+    if (b.status === 'modified' && !b.cancel_requested_at) {
+      const open = lines.filter(
+        (l) => l.status === 'confirmed' && l.guest_version !== b.guest_version && !l.amend_failed,
+      );
+      if (open.length > 0) return; // hotels still to answer
+      const refused = lines.filter((l) => l.amend_failed);
+      const next = bookingMachine.next('modified', 'reconfirm');
+      await tx.query(`UPDATE booking.bookings SET status = $2, updated_at = now() WHERE id = $1`, [
+        b.id,
+        next,
+      ]);
+      await this.audit.record({
+        actorType: 'system',
+        actorId: null,
+        action: refused.length ? 'booking.modification_failed' : 'booking.modified',
+        entityType: 'booking',
+        entityId: b.id,
+        module: 'booking',
+        metadata: { refused: refused.map((l) => l.property_name) },
+      });
+      if (refused.length) {
+        await tx.publish({
+          type: 'BookingModificationFailed',
+          version: 1,
+          payload: {
+            bookingId: b.id,
+            tripId: b.trip_id,
+            advisorId: b.owner_advisor_id,
+            advisorUserId: b.advisor_user_id,
+            tripTitle: b.trip_title,
+            hotels: refused.map((l) => l.property_name),
+          },
+        });
+      } else if (traveler) {
+        await tx.publish({
+          type: 'BookingModified',
+          version: 1,
+          payload: {
+            bookingId: b.id,
+            tripId: b.trip_id,
+            advisorId: b.owner_advisor_id,
+            advisorUserId: b.advisor_user_id,
+            tripTitle: b.trip_title,
+            travelerName: traveler.name,
+            travelerEmail: traveler.email,
+          },
+        });
+      }
+      return;
+    }
+
     if (b.cancel_requested_at && bookingMachine.can(b.status, 'cancel')) {
       if (lines.some((l) => l.status === 'confirmed')) return; // still waiting on a supplier
       const penalty = lines.reduce((n, l) => n + BigInt(l.penalty_minor), 0n);
@@ -948,6 +1048,7 @@ export class BookingService implements OnModuleInit {
       proposalId: b.proposal_id,
       tripTitle: b.trip_title,
       status: b.status,
+      modifying: b.status === 'modified',
       cancelling:
         b.cancel_requested_at !== null && (b.status === 'confirmed' || b.status === 'modified'),
       currency: cur,
@@ -968,6 +1069,8 @@ export class BookingService implements OnModuleInit {
         penalty: m(l.penalty_minor, cur),
         attempts: l.attempts,
         failureReason: l.failure_reason,
+        guestDetailsSent: l.guest_version === b.guest_version && !l.amend_failed,
+        guestDetailsRefused: l.amend_failed,
       })),
       failureReason: b.failure_reason,
       createdAt: b.created_at.toISOString(),
@@ -1080,6 +1183,7 @@ export class BookingService implements OnModuleInit {
       for (const l of await this.lines(tx, id))
         if (l.status === 'confirmed')
           await tx.enqueue('booking.cancel-line', { lineId: l.id }, { jobKey: `cancel:${l.id}` });
+      await this.touch(tx, 'id', id);
     });
     return this.get(advisorId, id);
   }
@@ -1098,6 +1202,16 @@ export class BookingService implements OnModuleInit {
           'Only a booking the traveler has not submitted can be discarded',
           'Cancel it instead.',
         );
+      await tx.publish({
+        type: 'BookingUpdated',
+        version: 1,
+        payload: {
+          bookingId: id,
+          tripId: b.trip_id,
+          advisorId: b.owner_advisor_id,
+          status: 'discarded',
+        },
+      });
       await tx.query('DELETE FROM booking.lines WHERE booking_id = $1', [id]);
       await tx.query('DELETE FROM booking.bookings WHERE id = $1', [id]);
       await this.audit.record({
@@ -1118,6 +1232,128 @@ export class BookingService implements OnModuleInit {
           advisorId: b.owner_advisor_id,
         },
       });
+    });
+  }
+
+  /**
+   * Change the lead guest or requests on a confirmed booking (FR-BKG-05). Our record changes at once; each hotel
+   * is told from its own job. When every hotel has answered the booking is confirmed again; hotels that refuse
+   * are flagged for the advisor to settle directly.
+   */
+  async modifyGuest(
+    advisorId: string,
+    id: string,
+    changes: {
+      name?: string | undefined;
+      email?: string | undefined;
+      phone?: string | null | undefined;
+      specialRequests?: string | null | undefined;
+    },
+  ) {
+    await this.asAdvisor(advisorId, async (tx) => {
+      const b = await this.loadOwned(tx, advisorId, id, true);
+      if (!bookingMachine.can(b.status, 'modify') || b.cancel_requested_at)
+        throw problem(
+          HttpStatus.CONFLICT,
+          'booking-not-modifiable',
+          `A ${b.cancel_requested_at ? 'cancelling' : b.status} booking cannot be changed`,
+          'Only a confirmed booking can be changed, one change at a time.',
+        );
+      const cur = this.traveler(b);
+      if (!cur)
+        throw problem(HttpStatus.CONFLICT, 'booking-not-modifiable', 'No guest details yet');
+      const next: Traveler = {
+        name: changes.name ?? cur.name,
+        email: changes.email ?? cur.email,
+        phone: changes.phone === undefined ? cur.phone : changes.phone,
+        specialRequests:
+          changes.specialRequests === undefined ? cur.specialRequests : changes.specialRequests,
+      };
+      if (JSON.stringify(next) === JSON.stringify(cur))
+        throw problem(HttpStatus.UNPROCESSABLE_ENTITY, 'nothing-to-change', 'Nothing was changed');
+      const version = b.guest_version + 1;
+      await tx.query(
+        `UPDATE booking.bookings SET traveler_enc = $2, guest_version = $3, status = $4, updated_at = now() WHERE id = $1`,
+        [
+          id,
+          this.crypto.encrypt(JSON.stringify(next)),
+          version,
+          bookingMachine.next(b.status, 'modify'),
+        ],
+      );
+      await tx.query(`UPDATE booking.lines SET amend_failed = false WHERE booking_id = $1`, [id]);
+      await this.audit.record({
+        actorType: 'user',
+        action: 'booking.modify_requested',
+        entityType: 'booking',
+        entityId: id,
+        module: 'booking',
+        metadata: { fields: Object.keys(changes) },
+      });
+      for (const l of await this.lines(tx, id))
+        if (l.status === 'confirmed')
+          await tx.enqueue(
+            'booking.amend-line',
+            { lineId: l.id, version },
+            { jobKey: `amend:${l.id}:${version}` },
+          );
+      await this.touch(tx, 'id', id);
+    });
+    return this.get(advisorId, id);
+  }
+
+  private async amendLine(lineId: string, version: number, ctx: JobContext): Promise<void> {
+    const loaded = await this.system(async (tx) => {
+      const [l] = await tx.query<LineRow>(`${LINE_SELECT} WHERE id = $1`, [lineId]);
+      if (!l) return null;
+      const [b] = await tx.query<BookingRow>(
+        `SELECT ${BOOKING_COLUMNS} FROM booking.bookings b WHERE id = $1`,
+        [l.booking_id],
+      );
+      return { l, b: b! };
+    });
+    if (!loaded) return;
+    const { l, b } = loaded;
+    if (
+      b.status !== 'modified' ||
+      b.guest_version !== version ||
+      l.status !== 'confirmed' ||
+      l.guest_version >= version ||
+      !l.supplier_ref
+    )
+      return; // superseded by a newer change, cancelled, or already done
+    const guest = this.traveler(b)!;
+    let ok: boolean;
+    try {
+      const r = await this.catalog.amendReservation(
+        l.supplier_ref,
+        {
+          name: guest.name,
+          email: guest.email,
+          phone: guest.phone,
+          specialRequests: guest.specialRequests,
+        },
+        `${l.id}:amend:${version}`,
+      );
+      ok = r.status === 'amended';
+    } catch (e) {
+      if (ctx.attempts < ctx.maxAttempts) throw e;
+      ok = false;
+    }
+    await this.system(async (tx) => {
+      const booking = await this.lockBooking(tx, b.id);
+      if (booking.guest_version !== version) return;
+      if (ok)
+        await tx.query(
+          `UPDATE booking.lines SET guest_version = $2, updated_at = now() WHERE id = $1`,
+          [l.id, version],
+        );
+      else
+        await tx.query(
+          `UPDATE booking.lines SET amend_failed = true, updated_at = now() WHERE id = $1`,
+          [l.id],
+        );
+      await this.evaluate(tx, b.id);
     });
   }
 
@@ -1200,6 +1436,7 @@ export class BookingService implements OnModuleInit {
           version: 1,
           payload: { bookingId: r.id, advisorId: r.owner_advisor_id },
         });
+        await this.touch(tx, 'id', r.id);
       }
     });
   }

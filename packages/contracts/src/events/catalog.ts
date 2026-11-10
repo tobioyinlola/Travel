@@ -372,6 +372,36 @@ export const eventCatalog = {
       penalty: money.optional(),
     }),
   },
+  /** The lead guest on a confirmed booking was changed and every hotel acknowledged it. */
+  'BookingModified.v1': {
+    producer: 'booking',
+    payload: z.object({
+      bookingId: id,
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+      tripTitle: z.string(),
+      travelerName: z.string(),
+      travelerEmail: z.string(),
+    }),
+  },
+  /** One or more hotels would not take the change: the advisor must sort it out with them directly. */
+  'BookingModificationFailed.v1': {
+    producer: 'booking',
+    payload: z.object({
+      bookingId: id,
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+      tripTitle: z.string(),
+      hotels: z.array(z.string()),
+    }),
+  },
+  /** Something about a booking changed; drives the advisor's live status stream (no business meaning). */
+  'BookingUpdated.v1': {
+    producer: 'booking',
+    payload: z.object({ bookingId: id, tripId: id, advisorId: id, status: z.string() }),
+  },
   'BookingCompleted.v1': {
     producer: 'booking',
     payload: z.object({ bookingId: id, advisorId: id }),

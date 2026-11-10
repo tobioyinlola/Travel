@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LiveStatusService } from './application/live-status.service.js';
 import { BookingService } from './application/booking.service.js';
 import { BookingsController, SupportBookingsController } from './http/bookings.controller.js';
 import { CheckoutController } from './http/checkout.controller.js';
@@ -10,6 +11,6 @@ import { CheckoutController } from './http/checkout.controller.js';
  */
 @Module({
   controllers: [CheckoutController, BookingsController, SupportBookingsController],
-  providers: [BookingService],
+  providers: [BookingService, LiveStatusService],
 })
 export class BookingModule {}

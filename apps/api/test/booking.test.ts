@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { fakePaymentWebhookRequest } from '../src/modules/commission-payments/infrastructure/fake-payment-provider.js';
+import { LiveStatusService } from '../src/modules/booking/application/live-status.service.js';
 import { inDays, startApp, type TestApp } from './app-harness.js';
 
 type Agent = ReturnType<typeof request.agent>;
@@ -11,6 +12,14 @@ interface Rate {
   total: { amountMinor: string };
   checkIn: string;
   checkOut: string;
+}
+
+async function until(cond: () => boolean, ms = 3000): Promise<void> {
+  const end = Date.now() + ms;
+  while (!cond()) {
+    if (Date.now() > end) throw new Error('timed out waiting');
+    await new Promise((r) => setTimeout(r, 25));
+  }
 }
 
 const CARD_OK = '4242 4242 4242 4242';
@@ -570,6 +579,118 @@ describe('booking and payments (FR-BKG-01..06, FR-PAY-01/02, AC-02..AC-04)', () 
     const b = await bookingOf(tripId);
     expect(b).toMatchObject({ status: 'failed', paymentState: 'refunded' });
     expect(b.failureReason).toMatch(/could not be reached/);
+  });
+
+  it('changing the lead guest: hotels are told and the booking is confirmed again (FR-BKG-05)', async () => {
+    const { tripId, token } = await approvedTrip();
+    await confirm(token, 'pay_at_hotel').expect(200);
+    await t.settle();
+    const b = await bookingOf(tripId);
+    const patch = (body: object, key = crypto.randomUUID()) =>
+      ada.agent.patch(`/v1/bookings/${b.id}/guest`).set('Idempotency-Key', key).send(body);
+
+    await patch({}).expect(400);
+    await patch({ name: 'Grace Brewster Hopper', specialRequests: 'High floor' }).expect(200);
+    const mid = await bookingOf(tripId);
+    expect(mid).toMatchObject({ status: 'modified', modifying: true });
+    await t.settle();
+
+    const done = await bookingOf(tripId);
+    expect(done).toMatchObject({
+      status: 'confirmed',
+      modifying: false,
+      traveler: { name: 'Grace Brewster Hopper' },
+    });
+    expect(done.lines[0].guestDetailsSent).toBe(true);
+    const calls = t.suppliers.flatMap((s) => s.amendCalls);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.name).toBe('Grace Brewster Hopper');
+    expect(mailTo('grace@example.com', /details were updated/)).toHaveLength(1);
+    // Nothing to change is refused; a cancelled booking cannot be modified.
+    await patch({ name: 'Grace Brewster Hopper', specialRequests: 'High floor' }).expect(422);
+    await ada.agent
+      .post(`/v1/bookings/${b.id}/cancel`)
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ reason: 'Traveler cancelled' })
+      .expect(200);
+    await t.settle();
+    await patch({ name: 'Someone Else' }).expect(409);
+  });
+
+  it('a hotel that refuses the change is flagged and the advisor is told, but the booking stays confirmed', async () => {
+    const { tripId, token } = await approvedTrip();
+    await confirm(token, 'pay_at_hotel').expect(200);
+    await t.settle();
+    const b = await bookingOf(tripId);
+    t.suppliers.forEach((s) => (s.rejectAmend = true));
+    await ada.agent
+      .patch(`/v1/bookings/${b.id}/guest`)
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ name: 'Grace Murray Hopper' })
+      .expect(200);
+    await t.settle();
+    const after = await bookingOf(tripId);
+    expect(after.status).toBe('confirmed');
+    expect(after.lines[0]).toMatchObject({ guestDetailsSent: false, guestDetailsRefused: true });
+    expect(mailTo('ada@example.com', /did not accept the change/)).toHaveLength(1);
+  });
+
+  it('retries a hotel amendment after a transport error with the same key', async () => {
+    const { tripId, token } = await approvedTrip();
+    await confirm(token, 'pay_at_hotel').expect(200);
+    await t.settle();
+    const b = await bookingOf(tripId);
+    t.suppliers.forEach((s) => (s.amendFailures = 1));
+    await ada.agent
+      .patch(`/v1/bookings/${b.id}/guest`)
+      .set('Idempotency-Key', crypto.randomUUID())
+      .send({ phone: '+44 20 7946 0000' })
+      .expect(200);
+    await t.settle();
+    expect((await bookingOf(tripId)).status).toBe('modified');
+    await retryDueNow();
+    expect((await bookingOf(tripId)).status).toBe('confirmed');
+    const calls = t.suppliers.flatMap((s) => s.amendCalls);
+    expect(calls).toHaveLength(2);
+    expect(new Set(calls.map((c) => c.idempotencyKey)).size).toBe(1);
+  });
+
+  it('streams live booking status to the advisor, and only to that advisor', async () => {
+    const live = t.app.get(LiveStatusService);
+    const mine: Array<{ type: string; data: { status: string; bookingId: string } }> = [];
+    const theirs: unknown[] = [];
+    const bob = await t.onboardAdvisor('bob@example.com', { essentials: true });
+    const a = live.stream(ada.advisorId).subscribe((m) => mine.push(m as never));
+    const b = live.stream(bob.advisorId).subscribe((m) => theirs.push(m));
+    await until(() => mine.some((m) => m.type === 'ready') && theirs.some(() => true));
+
+    const { tripId, token } = await approvedTrip();
+    await confirm(token, 'pay_at_hotel').expect(200);
+    await t.settle();
+    await until(() => mine.some((m) => m.type === 'booking' && m.data.status === 'confirmed'));
+    const booking = await bookingOf(tripId);
+    expect(mine.some((m) => m.data.bookingId === booking.id)).toBe(true);
+    expect(theirs.filter((m) => (m as { type: string }).type === 'booking')).toHaveLength(0);
+    a.unsubscribe();
+    b.unsubscribe();
+  });
+
+  it('serves the stream over HTTP to signed-in advisors only', async () => {
+    await t.http().get('/v1/bookings/stream').expect(401);
+    const res = await new Promise<{ type: string; status: number }>((resolve, reject) => {
+      ada.agent
+        .get('/v1/bookings/stream')
+        .buffer(false)
+        .parse((r, cb) => {
+          resolve({ type: String(r.headers['content-type']), status: r.statusCode ?? 0 });
+          (r as unknown as { destroy(): void }).destroy();
+          cb(null, '');
+        })
+        .end(() => undefined);
+      setTimeout(() => reject(new Error('no response')), 5000);
+    });
+    expect(res.status).toBe(200);
+    expect(res.type).toContain('text/event-stream');
   });
 
   it('completes bookings after check-out (FRD: Confirmed -> Completed)', async () => {

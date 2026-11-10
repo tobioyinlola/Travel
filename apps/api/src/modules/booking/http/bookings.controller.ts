@@ -6,7 +6,9 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
+  Sse,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
@@ -14,12 +16,14 @@ import { CurrentUser, Roles, type AuthUser } from '../../../platform/http/auth.j
 import { RequireIdempotencyKey } from '../../../platform/http/idempotency.js';
 import { ZBody, ZQuery, ZResponse } from '../../../platform/http/zod.js';
 import { IdentityApi } from '../../identity/index.js';
+import { LiveStatusService } from '../application/live-status.service.js';
 import { BookingService } from '../application/booking.service.js';
 import {
   bookingListSchema,
   bookingSchema,
   cancelSchema,
   cancellationQuoteSchema,
+  modifySchema,
   stuckListSchema,
 } from './schemas.js';
 
@@ -47,11 +51,18 @@ const stuckQuery = z.object({ minutes: z.coerce.number().int().min(1).max(1440).
 export class BookingsController {
   constructor(
     private readonly booking: BookingService,
+    private readonly live: LiveStatusService,
     private readonly identity: IdentityApi,
   ) {}
 
   private async advisorId(user: AuthUser) {
     return (await this.identity.requireAdvisor(user.id, ['approved', 'active'])).id;
+  }
+
+  /** Server-Sent Events: a `booking` message whenever one of the advisor's bookings changes. */
+  @Sse('stream')
+  async stream(@CurrentUser() user: AuthUser) {
+    return this.live.stream(await this.advisorId(user));
   }
 
   @Get()
@@ -83,6 +94,18 @@ export class BookingsController {
     @ZBody(cancelSchema) body: z.infer<typeof cancelSchema>,
   ) {
     return this.booking.cancel(await this.advisorId(user), id, body.reason);
+  }
+
+  /** Change the lead guest or special requests on a confirmed booking; hotels are told in the background. */
+  @Patch(':id/guest')
+  @RequireIdempotencyKey()
+  @ZResponse(200, bookingSchema)
+  async modify(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @ZBody(modifySchema) body: z.infer<typeof modifySchema>,
+  ) {
+    return this.booking.modifyGuest(await this.advisorId(user), id, body);
   }
 
   /** Drop a booking the traveler has not submitted, so the trip can be changed and proposed again. */

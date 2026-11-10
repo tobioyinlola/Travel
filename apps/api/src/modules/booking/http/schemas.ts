@@ -91,6 +91,8 @@ const advisorLine = checkoutLine.extend({
   penalty: money,
   attempts: z.number().int(),
   failureReason: z.string().nullable(),
+  guestDetailsSent: z.boolean(),
+  guestDetailsRefused: z.boolean(),
 });
 
 export const bookingSchema = z.object({
@@ -101,6 +103,8 @@ export const bookingSchema = z.object({
   status,
   /** A cancellation is in progress: suppliers are being asked, the refund follows. */
   cancelling: z.boolean(),
+  /** A guest change is being passed to the hotels. */
+  modifying: z.boolean(),
   currency: z.string(),
   paymentMode: mode.nullable(),
   total: money,
@@ -155,3 +159,7 @@ export const stuckBookingSchema = z.object({
   ),
 });
 export const stuckListSchema = z.object({ items: z.array(stuckBookingSchema) });
+
+export const modifySchema = travelerSchema
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, { message: 'Change at least one field' });

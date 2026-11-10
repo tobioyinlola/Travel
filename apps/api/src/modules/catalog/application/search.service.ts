@@ -11,6 +11,7 @@ import {
   type HotelSupplierPort,
   type Money,
   type Occupancy,
+  type AmendResult,
   type CancelResult,
   type ReserveRequest,
   type ReserveResult,
@@ -173,6 +174,20 @@ export class SearchService {
           supplier: supplier.name,
         }
       : { ...result, supplier: supplier.name };
+  }
+
+  async amendReservation(
+    qualifiedRef: string,
+    guest: ReserveRequest['guest'],
+    idempotencyKey: string,
+  ): Promise<AmendResult> {
+    const { supplier, key } = this.supplierFor(qualifiedRef);
+    return this.call(
+      supplier.name,
+      'amend',
+      () => supplier.amend(key, guest, idempotencyKey),
+      RESERVE_TIMEOUT_MS,
+    );
   }
 
   /** Cancel with the supplier that holds the reservation (reference is supplier-qualified). */

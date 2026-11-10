@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { api, ApiError, call, formatMoney, newKey } from '@/lib/api';
-import { Alert, Button, Card, StatusBadge, TextArea } from './ui';
+import { useEffect, useState } from 'react';
+import { API_BASE_URL, api, ApiError, call, formatMoney, newKey } from '@/lib/api';
+import { Alert, Button, Card, Field, StatusBadge, TextArea } from './ui';
 
 const MODE: Record<string, string> = {
   pay_at_hotel: 'Pay at hotel',
@@ -19,14 +19,16 @@ export function BookingCard({ tripId }: { tripId: string }) {
   const key = ['bookings', tripId];
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const q = useQuery({
     queryKey: key,
     queryFn: () => call(api.GET('/v1/bookings', { params: { query: { tripId } } })),
+    // Live updates come over the stream below; polling is only a safety net if it is blocked.
     refetchInterval: (query) => {
       const b = query.state.data?.items[0];
       const moving = b && (b.status === 'pending' || b.cancelling || b.paymentState === 'awaiting');
-      return moving ? 4000 : false;
+      return moving ? 15000 : false;
     },
   });
   const b = q.data?.items[0];
@@ -36,6 +38,22 @@ export function BookingCard({ tripId }: { tripId: string }) {
     queryFn: () =>
       call(api.GET('/v1/bookings/{id}/cancellation-quote', { params: { path: { id: b!.id } } })),
   });
+  useEffect(() => {
+    if (typeof EventSource === 'undefined') return;
+    const es = new EventSource(`${API_BASE_URL}/v1/bookings/stream`, { withCredentials: true });
+    es.addEventListener('booking', (e) => {
+      try {
+        if (JSON.parse((e as MessageEvent).data).tripId === tripId) {
+          void qc.invalidateQueries({ queryKey: key });
+          void qc.invalidateQueries({ queryKey: ['trip', tripId] });
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+    return () => es.close();
+  }, [tripId]);
+
   const refreshAll = async () => {
     await qc.invalidateQueries({ queryKey: key });
     await qc.invalidateQueries({ queryKey: ['trip', tripId] });
@@ -43,6 +61,25 @@ export function BookingCard({ tripId }: { tripId: string }) {
   const discard = useMutation({
     mutationFn: () => call(api.DELETE('/v1/bookings/{id}', { params: { path: { id: b!.id } } })),
     onSuccess: refreshAll,
+    onError: (e) => setError(errText(e)),
+  });
+  const modify = useMutation({
+    mutationFn: (body: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      specialRequests?: string;
+    }) =>
+      call(
+        api.PATCH('/v1/bookings/{id}/guest', {
+          params: { path: { id: b!.id }, header: { 'Idempotency-Key': newKey() } },
+          body,
+        }),
+      ),
+    onSuccess: async () => {
+      setEditing(false);
+      await refreshAll();
+    },
     onError: (e) => setError(errText(e)),
   });
   const cancel = useMutation({
@@ -74,6 +111,7 @@ export function BookingCard({ tripId }: { tripId: string }) {
     <Card title="Booking" action={<StatusBadge status={b.cancelling ? 'pending' : b.status} />}>
       <div className="flex flex-col gap-3 text-sm">
         {error && <Alert>{error}</Alert>}
+        {b.modifying && <Alert kind="info">Telling the hotels about the change…</Alert>}
         {b.cancelling && <Alert kind="info">Cancelling with the hotels; the refund follows.</Alert>}
         {waiting && <p className="text-muted">{waiting}</p>}
         {b.failureReason && <Alert>{b.failureReason}</Alert>}
@@ -87,6 +125,11 @@ export function BookingCard({ tripId }: { tripId: string }) {
               <p className="text-muted">
                 {l.checkIn} to {l.checkOut} · {formatMoney(l.total)}
               </p>
+              {l.guestDetailsRefused && (
+                <p className="text-danger">
+                  This hotel did not accept the new guest details. Please contact them directly.
+                </p>
+              )}
               {l.confirmationCode && (
                 <p>
                   Confirmation: <strong className="font-medium">{l.confirmationCode}</strong>
@@ -106,6 +149,63 @@ export function BookingCard({ tripId }: { tripId: string }) {
           <p className="text-muted">
             Lead traveler: {b.traveler.name} ({b.traveler.email})
           </p>
+        )}
+
+        {b.status === 'confirmed' && !b.cancelling && !editing && !cancelling && (
+          <Button variant="secondary" onClick={() => setEditing(true)}>
+            Edit guest details
+          </Button>
+        )}
+        {editing && b.traveler && (
+          <form
+            className="flex flex-col gap-3 rounded-[14px] bg-canvas p-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setError(null);
+              const f = new FormData(e.currentTarget);
+              const v = (k: string) => String(f.get(k) ?? '').trim();
+              const t = b.traveler!;
+              const changes: Record<string, string> = {};
+              if (v('name') !== t.name) changes.name = v('name');
+              if (v('email') !== t.email) changes.email = v('email');
+              if (v('phone') !== (t.phone ?? '')) changes.phone = v('phone');
+              if (v('requests') !== (t.specialRequests ?? ''))
+                changes.specialRequests = v('requests');
+              if (Object.keys(changes).length === 0) return setEditing(false);
+              modify.mutate(changes);
+            }}
+          >
+            <Field
+              label="Lead guest"
+              name="name"
+              defaultValue={b.traveler.name}
+              required
+              minLength={2}
+            />
+            <Field
+              label="Email"
+              name="email"
+              type="email"
+              defaultValue={b.traveler.email}
+              required
+            />
+            <Field label="Phone" name="phone" defaultValue={b.traveler.phone ?? ''} />
+            <TextArea
+              label="Special requests"
+              name="requests"
+              rows={2}
+              defaultValue={b.traveler.specialRequests ?? ''}
+              maxLength={500}
+            />
+            <div className="flex gap-2">
+              <Button type="submit" disabled={modify.isPending}>
+                Save and tell the hotels
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setEditing(false)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
         )}
 
         {b.status === 'draft' && (

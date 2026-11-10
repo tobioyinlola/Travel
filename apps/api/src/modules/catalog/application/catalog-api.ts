@@ -21,6 +21,10 @@ export class CatalogApi {
     return this.searchService.reserve(rateKey, req);
   }
 
+  amendReservation(qualifiedRef: string, guest: ReserveRequest['guest'], idempotencyKey: string) {
+    return this.searchService.amendReservation(qualifiedRef, guest, idempotencyKey);
+  }
+
   cancelReservation(qualifiedRef: string, idempotencyKey: string) {
     return this.searchService.cancelReservation(qualifiedRef, idempotencyKey);
   }

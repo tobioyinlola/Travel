@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type {
+  AmendResult,
   Board,
   CancelResult,
   HotelSupplierPort,
@@ -186,6 +187,10 @@ export class FakeHotelSupplier implements HotelSupplierPort {
     null;
   /** Every reserve call that reached this supplier, for assertions (idempotency, retries). */
   readonly reserveCalls: ReserveRequest[] = [];
+  /** Amend hooks: transport errors for the next N calls, or a definitive refusal. */
+  amendFailures = 0;
+  rejectAmend = false;
+  readonly amendCalls: Array<{ reservationRef: string; name: string; idempotencyKey: string }> = [];
 
   constructor(
     readonly name: 'fake-wholesaler-a' | 'fake-wholesaler-b',
@@ -312,6 +317,21 @@ export class FakeHotelSupplier implements HotelSupplierPort {
       total: rate.total,
       raw: { supplier: this.name, reservationRef, confirmationCode, guest: req.guest.name },
     };
+  }
+
+  async amend(
+    reservationRef: string,
+    guest: ReserveRequest['guest'],
+    idempotencyKey: string,
+  ): Promise<AmendResult> {
+    await this.delay();
+    this.amendCalls.push({ reservationRef, name: guest.name, idempotencyKey });
+    if (this.amendFailures > 0) {
+      this.amendFailures -= 1;
+      throw new Error(`${this.name} amend timed out`);
+    }
+    if (this.rejectAmend) return { status: 'rejected', raw: { error: 'not_amendable' } };
+    return { status: 'amended', raw: { reservationRef, guest: guest.name } };
   }
 
   async cancel(reservationRef: string): Promise<CancelResult> {

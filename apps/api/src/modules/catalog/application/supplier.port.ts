@@ -94,6 +94,11 @@ export interface CancelResult {
   raw: unknown;
 }
 
+export interface AmendResult {
+  status: 'amended' | 'rejected';
+  raw: unknown;
+}
+
 export interface HotelSupplierPort {
   readonly name: string;
   /** Content for ingestion, paged. */
@@ -108,6 +113,12 @@ export interface HotelSupplierPort {
    * returns `rejected` for definitive refusals (no retry).
    */
   reserve(req: ReserveRequest): Promise<ReserveResult>;
+  /** Change the lead guest or requests on a reservation. Throws on transport errors; idempotent by key. */
+  amend(
+    reservationRef: string,
+    guest: ReserveRequest['guest'],
+    idempotencyKey: string,
+  ): Promise<AmendResult>;
   /** Cancel a reservation. Idempotent by reservation reference. */
   cancel(reservationRef: string, idempotencyKey: string): Promise<CancelResult>;
 }

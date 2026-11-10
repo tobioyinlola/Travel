@@ -176,7 +176,7 @@ Fake: `FakeHotelSupplier` with a realistic seeded catalog, deterministic failure
 ### Sprint 4-6: Booking + Payments (critical path)
 
 Status: Sprint 4 done, see ADR-15 (checkout, payments with fakes, reservation sagas, cancel with penalty, support queue).
-Still to build: modify bookings (FR-BKG-05 modify), SSE live status, real providers (Sprint 10).
+Sprint 5 done, see ADR-16 (guest changes with hotel amendment, live status stream). Still to build: date/room changes, perk auto-attach (with Sprint 6), real providers (Sprint 10).
 
 Implements ARCH "Booking to payout flow" steps 1-6 and the FRD booking state machine.
 

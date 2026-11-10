@@ -101,6 +101,9 @@ export async function startApp() {
       s.rejectReserve = null;
       s.rejectWhen = null;
       s.reserveCalls.length = 0;
+      s.amendFailures = 0;
+      s.rejectAmend = false;
+      s.amendCalls.length = 0;
     }
     const pay = app.get<FakePaymentProvider>(PAYMENT_PROVIDER);
     pay.failRefunds = null;

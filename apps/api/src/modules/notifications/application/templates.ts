@@ -89,6 +89,14 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
     subject: `Your booking is cancelled: ${v.title}`,
     text: `Hi ${v.name},\n\nYour booking for "${v.title}" has been cancelled.${v.penalty !== v.zero ? ` The hotels kept ${v.penalty} under their cancellation terms.` : ''} Refund to your card: ${v.refund}.`,
   }),
+  booking_modified_traveler: (v) => ({
+    subject: `Your booking details were updated: ${v.title}`,
+    text: `Hi ${v.name},\n\nThe guest details on your booking for "${v.title}" were updated and the hotels have confirmed the change.`,
+  }),
+  booking_modification_failed_advisor: (v) => ({
+    subject: `A hotel did not accept the change: ${v.title}`,
+    text: `Hi ${v.name},\n\nThese hotels did not accept the updated guest details for "${v.title}": ${v.hotels}.\nPlease contact them directly; the booking itself is still confirmed.\n${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
   membership_cancelled: (v) => ({
     subject: 'Your membership is cancelled',
     text: `Hi ${v.name},\n\nYour membership is cancelled and ends on ${v.endsAt}. Your open bookings stay serviceable.`,

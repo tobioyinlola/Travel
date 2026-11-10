@@ -51,6 +51,17 @@ const hotelsText = (p: Record<string, unknown>) =>
 
 const RULES: Rule[] = [
   {
+    event: 'BookingModificationFailed',
+    template: 'booking_modification_failed_advisor',
+    recipient: 'advisorUserId',
+    urgent: true,
+    vars: (p) => ({
+      tripId: String(p.tripId),
+      title: String(p.tripTitle),
+      hotels: (p.hotels as string[]).join(', '),
+    }),
+  },
+  {
     event: 'BookingConfirmed',
     template: 'booking_confirmed_advisor',
     recipient: 'advisorUserId',
@@ -257,6 +268,7 @@ export class NotificationsService implements OnModuleInit {
         'booking_confirmed_traveler',
         (p) => ({ title: String(p.tripTitle), hotels: hotelsText(p) }),
       ],
+      ['BookingModified', 'booking_modified_traveler', (p) => ({ title: String(p.tripTitle) })],
       [
         'BookingFailed',
         'booking_failed_traveler',
