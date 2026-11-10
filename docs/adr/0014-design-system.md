@@ -8,7 +8,7 @@ The look follows a travel CRM case study the product owner chose as the referenc
 screenshots). We follow its visual language; we do not reuse its brand name, logo, photographs or artwork.
 Our mark (a dotted route between two stops) and wordmark are our own.
 
-## Tokens (`apps/web/app/globals.css`)
+## Tokens (`frontend/app/globals.css`)
 
 | Token         | Value   | Use                                                                 |
 | ------------- | ------- | ------------------------------------------------------------------- |
@@ -28,7 +28,7 @@ fully rounded. Almost no shadows (popovers only).
 Urbanist (variable, OFL, self-hosted via @fontsource), light weights for headings and large numbers.
 Lucide line icons (ISC) at 1.5 stroke, inside round white or dark buttons.
 
-## Components (`apps/web/components`)
+## Components (`frontend/components`)
 
 - `ui.tsx`: Card, PageHeader, Button / ButtonLink (primary, secondary, dark, danger, ghost), IconButton,
   ArrowLink, Field, Select, TextArea, Segmented, Alert, StatusBadge, StatCard, ListRow (icon tile, title,

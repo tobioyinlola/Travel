@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import { DemoRoles } from '@/components/demo-roles';
 import { Alert, Button, Field } from '@/components/ui';
 import { api, ApiError, call } from '@/lib/api';
 import { nextPath, useRefreshMe } from '@/lib/session';
@@ -35,6 +36,7 @@ export default function LoginPage() {
 
   return (
     <>
+      <DemoRoles />
       <h1 className="text-3xl font-normal tracking-tight">Sign in</h1>
       <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
         {error && <Alert>{error}</Alert>}

@@ -1,5 +1,6 @@
 packages:
-  - apps/*
+  - frontend
+  - backend
   - packages/*
 onlyBuiltDependencies:
   - '@swc/core'

@@ -13,6 +13,8 @@ import {
 import { Checkout, type CheckoutView } from './checkout';
 import { Decision } from './decision';
 import { Messages } from './messages';
+import { demoResponse } from '@/lib/demo/respond';
+import { isDemo } from '@/lib/demo/mode';
 
 // Proposal links carry a secret token: never index them, never cache them publicly.
 export const metadata: Metadata = {
@@ -112,10 +114,13 @@ function Tile({ icon: Icon }: { icon: LucideIcon }) {
 async function load(token: string): Promise<{ proposal: Proposal } | { error: number }> {
   const h = await headers();
   const forwarded = h.get('x-forwarded-for');
-  const res = await fetch(`${API}/v1/proposal-links/${encodeURIComponent(token)}`, {
-    cache: 'no-store',
-    headers: forwarded ? { 'x-forwarded-for': forwarded } : {},
-  });
+  const url = `/v1/proposal-links/${encodeURIComponent(token)}`;
+  const res = isDemo
+    ? demoResponse('GET', url)
+    : await fetch(`${API}${url}`, {
+        cache: 'no-store',
+        headers: forwarded ? { 'x-forwarded-for': forwarded } : {},
+      });
   if (!res.ok) return { error: res.status };
   return { proposal: (await res.json()) as Proposal };
 }
@@ -123,10 +128,13 @@ async function load(token: string): Promise<{ proposal: Proposal } | { error: nu
 async function loadCheckout(token: string): Promise<CheckoutView | null> {
   const h = await headers();
   const forwarded = h.get('x-forwarded-for');
-  const res = await fetch(`${API}/v1/checkout/${encodeURIComponent(token)}`, {
-    cache: 'no-store',
-    headers: forwarded ? { 'x-forwarded-for': forwarded } : {},
-  });
+  const url = `/v1/checkout/${encodeURIComponent(token)}`;
+  const res = isDemo
+    ? demoResponse('GET', url)
+    : await fetch(`${API}${url}`, {
+        cache: 'no-store',
+        headers: forwarded ? { 'x-forwarded-for': forwarded } : {},
+      });
   return res.ok ? ((await res.json()) as CheckoutView) : null;
 }
 

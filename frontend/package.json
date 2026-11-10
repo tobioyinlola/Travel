@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start --port 3000",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint app components lib"
+    "lint": "eslint app components lib",
+    "demo:generate": "node scripts/generate-demo-samples.mjs",
+    "build:demo": "NEXT_PUBLIC_DEMO_MODE=1 next build"
   },
   "dependencies": {
     "@atp/api-client": "workspace:*",
@@ -34,5 +36,8 @@
     "@types/topojson-specification": "^1.0.5",
     "postcss": "^8.5.32",
     "tailwindcss": "^4.3.5"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

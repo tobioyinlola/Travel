@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { loadConfig } from '../config.js';
 import { buildOpenApi, createHttpApp } from '../http-app.js';
 
-/** Writes apps/api/openapi.json, from which packages/api-client generates typed clients. */
+/** Writes backend/openapi.json, from which packages/api-client generates typed clients. */
 async function main(): Promise<void> {
   const app = await createHttpApp(loadConfig(), { logger: false });
   const doc = buildOpenApi(app);

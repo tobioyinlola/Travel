@@ -11,8 +11,8 @@ commission and payouts. Built as a **modular monolith** (see `docs/source/ARCH.p
 
 | Part                  | Tech                                                                                           |
 | --------------------- | ---------------------------------------------------------------------------------------------- |
-| Backend (`apps/api`)  | Node.js 22, TypeScript, NestJS 12, PostgreSQL 16, graphile-worker, Redis                       |
-| Frontend (`apps/web`) | TypeScript, React 19, Next.js 16 (App Router), TanStack Query, Tailwind CSS 4                  |
+| Backend (`backend`)   | Node.js 22, TypeScript, NestJS 12, PostgreSQL 16, graphile-worker, Redis                       |
+| Frontend (`frontend`) | TypeScript, React 19, Next.js 16 (App Router), TanStack Query, Tailwind CSS 4                  |
 | Shared                | `packages/contracts` (versioned event schemas), `packages/api-client` (generated from OpenAPI) |
 
 ## Getting started
@@ -82,10 +82,19 @@ Providers run as fakes (`PROVIDERS_MODE=fake`):
 Flow: sign up at `/signup`, verify the code, set up MFA, submit the application, complete both checks,
 choose a plan, then accept the application as an admin at `/admin/applications`.
 
+## Repository layout
+
+```
+frontend/   Next.js app: advisor portal, admin console (app/(admin)), traveler pages. Can run alone in demo mode.
+backend/    NestJS API, worker, migrations, tests
+packages/   shared: contracts (event catalog), api-client (typed client generated from backend/openapi.json)
+docs/       plan, ADRs, runbooks; docs/DEPLOY_VERCEL.md for the frontend demo deployment
+```
+
 ## How the backend is organised
 
 ```
-apps/api/src
+backend/src
   module-registry.json   # every module and its layer: the source of truth for boundaries and DB roles
   platform/              # outbox, event bus, jobs, DB roles, idempotency, errors, logging
   modules/<module>/

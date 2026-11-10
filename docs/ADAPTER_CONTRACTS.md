@@ -1,7 +1,7 @@
 # Adapter contracts
 
 Every external dependency sits behind a port, and every port has a contract suite in
-`apps/api/test/contracts/adapters.ts`. The suites describe what the platform relies on (idempotent calls, refusals
+`backend/test/contracts/adapters.ts`. The suites describe what the platform relies on (idempotent calls, refusals
 as results rather than exceptions, money as whole minor units, never citing sources it was not given), not how any
 provider works.
 
@@ -19,7 +19,7 @@ provider works.
 ## Adding a real adapter
 
 1. Implement the port in the owning module's `infrastructure/` folder. Keep every provider-specific type inside it.
-2. Add it to `apps/api/test/adapters.test.ts` with the same suite and the provider's **sandbox** fixtures
+2. Add it to `backend/test/adapters.test.ts` with the same suite and the provider's **sandbox** fixtures
    (test card tokens, a refused bank account, sandbox hotel ids). The suite must pass against the sandbox.
 3. Wire it in the module's `forRoot` when `PROVIDERS_MODE=live` (today those throw "not implemented"; that is
    deliberate, so a live deployment cannot silently run on fakes: `loadConfig` also refuses `fake` in production).

@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, api, ApiError, call, formatMoney, newKey } from '@/lib/api';
+import { isDemo } from '@/lib/demo/mode';
 import { HotelSearch } from './hotel-search';
 import { Alert, Button, Card, Field, StatusBadge, TextArea } from './ui';
 
@@ -53,7 +54,7 @@ export function BookingCard({ tripId }: { tripId: string }) {
       call(api.GET('/v1/bookings/{id}/cancellation-quote', { params: { path: { id: b!.id } } })),
   });
   useEffect(() => {
-    if (typeof EventSource === 'undefined') return;
+    if (isDemo || typeof EventSource === 'undefined') return;
     const es = new EventSource(`${API_BASE_URL}/v1/bookings/stream`, { withCredentials: true });
     es.addEventListener('booking', (e) => {
       try {

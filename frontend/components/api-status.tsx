@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { isDemo } from '@/lib/demo/mode';
 
 /** Small live check that the typed client reaches the API. */
 export function ApiStatus() {
@@ -13,7 +14,13 @@ export function ApiStatus() {
       return data;
     },
   });
-  const label = isPending ? 'Checking API…' : isError ? 'API unreachable' : `API ${data?.status}`;
+  const label = isDemo
+    ? 'Demo mode: sample data, no backend'
+    : isPending
+      ? 'Checking API…'
+      : isError
+        ? 'API unreachable'
+        : `API ${data?.status}`;
   return (
     <p role="status" className="text-sm text-muted">
       {label}

@@ -21,8 +21,8 @@ const csp = [
 ].join('; ');
 
 const config: NextConfig = {
-  // Self-contained server bundle for the container image.
-  output: 'standalone',
+  // Self-contained server bundle for the container image (Vercel builds its own output).
+  ...(process.env.VERCEL ? {} : { output: 'standalone' as const }),
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

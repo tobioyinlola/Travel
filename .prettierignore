@@ -3,5 +3,6 @@ dist
 .next
 coverage
 packages/api-client/src/schema.d.ts
-apps/api/openapi.json
+backend/openapi.json
 docs/source
+frontend/lib/demo/samples.generated.json

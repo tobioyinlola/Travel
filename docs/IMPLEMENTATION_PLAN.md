@@ -59,7 +59,7 @@ Rules enforced in CI from day one: calls go **down** only; same-layer modules (e
 
 | Concern                          | Choice                                                                                | Notes                                                                                                                                           |
 | -------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repo                             | pnpm workspaces + Turborepo monorepo                                                  | `apps/api`, `apps/web`, `packages/*`                                                                                                            |
+| Repo                             | pnpm workspaces + Turborepo monorepo                                                  | `backend`, `frontend`, `packages/*`                                                                                                             |
 | Backend                          | TypeScript, NestJS                                                                    | One Nest module per business module                                                                                                             |
 | Migrations                       | Plain SQL per module, run as the module's DB role (ADR-08)                            | Postgres itself stops a migration from touching another schema. Typed query builder (Drizzle or Kysely) to decide in Sprint 1                   |
 | Job queue                        | graphile-worker                                                                       | Jobs can be added with SQL inside the same transaction as business writes (ARCH requirement)                                                    |
@@ -299,12 +299,12 @@ Engineering can start without these (fakes cover them), but each has a "needed b
 
 1. Initialize monorepo (`pnpm`, Turborepo, TS strict, ESLint, Prettier, Vitest).
 2. `infra/docker-compose.yml`: Postgres 16 (with `pg_trgm`, `pgvector`), Redis, MinIO, Mailpit.
-3. Scaffold `apps/api` NestJS with `main.web.ts` and `main.worker.ts`.
+3. Scaffold `backend` NestJS with `main.web.ts` and `main.worker.ts`.
 4. Implement `shared-kernel` (`Money`, IDs, `DomainEvent`) with unit tests.
 5. Implement `platform` outbox + relay + event bus + graphile-worker queues + idempotency middleware.
 6. Add dependency-cruiser layer rules and a per-module DB role migration; prove both fail on violation.
 7. Scaffold empty module folders for all 13 modules with `index.ts` public interfaces.
-8. Scaffold `apps/web` Next.js with three route groups and the generated API client.
+8. Scaffold `frontend` Next.js with three route groups and the generated API client.
 9. GitHub Actions pipeline: install, lint, typecheck, test, arch tests, build image.
 10. Write ADR-08 (per-module SQL migrations), ADR-09 (graphile-worker and outbox relay) and ADR-10 (ESM) to extend ARCH's decision log.
 

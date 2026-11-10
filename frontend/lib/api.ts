@@ -1,9 +1,11 @@
 import { createApiClient, type ProblemDetails } from '@atp/api-client';
+import { demoFetch } from './demo/fetch';
+import { isDemo } from './demo/mode';
 
 /** Browser and server both talk to the same versioned REST API. */
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
-export const api = createApiClient(API_BASE_URL);
+export const api = createApiClient(API_BASE_URL, isDemo ? { fetch: demoFetch } : {});
 
 /** Thrown for any non-2xx response; carries the API's RFC 9457 problem details. */
 export class ApiError extends Error {
@@ -81,6 +83,13 @@ export interface UploadedFile {
 
 /** Sends one file as raw bytes (the API takes PDF, PNG and JPEG up to 5 MB and checks the content itself). */
 export async function uploadFile(path: string, file: File): Promise<UploadedFile> {
+  if (isDemo)
+    return {
+      id: crypto.randomUUID(),
+      filename: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    };
   const res = await fetch(`${API_BASE_URL}${path}?filename=${encodeURIComponent(file.name)}`, {
     method: 'POST',
     credentials: 'include',

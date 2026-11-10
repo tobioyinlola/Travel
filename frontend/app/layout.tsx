@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { DemoBanner } from '@/components/demo-banner';
 import { Providers } from '@/components/providers';
 import './globals.css';
 
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="min-h-screen antialiased">
         <Providers>{children}</Providers>
+        <DemoBanner />
       </body>
     </html>
   );
