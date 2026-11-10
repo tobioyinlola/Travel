@@ -111,6 +111,7 @@ export async function startApp() {
       s.amendFailures = 0;
       s.rejectAmend = false;
       s.amendCalls.length = 0;
+      s.cancelCalls.length = 0;
     }
     const payout = app.get<FakePayoutProvider>(PAYOUT_PROVIDER);
     payout.transportFailures = 0;

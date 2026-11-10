@@ -85,6 +85,8 @@ export const checkoutSchema = z.object({
 });
 
 const advisorLine = checkoutLine.extend({
+  adults: z.number().int(),
+  childrenAges: z.array(z.number().int()),
   supplier: z.string(),
   commissionable: money,
   commissionBps: z.number().int(),
@@ -93,6 +95,10 @@ const advisorLine = checkoutLine.extend({
   failureReason: z.string().nullable(),
   guestDetailsSent: z.boolean(),
   guestDetailsRefused: z.boolean(),
+  /** Set when this stay was swapped for another (the id of the new line). */
+  replacedBy: z.uuid().nullable(),
+  /** A change of this stay is in progress. */
+  changing: z.boolean(),
 });
 
 export const bookingSchema = z.object({
@@ -141,6 +147,8 @@ export const cancellationQuoteSchema = z.object({
   paid: money,
   refund: money,
 });
+
+export const replaceLineSchema = z.object({ rateKey: z.string().trim().min(3).max(500) });
 
 export const cancelSchema = z.object({ reason: z.string().trim().min(2).max(300) });
 

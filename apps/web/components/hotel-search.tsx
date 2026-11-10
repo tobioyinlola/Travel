@@ -29,6 +29,8 @@ const BOARD: Record<string, string> = {
 export function HotelSearch({
   trip,
   onAdd,
+  verb = 'Add',
+  title = 'Add a hotel',
 }: {
   trip: {
     startDate: string;
@@ -38,6 +40,9 @@ export function HotelSearch({
     currency: string;
   };
   onAdd: (rateKey: string) => Promise<void>;
+  /** Button word and card title, e.g. "Switch to" when changing an existing stay. */
+  verb?: string;
+  title?: string;
 }) {
   const [params, setParams] = useState<SearchParams | null>(null);
   const [destination, setDestination] = useState('');
@@ -85,7 +90,7 @@ export function HotelSearch({
 
   const party = `${trip.adults} adult${trip.adults === 1 ? '' : 's'}${trip.childrenAges.length ? `, children aged ${trip.childrenAges.join(', ')}` : ''}`;
   return (
-    <Card title="Add a hotel">
+    <Card title={title}>
       <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
         <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
           <Select
@@ -226,9 +231,9 @@ export function HotelSearch({
                       className="h-10 px-4 text-sm"
                       disabled={adding !== null}
                       onClick={() => add(rate.rateKey)}
-                      aria-label={`Add ${rate.roomName}, ${BOARD[rate.board]}, ${formatMoney(rate.total)}`}
+                      aria-label={`${verb} ${rate.roomName}, ${BOARD[rate.board]}, ${formatMoney(rate.total)}`}
                     >
-                      {adding === rate.rateKey ? 'Adding…' : 'Add'}
+                      {adding === rate.rateKey ? 'Working…' : verb}
                     </Button>
                   </li>
                 ))}

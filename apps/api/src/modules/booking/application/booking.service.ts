@@ -100,6 +100,8 @@ interface LineRow {
   rate_codes: string[];
   guest_version: number;
   amend_failed: boolean;
+  replaces_line_id: string | null;
+  replace_state: 'open' | 'done' | 'failed' | null;
 }
 
 interface Traveler {
@@ -119,7 +121,8 @@ const LINE_SELECT = `SELECT id, booking_id, position, status, supplier, rate_key
   to_char(check_in, 'YYYY-MM-DD') AS check_in, to_char(check_out, 'YYYY-MM-DD') AS check_out, nights, room_name, board,
   adults, children_ages, total_minor, fees_at_hotel_minor, commissionable_minor, commission_bps, payment_modes,
   refundable, free_cancellation_until, cancellation_policy, supplier_ref, confirmation_code, failure_reason,
-  penalty_minor, attempts, property_id, rate_codes, guest_version, amend_failed FROM booking.lines`;
+  penalty_minor, attempts, property_id, rate_codes, guest_version, amend_failed, replaces_line_id, replace_state
+  FROM booking.lines`;
 
 const m = (minor: string | bigint, currency: string) => ({
   amountMinor: String(minor),
@@ -751,11 +754,14 @@ export class BookingService implements OnModuleInit {
     });
     if (!loaded || loaded.l.status !== 'pending') return;
     const { l, b } = loaded;
-    if (b.status !== 'pending') {
-      // The booking failed or was dropped while this job waited: never reserve for it.
+    const replacing =
+      l.replace_state === 'open' && b.status === 'modified' && b.cancel_requested_at === null;
+    if (b.status !== 'pending' && !replacing) {
+      // The booking failed, was dropped or cancelled while this job waited: never reserve for it.
       await this.system(async (tx) => {
         await tx.query(
-          `UPDATE booking.lines SET status = 'cancelled', updated_at = now() WHERE id = $1 AND status = 'pending'`,
+          `UPDATE booking.lines SET status = 'cancelled', replace_state = CASE WHEN replace_state = 'open' THEN 'failed' ELSE replace_state END,
+                  updated_at = now() WHERE id = $1 AND status = 'pending'`,
           [l.id],
         );
       });
@@ -991,11 +997,81 @@ export class BookingService implements OnModuleInit {
     }
 
     if (b.status === 'modified' && !b.cancel_requested_at) {
+      // Stay changes: reserve the new hotel first, cancel the old one only after that, then settle the money.
+      const replaced: Array<{ old: LineRow; next: LineRow }> = [];
+      const refusedStays: LineRow[] = [];
+      let waiting = false;
+      for (const n of lines.filter((l) => l.replace_state === 'open')) {
+        const old = lines.find((l) => l.id === n.replaces_line_id)!;
+        if (n.status === 'pending') waiting = true;
+        else if (n.status !== 'confirmed') {
+          await tx.query(`UPDATE booking.lines SET replace_state = 'failed' WHERE id = $1`, [n.id]);
+          refusedStays.push(n);
+        } else if (old.status === 'confirmed') {
+          await tx.enqueue(
+            'booking.cancel-line',
+            { lineId: old.id },
+            { jobKey: `cancel:${old.id}` },
+          );
+          waiting = true;
+        } else {
+          await tx.query(`UPDATE booking.lines SET replace_state = 'done' WHERE id = $1`, [n.id]);
+          replaced.push({ old, next: n });
+        }
+      }
+      if (waiting) return;
+      for (const { old, next: n } of replaced) {
+        // A prepaid stay that got cheaper returns the difference, less any fee the old hotel still charged.
+        const drop = BigInt(old.total_minor) - BigInt(n.total_minor) - BigInt(old.penalty_minor);
+        const refund = b.payment_mode === 'prepay' && drop > 0n ? drop : 0n;
+        await tx.query(
+          `UPDATE booking.bookings SET total_minor = total_minor - $2::bigint + $3::bigint, updated_at = now() WHERE id = $1`,
+          [b.id, old.total_minor, n.total_minor],
+        );
+        await this.audit.record({
+          actorType: 'system',
+          actorId: null,
+          action: 'booking.stay_replaced',
+          entityType: 'booking',
+          entityId: b.id,
+          module: 'booking',
+          metadata: {
+            from: `${old.property_name} ${old.check_in}..${old.check_out}`,
+            to: `${n.property_name} ${n.check_in}..${n.check_out}`,
+            refundMinor: String(refund),
+          },
+        });
+        await tx.publish({
+          type: 'BookingLineReplaced',
+          version: 1,
+          payload: {
+            bookingId: b.id,
+            tripId: b.trip_id,
+            advisorId: b.owner_advisor_id,
+            oldLineId: old.id,
+            newLine: {
+              lineId: n.id,
+              ...(n.property_id ? { propertyId: n.property_id } : {}),
+              rateCodes: n.rate_codes,
+              supplier: n.supplier,
+              propertyName: n.property_name,
+              checkIn: n.check_in,
+              checkOut: n.check_out,
+              confirmationCode: n.confirmation_code ?? '',
+              total: m(n.total_minor, b.currency),
+              commissionable: m(n.commissionable_minor, b.currency),
+              commissionBps: n.commission_bps,
+            },
+            refund: m(refund, b.currency),
+          },
+        });
+      }
+
       const open = lines.filter(
         (l) => l.status === 'confirmed' && l.guest_version !== b.guest_version && !l.amend_failed,
       );
       if (open.length > 0) return; // hotels still to answer
-      const refused = lines.filter((l) => l.amend_failed);
+      const refused = [...lines.filter((l) => l.amend_failed), ...refusedStays];
       const next = bookingMachine.next('modified', 'reconfirm');
       await tx.query(`UPDATE booking.bookings SET status = $2, updated_at = now() WHERE id = $1`, [
         b.id,
@@ -1096,18 +1172,26 @@ export class BookingService implements OnModuleInit {
       penalty: m(b.penalty_minor, cur),
       paymentState: b.payment_state,
       traveler: this.traveler(b),
-      lines: lines.map((l) => ({
-        ...this.checkoutView(b, [l]).lines[0]!,
-        confirmationCode: l.confirmation_code,
-        supplier: l.supplier,
-        commissionable: m(l.commissionable_minor, cur),
-        commissionBps: l.commission_bps,
-        penalty: m(l.penalty_minor, cur),
-        attempts: l.attempts,
-        failureReason: l.failure_reason,
-        guestDetailsSent: l.guest_version === b.guest_version && !l.amend_failed,
-        guestDetailsRefused: l.amend_failed,
-      })),
+      lines: lines
+        .filter((l) => l.replace_state !== 'failed')
+        .map((l) => ({
+          ...this.checkoutView(b, [l]).lines[0]!,
+          replacedBy:
+            lines.find((x) => x.replaces_line_id === l.id && x.replace_state === 'done')?.id ??
+            null,
+          changing:
+            l.replace_state === 'open' ||
+            lines.some((x) => x.replaces_line_id === l.id && x.replace_state === 'open'),
+          confirmationCode: l.confirmation_code,
+          supplier: l.supplier,
+          commissionable: m(l.commissionable_minor, cur),
+          commissionBps: l.commission_bps,
+          penalty: m(l.penalty_minor, cur),
+          attempts: l.attempts,
+          failureReason: l.failure_reason,
+          guestDetailsSent: l.guest_version === b.guest_version && !l.amend_failed,
+          guestDetailsRefused: l.amend_failed,
+        })),
       failureReason: b.failure_reason,
       createdAt: b.created_at.toISOString(),
       confirmedAt: iso(b.confirmed_at),
@@ -1336,6 +1420,163 @@ export class BookingService implements OnModuleInit {
       await this.touch(tx, 'id', id);
     });
     return this.get(advisorId, id);
+  }
+
+  /**
+   * Change a confirmed stay (dates, room or hotel). The new offer is checked live and reserved FIRST; the old hotel
+   * is cancelled only once the new one is confirmed, so the traveler is never left without a room. Nothing is
+   * charged without the traveler: the old stay must be free to cancel, and a prepaid stay can only stay the
+   * same or get cheaper (the difference is refunded). Pay-at-hotel stays may change price: nothing was collected.
+   */
+  async replaceLine(advisorId: string, id: string, lineId: string, rateKey: string) {
+    const pre = await this.asAdvisor(advisorId, async (tx) => {
+      const b = await this.loadOwned(tx, advisorId, id);
+      const lines = await this.lines(tx, id);
+      return { b, lines };
+    });
+    const old = pre.lines.find((l) => l.id === lineId);
+    if (!old) throw problem(HttpStatus.NOT_FOUND, 'not-found', 'Hotel not found on this booking');
+    this.assertReplaceable(pre.b, pre.lines, old);
+
+    let found: Awaited<ReturnType<CatalogApi['checkRate']>>;
+    try {
+      found = await this.catalog.checkRate(rateKey, pre.b.currency);
+    } catch {
+      throw problem(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        'supplier-unavailable',
+        'We could not check that offer just now',
+        'Please try again in a few minutes.',
+      );
+    }
+    if (!found)
+      throw problem(HttpStatus.CONFLICT, 'rate-unavailable', 'That offer is no longer available');
+    const { rate, property } = found;
+    const sameParty =
+      rate.occupancy.adults === old.adults &&
+      [...rate.occupancy.childrenAges].sort().join() === [...old.children_ages].sort().join();
+    if (!sameParty)
+      throw problem(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'party-differs',
+        'The new stay must be for the same travelers',
+        'Search again for the same number of adults and children.',
+      );
+    if (rate.rateKey === old.rate_key)
+      throw problem(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'nothing-to-change',
+        'That is the current stay',
+      );
+    const mode = pre.b.payment_mode;
+    if (mode && !rate.paymentModes.includes(mode))
+      throw problem(
+        HttpStatus.CONFLICT,
+        'payment-mode-unavailable',
+        "The traveler's way of paying is not offered for that stay",
+      );
+    if (
+      mode === 'deposit' ||
+      (mode === 'prepay' && BigInt(rate.total.amountMinor) > BigInt(old.total_minor))
+    )
+      throw problem(
+        HttpStatus.CONFLICT,
+        'price-increase',
+        mode === 'deposit' ? 'Deposit bookings cannot change stay yet' : 'The new stay costs more',
+        'The traveler has already paid. A dearer stay needs a new proposal they approve.',
+      );
+
+    await this.asAdvisor(advisorId, async (tx) => {
+      const b = await this.loadOwned(tx, advisorId, id, true);
+      const lines = await this.lines(tx, id, true);
+      const cur = lines.find((l) => l.id === lineId);
+      if (!cur) throw problem(HttpStatus.NOT_FOUND, 'not-found', 'Hotel not found on this booking');
+      this.assertReplaceable(b, lines, cur);
+      const newId_ = newId();
+      await tx.query(
+        `INSERT INTO booking.lines (id, booking_id, owner_advisor_id, item_id, position, supplier, rate_key, property_name,
+                                    city, check_in, check_out, nights, room_name, board, adults, children_ages, total_minor,
+                                    fees_at_hotel_minor, commissionable_minor, commission_bps, payment_modes, refundable,
+                                    free_cancellation_until, cancellation_policy, property_id, rate_codes, guest_version,
+                                    replaces_line_id, replace_state)
+         SELECT $1, booking_id, owner_advisor_id, item_id, (SELECT max(position) + 1 FROM booking.lines WHERE booking_id = $2),
+                $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, id, 'open'
+           FROM booking.lines WHERE id = $25`,
+        [
+          newId_,
+          id,
+          rate.supplier,
+          rate.rateKey,
+          property.name,
+          property.city,
+          rate.checkIn,
+          rate.checkOut,
+          rate.nights,
+          rate.roomName,
+          rate.board,
+          rate.occupancy.adults,
+          rate.occupancy.childrenAges,
+          rate.total.amountMinor,
+          rate.feesAtHotel.amountMinor,
+          rate.commissionable.amountMinor,
+          rate.commissionBps,
+          rate.paymentModes,
+          rate.refundable,
+          rate.freeCancellationUntil,
+          rate.cancellationPolicy,
+          rate.propertyId,
+          rate.rateCodes,
+          b.guest_version,
+          lineId,
+        ],
+      );
+      await tx.query(`UPDATE booking.bookings SET status = $2, updated_at = now() WHERE id = $1`, [
+        id,
+        bookingMachine.next(b.status, 'modify'),
+      ]);
+      await this.audit.record({
+        actorType: 'user',
+        action: 'booking.stay_change_requested',
+        entityType: 'booking',
+        entityId: id,
+        module: 'booking',
+        metadata: { lineId, to: `${property.name} ${rate.checkIn}..${rate.checkOut}` },
+      });
+      await tx.enqueue('booking.reserve-line', { lineId: newId_ }, { jobKey: `reserve:${newId_}` });
+      await this.touch(tx, 'id', id);
+    });
+    return this.get(advisorId, id);
+  }
+
+  private assertReplaceable(b: BookingRow, lines: LineRow[], old: LineRow): void {
+    if (!bookingMachine.can(b.status, 'modify') || b.cancel_requested_at)
+      throw problem(
+        HttpStatus.CONFLICT,
+        'booking-not-modifiable',
+        `A ${b.cancel_requested_at ? 'cancelling' : b.status} booking cannot be changed`,
+        'Only a confirmed booking can be changed, one change at a time.',
+      );
+    if (
+      old.status !== 'confirmed' ||
+      lines.some((l) => l.replaces_line_id === old.id && l.replace_state !== 'failed')
+    )
+      throw problem(HttpStatus.CONFLICT, 'line-not-replaceable', 'This hotel cannot be changed');
+    const penalty = cancellationPenalty(
+      {
+        totalMinor: BigInt(old.total_minor),
+        nights: old.nights,
+        refundable: old.refundable,
+        freeCancellationUntil: old.free_cancellation_until,
+      },
+      new Date(),
+    );
+    if (penalty > 0n)
+      throw problem(
+        HttpStatus.CONFLICT,
+        'penalty-applies',
+        'The current hotel would charge a cancellation fee',
+        'Changing it would cost the traveler money, so it needs their agreement. Cancel or arrange it with them directly.',
+      );
   }
 
   private async amendLine(lineId: string, version: number, ctx: JobContext): Promise<void> {

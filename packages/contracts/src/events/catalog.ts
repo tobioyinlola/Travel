@@ -439,6 +439,33 @@ export const eventCatalog = {
       travelerEmail: z.string(),
     }),
   },
+  /**
+   * A confirmed stay was swapped for another (dates, room or hotel): the old hotel is cancelled, the new one confirmed.
+   * Commission reverses the old line and recognises the new one; Payments returns `refund` (a price drop, prepaid).
+   */
+  'BookingLineReplaced.v1': {
+    producer: 'booking',
+    payload: z.object({
+      bookingId: id,
+      tripId: id,
+      advisorId: id,
+      oldLineId: id,
+      newLine: z.object({
+        lineId: id,
+        propertyId: id.optional(),
+        rateCodes: z.array(z.string()),
+        supplier: z.string(),
+        propertyName: z.string(),
+        checkIn: z.string(),
+        checkOut: z.string(),
+        confirmationCode: z.string(),
+        total: money,
+        commissionable: money,
+        commissionBps: z.number().int(),
+      }),
+      refund: money,
+    }),
+  },
   /** One or more hotels would not take the change: the advisor must sort it out with them directly. */
   'BookingModificationFailed.v1': {
     producer: 'booking',

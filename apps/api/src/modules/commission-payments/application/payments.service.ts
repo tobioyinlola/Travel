@@ -127,6 +127,20 @@ export class PaymentsService implements OnModuleInit, PaymentWebhookSink {
       handle: (e, tx) => this.expireOpen(tx, e.payload.bookingId),
     });
 
+    // A stay swapped for a cheaper one on a prepaid booking returns the difference.
+    this.bus.subscribe<{ bookingId: string; refund: { amountMinor: string } }>({
+      module: 'commission-payments',
+      handler: 'payments.refundStayChange',
+      event: 'BookingLineReplaced',
+      version: 1,
+      queue: 'critical',
+      handle: async (e, tx) => {
+        const refund = BigInt(e.payload.refund.amountMinor);
+        if (refund > 0n)
+          await this.refundBooking(tx, e.payload.bookingId, refund, 'stay_changed', e.id);
+      },
+    });
+
     // A cancelled booking returns what the supplier's penalty leaves.
     this.bus.subscribe<{ bookingId: string; refund?: { amountMinor: string } }>({
       module: 'commission-payments',

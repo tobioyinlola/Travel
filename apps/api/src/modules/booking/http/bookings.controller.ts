@@ -24,6 +24,7 @@ import {
   cancelSchema,
   cancellationQuoteSchema,
   modifySchema,
+  replaceLineSchema,
   stuckListSchema,
 } from './schemas.js';
 
@@ -106,6 +107,19 @@ export class BookingsController {
     @ZBody(modifySchema) body: z.infer<typeof modifySchema>,
   ) {
     return this.booking.modifyGuest(await this.advisorId(user), id, body);
+  }
+
+  /** Change one stay on a confirmed booking: the new hotel is confirmed first, then the old one is cancelled. */
+  @Post(':id/lines/:lineId/replace')
+  @RequireIdempotencyKey()
+  @ZResponse(201, bookingSchema)
+  async replace(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('lineId', ParseUUIDPipe) lineId: string,
+    @ZBody(replaceLineSchema) body: z.infer<typeof replaceLineSchema>,
+  ) {
+    return this.booking.replaceLine(await this.advisorId(user), id, lineId, body.rateKey);
   }
 
   /** Drop a booking the traveler has not submitted, so the trip can be changed and proposed again. */

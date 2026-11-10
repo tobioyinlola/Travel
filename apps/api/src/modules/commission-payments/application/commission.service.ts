@@ -83,6 +83,28 @@ export class CommissionService implements OnModuleInit {
       queue: 'critical',
       handle: (e, tx) => this.reverseBooking(tx, e.payload.bookingId, 'booking_cancelled'),
     });
+    // A swapped stay: the old hotel earns nothing, the new one is recognised like a fresh confirmation.
+    this.bus.subscribe<EventPayload<'BookingLineReplaced.v1'>>({
+      module: 'commission-payments',
+      handler: 'commission.replaceLine',
+      event: 'BookingLineReplaced',
+      version: 1,
+      queue: 'critical',
+      handle: async (e, tx) => {
+        await this.reverseBooking(tx, e.payload.bookingId, 'stay_replaced', e.payload.oldLineId);
+        await this.recognize(
+          {
+            bookingId: e.payload.bookingId,
+            tripId: e.payload.tripId,
+            advisorId: e.payload.advisorId,
+            total: e.payload.newLine.total,
+            lines: [e.payload.newLine],
+          } as EventPayload<'BookingConfirmed.v1'>,
+          e.occurredAt,
+          tx,
+        );
+      },
+    });
   }
 
   // ---------- Ledger ----------
@@ -300,11 +322,17 @@ export class CommissionService implements OnModuleInit {
    * depends on how far the commission got: before the supplier paid, the receivable is written off; after, the
    * money goes back and the advisor's payable is taken away.
    */
-  private async reverseBooking(tx: Tx, bookingId: string, reason: string): Promise<void> {
+  private async reverseBooking(
+    tx: Tx,
+    bookingId: string,
+    reason: string,
+    lineId?: string,
+  ): Promise<void> {
     await tx.setLocal('atp.scope', 'all');
-    const rows = await tx.query<CommissionRow>(`${SELECT} WHERE booking_id = $1 FOR UPDATE`, [
-      bookingId,
-    ]);
+    const rows = await tx.query<CommissionRow>(
+      `${SELECT} WHERE booking_id = $1 ${lineId ? 'AND line_id = $2' : ''} FOR UPDATE`,
+      lineId ? [bookingId, lineId] : [bookingId],
+    );
     for (const c of rows) {
       if (c.status === 'reversed') continue;
       if (c.status === 'paid') {

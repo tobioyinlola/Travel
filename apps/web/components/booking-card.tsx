@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, api, ApiError, call, formatMoney, newKey } from '@/lib/api';
+import { HotelSearch } from './hotel-search';
 import { Alert, Button, Card, Field, StatusBadge, TextArea } from './ui';
 
 const MODE: Record<string, string> = {
@@ -20,6 +21,7 @@ export function BookingCard({ tripId }: { tripId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [changing, setChanging] = useState<string | null>(null);
 
   const q = useQuery({
     queryKey: key,
@@ -109,6 +111,20 @@ export function BookingCard({ tripId }: { tripId: string }) {
     onError: (e) => setError(errText(e)),
   });
 
+  const replace = useMutation({
+    mutationFn: ({ lineId, rateKey }: { lineId: string; rateKey: string }) =>
+      call(
+        api.POST('/v1/bookings/{id}/lines/{lineId}/replace', {
+          params: { path: { id: b!.id, lineId }, header: { 'Idempotency-Key': newKey() } },
+          body: { rateKey },
+        }),
+      ),
+    onSuccess: async () => {
+      setChanging(null);
+      await refreshAll();
+    },
+  });
+
   if (!b) return null;
   const waiting =
     b.status === 'draft'
@@ -123,7 +139,11 @@ export function BookingCard({ tripId }: { tripId: string }) {
     <Card title="Booking" action={<StatusBadge status={b.cancelling ? 'pending' : b.status} />}>
       <div className="flex flex-col gap-3 text-sm">
         {error && <Alert>{error}</Alert>}
-        {b.modifying && <Alert kind="info">Telling the hotels about the change…</Alert>}
+        {b.modifying && (
+          <Alert kind="info">
+            Updating the hotels. A changed stay is booked first, then the old one is cancelled.
+          </Alert>
+        )}
         {b.cancelling && <Alert kind="info">Cancelling with the hotels; the refund follows.</Alert>}
         {waiting && <p className="text-muted">{waiting}</p>}
         {b.failureReason && <Alert>{b.failureReason}</Alert>}
@@ -153,6 +173,56 @@ export function BookingCard({ tripId }: { tripId: string }) {
                 <p>
                   Confirmation: <strong className="font-medium">{l.confirmationCode}</strong>
                 </p>
+              )}
+              {l.replacedBy && <p className="text-muted">Replaced by another stay.</p>}
+              {b.status === 'confirmed' &&
+                !b.cancelling &&
+                l.status === 'confirmed' &&
+                !l.changing &&
+                l.refundable &&
+                l.freeCancellationUntil &&
+                new Date(l.freeCancellationUntil) > new Date() &&
+                changing !== l.id && (
+                  <Button
+                    variant="ghost"
+                    className="mt-2 h-10 px-4 text-sm"
+                    onClick={() => setChanging(l.id)}
+                  >
+                    Change dates, room or hotel
+                  </Button>
+                )}
+              {changing === l.id && (
+                <div className="mt-3 flex flex-col gap-2">
+                  <p className="text-xs text-muted">
+                    The new stay is booked first; the current one is cancelled only after it is
+                    confirmed.
+                    {b.paymentMode === 'prepay' &&
+                      ' The traveler has paid, so the new stay can cost the same or less (the difference is refunded).'}
+                  </p>
+                  <HotelSearch
+                    title="Choose the new stay"
+                    verb="Switch to"
+                    trip={{
+                      startDate: l.checkIn,
+                      endDate: l.checkOut,
+                      adults: l.adults,
+                      childrenAges: l.childrenAges,
+                      currency: b.currency,
+                    }}
+                    onAdd={async (rateKey) => {
+                      setError(null);
+                      try {
+                        await replace.mutateAsync({ lineId: l.id, rateKey });
+                      } catch (e) {
+                        setError(errText(e));
+                        throw e;
+                      }
+                    }}
+                  />
+                  <Button variant="ghost" onClick={() => setChanging(null)}>
+                    Keep the current stay
+                  </Button>
+                </div>
               )}
             </li>
           ))}

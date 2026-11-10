@@ -655,6 +655,201 @@ describe('booking and payments (FR-BKG-01..06, FR-PAY-01/02, AC-02..AC-04)', () 
     expect(new Set(calls.map((c) => c.idempotencyKey)).size).toBe(1);
   });
 
+  describe('changing a stay on a confirmed booking', () => {
+    type Priced = Rate & { total: { amountMinor: string } };
+    const totalOf = (r: Rate) => BigInt((r as Priced).total.amountMinor);
+    const replace = (
+      bookingId: string,
+      lineId: string,
+      rateKey: string,
+      agent: Agent = ada.agent,
+    ) =>
+      agent
+        .post(`/v1/bookings/${bookingId}/lines/${lineId}/replace`)
+        .set('Idempotency-Key', crypto.randomUUID())
+        .send({ rateKey });
+    const shifted = (days: number, d = start) =>
+      new Date(Date.parse(d) + days * 86_400_000).toISOString().slice(0, 10);
+    const sql = (q: string, p: unknown[] = []) => t.admin.query(q, p).then((r) => r.rows);
+
+    it('pay at hotel: the new stay is reserved first, the old one cancelled, commission follows the new stay', async () => {
+      const { tripId, token } = await approvedTrip();
+      await confirm(token, 'pay_at_hotel').expect(200);
+      await t.settle();
+      const b = await bookingOf(tripId);
+      const oldLine = b.lines[0];
+      const before = await sql(
+        `SELECT status, line_id FROM commission.commissions WHERE booking_id = $1`,
+        [b.id],
+      );
+      expect(before).toHaveLength(1);
+
+      // One day later, any refundable pay-at-hotel offer (price may differ: nothing was collected).
+      const next = (await rates(ada.agent, shifted(1), shifted(4))).find(refundable)!;
+      const res = await replace(b.id, oldLine.id, next.rateKey).expect(201);
+      expect(res.body.status).toBe('modified');
+      await t.settle();
+
+      const done = await bookingOf(tripId);
+      expect(done.status).toBe('confirmed');
+      const oldNow = done.lines.find((l: { id: string }) => l.id === oldLine.id);
+      const fresh = done.lines.find(
+        (l: { replacedBy: string | null; status: string }) =>
+          l.replacedBy === null && l.status === 'confirmed',
+      );
+      expect(oldNow).toMatchObject({ status: 'cancelled' });
+      expect(oldNow.replacedBy).toBe(fresh.id);
+      expect(fresh.checkIn).toBe(shifted(1));
+      // Reserve-first ordering: two reservations, then one cancellation of the original.
+      expect(reserveCalls()).toHaveLength(2);
+      expect(t.suppliers.flatMap((x) => x.cancelCalls ?? [])).toHaveLength(1);
+      expect(BigInt(done.total.amountMinor)).toBe(BigInt(fresh.total.amountMinor));
+
+      const comm = await sql(
+        `SELECT line_id, status FROM commission.commissions WHERE booking_id = $1 ORDER BY recognized_at`,
+        [b.id],
+      );
+      expect(comm.find((c) => c.line_id === oldLine.id)?.status).toBe('reversed');
+      expect(comm.find((c) => c.line_id === fresh.id)?.status).toBe('expected');
+      const variance = await sql(
+        `SELECT coalesce(sum(CASE direction WHEN 'debit' THEN amount_minor ELSE -amount_minor END), 0)::text AS v FROM commission.ledger_entries`,
+      );
+      expect(variance[0].v).toBe('0');
+      expect(
+        mailTo('grace@example.com', /details were updated|changed|modified/i).length,
+      ).toBeGreaterThan(0);
+
+      // Cancelling afterwards reverses the new stay's commission; the old one is not reversed twice.
+      await ada.agent
+        .post(`/v1/bookings/${b.id}/cancel`)
+        .set('Idempotency-Key', crypto.randomUUID())
+        .send({ reason: 'Traveler cancelled' })
+        .expect(200);
+      await t.settle();
+      const after = await sql(`SELECT status FROM commission.commissions WHERE booking_id = $1`, [
+        b.id,
+      ]);
+      expect(after.map((c) => c.status)).toEqual(['reversed', 'reversed']);
+      expect(
+        (
+          await sql(`SELECT count(*)::int AS n FROM commission.ledger_txns WHERE kind = 'reversal'`)
+        )[0].n,
+      ).toBe(2);
+      expect(
+        (
+          await sql(
+            `SELECT coalesce(sum(CASE direction WHEN 'debit' THEN amount_minor ELSE -amount_minor END), 0)::text AS v FROM commission.ledger_entries`,
+          )
+        )[0].v,
+      ).toBe('0');
+    });
+
+    it('prepaid: a cheaper stay refunds the difference, a dearer one is refused', async () => {
+      const { tripId, token } = await approvedTrip([
+        { from: start, to: mid, pick: (r) => r.refundable && anyRate(r) },
+      ]);
+      await submitAndPay(token, 'prepay');
+      const b = await bookingOf(tripId);
+      const line = b.lines[0];
+      const all = (await rates(ada.agent, shifted(1), shifted(4))).filter(
+        (r) => r.refundable && anyRate(r),
+      );
+      const paid = BigInt(b.paid.amountMinor);
+      const cheaper = all
+        .filter((r) => totalOf(r) < paid)
+        .sort((a, c) => Number(totalOf(a) - totalOf(c)))[0]!;
+      const dearer = all.find((r) => totalOf(r) > paid)!;
+      expect((await replace(b.id, line.id, dearer.rateKey).expect(409)).body.type).toMatch(
+        /price-increase$/,
+      );
+      expect((await bookingOf(tripId)).status).toBe('confirmed'); // nothing started
+
+      await replace(b.id, line.id, cheaper.rateKey).expect(201);
+      await t.settle();
+      const done = await bookingOf(tripId);
+      expect(done.status).toBe('confirmed');
+      const expected = paid - totalOf(cheaper);
+      expect(BigInt(done.refunded.amountMinor)).toBe(expected);
+      const refunds = await sql(
+        `SELECT amount_minor::text AS a, reason FROM payments.refunds WHERE booking_id = $1`,
+        [b.id],
+      );
+      expect(refunds).toEqual([{ a: String(expected), reason: 'stay_changed' }]);
+    });
+
+    it('is refused when the current hotel would charge to cancel (the traveler must agree)', async () => {
+      const { tripId, token } = await approvedTrip([{ from: start, to: mid, pick: nonRefundable }]);
+      await submitAndPay(token);
+      const b = await bookingOf(tripId);
+      const other = (await rates(ada.agent, shifted(1), shifted(4))).find(refundable)!;
+      const r = await replace(b.id, b.lines[0].id, other.rateKey).expect(409);
+      expect(r.body.type).toMatch(/penalty-applies$/);
+      expect((await bookingOf(tripId)).status).toBe('confirmed');
+      expect(reserveCalls()).toHaveLength(1); // nothing was reserved
+    });
+
+    it('when the new hotel refuses, the old stay stays confirmed and the advisor is told', async () => {
+      const { tripId, token } = await approvedTrip();
+      await confirm(token, 'pay_at_hotel').expect(200);
+      await t.settle();
+      const b = await bookingOf(tripId);
+      const next = (await rates(ada.agent, shifted(1), shifted(4))).find(refundable)!;
+      t.suppliers.forEach((x) => (x.rejectReserve = 'sold_out'));
+      await replace(b.id, b.lines[0].id, next.rateKey).expect(201);
+      await t.settle();
+      const after = await bookingOf(tripId);
+      expect(after.status).toBe('confirmed');
+      expect(after.lines).toHaveLength(1); // the failed attempt is not shown
+      expect(after.lines[0]).toMatchObject({ id: b.lines[0].id, status: 'confirmed' });
+      expect(t.suppliers.flatMap((x) => x.cancelCalls ?? [])).toHaveLength(0);
+      const comm = await sql(`SELECT status FROM commission.commissions WHERE booking_id = $1`, [
+        b.id,
+      ]);
+      expect(comm.map((c) => c.status)).toEqual(['expected']);
+      expect(mailTo('ada@example.com', /did not accept the change/)).toHaveLength(1);
+      // It can be tried again once the hotel has room.
+      t.suppliers.forEach((x) => (x.rejectReserve = null));
+      await replace(b.id, b.lines[0].id, next.rateKey).expect(201);
+      await t.settle();
+      expect(
+        (await bookingOf(tripId)).lines.some((l: { replacedBy: string | null }) => l.replacedBy),
+      ).toBe(true);
+    });
+
+    it('guards: same stay, different party, other advisors, cancelling bookings', async () => {
+      const { tripId, token } = await approvedTrip();
+      await confirm(token, 'pay_at_hotel').expect(200);
+      await t.settle();
+      const b = await bookingOf(tripId);
+      const line = b.lines[0];
+      const cur = (await rates(ada.agent, start, mid)).find(
+        (r) => r.rateKey !== undefined && refundable(r),
+      )!;
+      void cur;
+      const other = (await rates(ada.agent, shifted(1), shifted(4))).find(refundable)!;
+      const bob = await t.onboardAdvisor('bob@example.com', { essentials: true });
+      await replace(b.id, line.id, other.rateKey, bob.agent).expect(404);
+      await replace(b.id, '00000000-0000-7000-8000-000000000000', other.rateKey).expect(404);
+      await replace(b.id, line.id, 'x').expect(400);
+      // Four adults is not the same party.
+      const four = (
+        await ada.agent
+          .get('/v1/catalog/search')
+          .query({ destination: 'lisbon', checkIn: shifted(1), checkOut: shifted(4), adults: 3 })
+          .expect(200)
+      ).body.results
+        .flatMap((r: { rates: Rate[] }) => r.rates)
+        .find(refundable);
+      if (four) await replace(b.id, line.id, four.rateKey).expect(422);
+      await ada.agent
+        .post(`/v1/bookings/${b.id}/cancel`)
+        .set('Idempotency-Key', crypto.randomUUID())
+        .send({ reason: 'Traveler cancelled' })
+        .expect(200);
+      await replace(b.id, line.id, other.rateKey).expect(409);
+    });
+  });
+
   it('streams live booking status to the advisor, and only to that advisor', async () => {
     const live = t.app.get(LiveStatusService);
     const mine: Array<{ type: string; data: { status: string; bookingId: string } }> = [];

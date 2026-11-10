@@ -44,8 +44,9 @@ container scanning; an email domain with SPF/DKIM; provider sandboxes and produc
    (finance: Finance and Reports; support: Privacy and Stuck bookings; admin: everything).
 4. USD only: tiers, payouts and reports assume one currency; local-currency payouts are not built.
 5. Contractor agreement PDF is not stored (needs the real e-sign provider); privacy policy and terms pages exist as drafts and need legal review; tax identifier is collected (optional, encrypted, ADR-23) but nothing reads it back yet.
-6. Date and room changes on a confirmed booking (guest changes only today; cancel and rebook instead); the traveler message thread and attachments are built (ADR-22, ADR-24) but attachments use a stand-in scanner and
-   live in Postgres (move to object storage before volume grows).
+6. Changing a confirmed stay is built (ADR-25) for same-party, free-to-cancel stays that cost the same or less when
+   prepaid; dearer prepaid changes need a traveler approval flow. Message attachments use a stand-in scanner and live in
+   Postgres (ADR-24): move to object storage before volume grows.
 7. Load target of 1,000 concurrent users is unproven on real infrastructure (see `docs/ops/LOAD_TEST.md`).
 8. Reporting facts start at deployment; earlier history needs an outbox replay.
 

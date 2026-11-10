@@ -190,6 +190,7 @@ export class FakeHotelSupplier implements HotelSupplierPort {
   /** Amend hooks: transport errors for the next N calls, or a definitive refusal. */
   amendFailures = 0;
   rejectAmend = false;
+  readonly cancelCalls: string[] = [];
   readonly amendCalls: Array<{ reservationRef: string; name: string; idempotencyKey: string }> = [];
 
   constructor(
@@ -336,6 +337,7 @@ export class FakeHotelSupplier implements HotelSupplierPort {
 
   async cancel(reservationRef: string): Promise<CancelResult> {
     await this.delay();
+    this.cancelCalls.push(reservationRef);
     const decoded = JSON.parse(
       Buffer.from(reservationRef.replace(/^RSV-/, ''), 'base64url').toString('utf8'),
     ) as { k: string; c: string; t: string };
