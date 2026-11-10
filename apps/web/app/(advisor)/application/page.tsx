@@ -104,6 +104,7 @@ function ApplicationForm({
             taxResidency: s('taxResidency'),
             experience: s('experience') as 'none' | 'some' | 'professional',
             niche: s('niche'),
+            ...(s('taxId') ? { taxId: s('taxId') } : {}),
             address: {
               line1: s('line1'),
               ...(s('line2') ? { line2: s('line2') } : {}),
@@ -209,6 +210,14 @@ function ApplicationForm({
           required
           hint="e.g. family beach holidays, African safaris"
           error={error?.fieldError('niche')}
+        />
+        <Field
+          label="Tax identification number (optional)"
+          name="taxId"
+          autoComplete="off"
+          placeholder={initial?.taxId.provided ? `On file, ending ${initial.taxId.last4}` : ''}
+          hint="Encrypted when stored. Leave blank to keep what is on file."
+          error={error?.fieldError('taxId')}
         />
         <div className="sm:col-span-2">
           <Button type="submit" disabled={submit.isPending}>

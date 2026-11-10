@@ -22,6 +22,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** Also active for these path prefixes. */
   match?: string[];
+  /** Small count shown on the link (e.g. unread messages). */
+  badge?: number;
 }
 
 /** Our mark: a route arc between two stops. Original artwork, not the reference's logo. */
@@ -155,12 +157,20 @@ function SideLink({
       aria-current={active ? 'page' : undefined}
       aria-label={compact ? item.label : undefined}
       title={compact ? item.label : undefined}
-      className={`flex h-12 items-center gap-3 rounded-full text-[15px] transition-colors ${compact ? 'w-12 justify-center' : 'px-4'} ${
+      className={`relative flex h-12 items-center gap-3 rounded-full text-[15px] transition-colors ${compact ? 'w-12 justify-center' : 'px-4'} ${
         active ? 'bg-accent-strong text-white' : 'text-ink hover:bg-surface'
       }`}
     >
       <item.icon {...ICON} className="shrink-0" aria-hidden />
       {!compact && <span className="truncate">{item.label}</span>}
+      {item.badge ? (
+        <span
+          className={`ml-auto rounded-full bg-accent px-2 py-0.5 text-xs text-white ${compact ? 'absolute -right-1 -top-1' : ''}`}
+        >
+          <span aria-hidden>{item.badge > 99 ? '99+' : item.badge}</span>
+          <span className="sr-only">{item.badge} unread</span>
+        </span>
+      ) : null}
     </Link>
   );
 }

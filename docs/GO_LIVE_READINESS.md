@@ -43,7 +43,7 @@ container scanning; an email domain with SPF/DKIM; provider sandboxes and produc
 3. ~~Finance and support have no web sign-in~~ Fixed: the staff console shows each role only its own pages
    (finance: Finance and Reports; support: Privacy and Stuck bookings; admin: everything).
 4. USD only: tiers, payouts and reports assume one currency; local-currency payouts are not built.
-5. Contractor agreement PDF is not stored (needs the real e-sign provider); privacy policy and terms pages exist as drafts and need legal review; tax identifier collection with field encryption is available but not yet wired into onboarding.
+5. Contractor agreement PDF is not stored (needs the real e-sign provider); privacy policy and terms pages exist as drafts and need legal review; tax identifier is collected (optional, encrypted, ADR-23) but nothing reads it back yet.
 6. Date and room changes on a confirmed booking (guest changes only today; cancel and rebook instead); message
    attachments (the traveler message thread itself is built, ADR-22).
 7. Load target of 1,000 concurrent users is unproven on real infrastructure (see `docs/ops/LOAD_TEST.md`).

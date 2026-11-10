@@ -2408,6 +2408,10 @@ export interface operations {
                         /** @enum {string} */
                         experience: "none" | "some" | "professional";
                         niche: string;
+                        taxId: {
+                            provided: boolean;
+                            last4: string | null;
+                        };
                         submittedAt: string;
                         infoRequestNote: string | null;
                         kyc: {
@@ -2452,6 +2456,7 @@ export interface operations {
                     /** @enum {string} */
                     experience: "none" | "some" | "professional";
                     niche: string;
+                    taxId?: string;
                 };
             };
         };
@@ -2484,6 +2489,10 @@ export interface operations {
                         /** @enum {string} */
                         experience: "none" | "some" | "professional";
                         niche: string;
+                        taxId: {
+                            provided: boolean;
+                            last4: string | null;
+                        };
                         submittedAt: string;
                         infoRequestNote: string | null;
                         kyc: {

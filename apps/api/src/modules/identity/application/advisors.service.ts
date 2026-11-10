@@ -2,6 +2,7 @@ import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { newId } from '../../shared-kernel/index.js';
 import { AuditWriter } from '../../../platform/audit/audit-writer.js';
 import { requestContext } from '../../../platform/context/request-context.js';
+import { FieldCrypto } from '../../../platform/security/field-crypto.js';
 import { Database } from '../../../platform/db/database.js';
 import type { Tx } from '../../../platform/db/tx.js';
 import { decodeCursor, toPage, type Page } from '../../../platform/http/pagination.js';
@@ -39,6 +40,8 @@ export interface ApplicationInput {
   taxResidency: string;
   experience: 'none' | 'some' | 'professional';
   niche: string;
+  /** Optional. Encrypted at rest, never written to the audit log, events or responses. */
+  taxId?: string | undefined;
 }
 
 interface AdvisorRow {
@@ -63,6 +66,7 @@ interface AdvisorRow {
   agreement_signed_at: Date | null;
   accepted_at: Date | null;
   approved_at: Date | null;
+  tax_id_last4: string | null;
   essentials_passed_at: Date | null;
   activated_at: Date | null;
   version: number;
@@ -85,6 +89,7 @@ export interface AdvisorApplicationView extends AdvisorSummary {
   taxResidency: string;
   experience: ApplicationInput['experience'];
   niche: string;
+  taxId: { provided: boolean; last4: string | null };
   submittedAt: string;
   infoRequestNote: string | null;
   kyc: { status: AdvisorRow['kyc_status']; redirectUrl: string | null; checkedAt: string | null };
@@ -113,6 +118,7 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
     @Inject(IDENTITY_VERIFICATION_PORT) private readonly kyc: IdentityVerificationPort,
     @Inject(SIGNATURE_PORT) private readonly esign: SignaturePort,
     private readonly auth: AuthService,
+    private readonly crypto: FieldCrypto,
   ) {}
 
   onModuleInit(): void {
@@ -131,8 +137,13 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
 
   async submitApplication(
     userId: string,
-    input: ApplicationInput,
+    submitted: ApplicationInput,
   ): Promise<AdvisorApplicationView> {
+    // The tax identifier is kept out of `input`, which goes to the audit log.
+    const { taxId, ...input } = submitted;
+    const taxValues = taxId
+      ? [this.crypto.encrypt(taxId), taxId.replace(/[^A-Za-z0-9]/g, '').slice(-4)]
+      : null;
     const advisorId = await this.db.transaction('identity', async (tx) => {
       const [existing] = await tx.query<AdvisorRow>(
         'SELECT * FROM identity.advisors WHERE user_id = $1 FOR UPDATE',
@@ -162,6 +173,11 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
             WHERE id = $1`,
           [existing.id, ...values],
         );
+        if (taxValues)
+          await tx.query(
+            `UPDATE identity.advisors SET tax_id_enc = $2, tax_id_last4 = $3 WHERE id = $1`,
+            [existing.id, ...taxValues],
+          );
         await this.audit.record({
           actorType: 'user',
           action: 'advisor.application_resubmitted',
@@ -194,6 +210,11 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
          VALUES ($1, $2, 'applied', $3, $4, $5, $6, $7, $8, now())`,
         [id, userId, ...values],
       );
+      if (taxValues)
+        await tx.query(
+          `UPDATE identity.advisors SET tax_id_enc = $2, tax_id_last4 = $3 WHERE id = $1`,
+          [id, ...taxValues],
+        );
       await this.audit.record({
         actorType: 'user',
         action: 'advisor.application_submitted',
@@ -667,6 +688,7 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
       taxResidency: a.tax_residency,
       experience: a.experience,
       niche: a.niche,
+      taxId: { provided: a.tax_id_last4 !== null, last4: a.tax_id_last4 },
       submittedAt: a.submitted_at.toISOString(),
       infoRequestNote: a.info_request_note,
       kyc: {

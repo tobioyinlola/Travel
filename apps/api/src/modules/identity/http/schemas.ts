@@ -76,6 +76,16 @@ export const applicationSchema = z.object({
   taxResidency: country,
   experience: z.enum(['none', 'some', 'professional']),
   niche: z.string().trim().min(2).max(200),
+  taxId: z
+    .string()
+    .trim()
+    .min(4)
+    .max(40)
+    .regex(
+      /^[A-Za-z0-9][A-Za-z0-9 ./-]*$/,
+      'Letters, numbers, spaces, dots, dashes and slashes only',
+    )
+    .optional(),
 });
 
 const advisorStatus = z.enum([
@@ -102,6 +112,7 @@ export const applicationViewSchema = advisorSummarySchema.extend({
   taxResidency: z.string(),
   experience: z.enum(['none', 'some', 'professional']),
   niche: z.string(),
+  taxId: z.object({ provided: z.boolean(), last4: z.string().nullable() }),
   submittedAt: z.string(),
   infoRequestNote: z.string().nullable(),
   kyc: z.object({
