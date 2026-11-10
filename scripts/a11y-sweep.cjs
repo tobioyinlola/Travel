@@ -1,10 +1,10 @@
 // WCAG 2.1 AA sweep (axe-core) over every page, signed in as an advisor and as an admin, plus the public pages. Also
 // fails on any browser console message about the Content Security Policy, so the security headers cannot silently break
-// a page. Usage: node scripts/a11y-sweep.cjs <workdir-with-axe/node_modules/axe-core> <session.json> <admin-email>
+// a page. Usage: node scripts/a11y-sweep.cjs <workdir-with-axe/node_modules/axe-core> <session.json> <admin-email> [<support-email> <finance-email>]
 const { chromium } = require('playwright');
 const { createHmac } = require('crypto');
 const fs = require('fs');
-const [WORK, SESSION, ADMIN_EMAIL] = process.argv.slice(2);
+const [WORK, SESSION, ADMIN_EMAIL, SUPPORT_EMAIL, FINANCE_EMAIL] = process.argv.slice(2);
 const s = JSON.parse(fs.readFileSync(SESSION, 'utf8'));
 const AXE = fs.readFileSync(`${WORK}/axe/node_modules/axe-core/axe.min.js`, 'utf8');
 const API = 'http://localhost:3001',
@@ -56,6 +56,19 @@ const post = async (ctx, path, data) => {
   });
   const en = await post(adm, '/v1/auth/mfa/enroll');
   await post(adm, '/v1/auth/mfa/enroll/confirm', { code: totp(en.secret) });
+  // Support and finance staff (optional): each sees only its own console pages.
+  async function staff(email) {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await post(ctx, '/v1/auth/login', {
+      identifier: email,
+      password: 'admin password long enough',
+    });
+    const en = await post(ctx, '/v1/auth/mfa/enroll');
+    await post(ctx, '/v1/auth/mfa/enroll/confirm', { code: totp(en.secret) });
+    return ctx;
+  }
+  const sup = SUPPORT_EMAIL ? await staff(SUPPORT_EMAIL) : null;
+  const fin = FINANCE_EMAIL ? await staff(FINANCE_EMAIL) : null;
   const anon = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const trip = `/trips/${s.lisbon}`;
   const pages = [
@@ -84,11 +97,18 @@ const post = async (ctx, path, data) => {
       '/admin/settings',
       '/admin/promo-codes',
     ].map((p) => [adm, p, 'admin']),
-    ...['/login', '/signup', '/', s.lisbonUrl.replace('http://localhost:3000', '')].map((p) => [
-      anon,
-      p,
-      'public',
-    ]),
+    ...(sup ? ['/admin/support', '/admin/privacy'].map((p) => [sup, p, 'support']) : []),
+    ...(fin ? ['/admin/finance', '/admin/reports'].map((p) => [fin, p, 'finance']) : []),
+    ...[
+      '/login',
+      '/signup',
+      '/forgot-password',
+      '/reset-password?token=abc',
+      '/privacy',
+      '/terms',
+      '/',
+      s.lisbonUrl.replace('http://localhost:3000', ''),
+    ].map((p) => [anon, p, 'public']),
   ];
   let problems = 0;
   for (const [ctx, path, who] of pages) {

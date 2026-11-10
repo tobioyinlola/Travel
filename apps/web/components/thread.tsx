@@ -53,7 +53,7 @@ export function Thread({
                 m.sender === mine ? 'self-end bg-accent-soft' : 'self-start bg-canvas'
               }`}
             >
-              <span className="block text-xs text-muted">
+              <span className="block text-xs text-ink">
                 {m.senderName} · {new Date(m.createdAt).toLocaleString()}
               </span>
               <span className="mt-1 block whitespace-pre-wrap">{m.body}</span>

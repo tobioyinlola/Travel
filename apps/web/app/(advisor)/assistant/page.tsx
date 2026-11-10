@@ -205,18 +205,23 @@ export default function AssistantPage() {
               Draft for review
             </Button>
           </form>
-          <ul className="mt-4 flex flex-col gap-3">
-            {drafts.data?.items.map((d) => (
-              <DraftCard
-                key={d.id}
-                d={d}
-                onDecide={(approve, text) =>
-                  decide.mutate({ id: d.id, approve, ...(text ? { text } : {}) })
-                }
-              />
-            ))}
-            {drafts.data?.items.length === 0 && <Empty>No drafts yet.</Empty>}
-          </ul>
+          {drafts.data?.items.length === 0 ? (
+            <div className="mt-4">
+              <Empty>No drafts yet.</Empty>
+            </div>
+          ) : (
+            <ul className="mt-4 flex flex-col gap-3">
+              {drafts.data?.items.map((d) => (
+                <DraftCard
+                  key={d.id}
+                  d={d}
+                  onDecide={(approve, text) =>
+                    decide.mutate({ id: d.id, approve, ...(text ? { text } : {}) })
+                  }
+                />
+              ))}
+            </ul>
+          )}
         </Card>
       </div>
 

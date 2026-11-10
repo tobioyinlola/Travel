@@ -13,7 +13,7 @@ automated tests or a repeatable script; the rest needs a decision, an account, o
 | Privacy       | Row-level security on advisor-owned data, privacy export and erasure, AI never reads another advisor's notes                                                                            | ADR-12, ADR-19                                          |
 | Operations    | SLO metrics, alert rules, five runbooks, dead-letter replay, feature kill switches                                                                                                      | `docs/ops/`, `ops-metrics.test.ts`                      |
 | Recovery      | Backup and restore drill script that proves counts and ledger balance                                                                                                                   | `scripts/restore-drill.sh`                              |
-| Accessibility | WCAG 2.1 AA sweep, 25 pages, zero violations, no CSP problems                                                                                                                           | `scripts/a11y-sweep.cjs`                                |
+| Accessibility | WCAG 2.1 AA sweep, 33 pages (advisor, admin, support, finance, public, message thread), zero violations, no CSP problems                                                                | `scripts/a11y-sweep.cjs`                                |
 | Provider swap | Contract suites every adapter must pass                                                                                                                                                 | `docs/ADAPTER_CONTRACTS.md`                             |
 
 ## Needs a decision from you

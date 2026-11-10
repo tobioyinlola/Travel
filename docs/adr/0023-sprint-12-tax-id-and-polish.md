@@ -22,5 +22,12 @@ Trips shows the count of unread traveler messages (`GET /v1/trips/messages/unrea
 ## 4. Accessibility
 
 New public pages (sign-in link target, forgot and reset password, privacy, terms) checked with axe-core, WCAG 2.1 AA,
-light and dark: no violations, no CSP messages. The signed-in sweep (`scripts/a11y-sweep.cjs`) was not re-run for the
-message thread and tax field; run it before the pilot.
+light and dark: no violations, no CSP messages. The signed-in sweep was re-run in Sprint 13 (below).
+
+## 5. Sprint 13: full signed-in sweep
+
+`scripts/a11y-sweep.cjs` now also signs in as support and finance staff and covers the legal and password pages: 33
+pages, light theme, zero violations and no CSP messages. It found and we fixed two real problems: an empty-state
+paragraph inside a list on the Assistant page, and low-contrast sender text on the message bubbles. Run it again
+whenever pages change: seed with the API, start the built web app, then
+`node scripts/a11y-sweep.cjs <axe-dir> <session.json> <admin> <support> <finance>` (each staff user is enrolled for MFA by the script, so use fresh ones).
