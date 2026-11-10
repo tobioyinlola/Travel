@@ -19,6 +19,8 @@ import {
   mfaCodeSchema,
   mfaConfirmResponseSchema,
   mfaEnrollResponseSchema,
+  passwordResetConfirmSchema,
+  passwordResetRequestSchema,
   registerResponseSchema,
   registerSchema,
   resendSchema,
@@ -65,6 +67,28 @@ export class AuthController {
     const { token, me } = await this.auth.verifyContact(body.userId, body.code);
     this.setSession(res, token);
     return me;
+  }
+
+  /** Always answers the same, whether or not the account exists. */
+  @Post('password-reset/request')
+  @Public()
+  @HttpCode(HttpStatus.ACCEPTED)
+  async requestReset(
+    @ZBody(passwordResetRequestSchema) body: z.infer<typeof passwordResetRequestSchema>,
+    @Req() req: Request,
+  ): Promise<{ sent: true }> {
+    await this.auth.requestPasswordReset(body.identifier, req.ip ?? 'unknown');
+    return { sent: true };
+  }
+
+  @Post('password-reset/confirm')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirmReset(
+    @ZBody(passwordResetConfirmSchema) body: z.infer<typeof passwordResetConfirmSchema>,
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.auth.confirmPasswordReset(body.token, body.password, req.ip ?? 'unknown');
   }
 
   @Post('verify/resend')

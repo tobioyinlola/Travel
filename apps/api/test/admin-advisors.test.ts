@@ -1,5 +1,6 @@
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { totp } from '../src/modules/identity/domain/totp.js';
 import { startApp, type TestApp } from './app-harness.js';
 import { confirmedBooking, supplierPays } from './flows.js';
 
@@ -8,7 +9,7 @@ const idem = () => crypto.randomUUID();
 
 describe('admin: advisor lifecycle (FR-ADM-02)', () => {
   let t: TestApp;
-  let ada: { agent: Agent; advisorId: string };
+  let ada: { agent: Agent; advisorId: string; secret: string };
   let bob: { agent: Agent; advisorId: string };
   let adm: Agent;
   let clientId: string;
@@ -70,10 +71,19 @@ describe('admin: advisor lifecycle (FR-ADM-02)', () => {
     await act('suspend', { reason: 'again again' }).expect(409);
     await act('reinstate', { reason: 'x' }).expect(400); // reason too short
 
-    // A suspended advisor cannot use the assistant or take bookings.
-    await ada.agent.post('/v1/ai/ask').send({ question: 'hotels in Lisbon' }).expect(403);
+    // Suspending ends their sessions at once, and they cannot sign back in while suspended.
+    await ada.agent.post('/v1/ai/ask').send({ question: 'hotels in Lisbon' }).expect(401);
     await act('reinstate', { reason: 'Cleared after review' }).expect(200);
     expect((await status()).status).toBe('active');
+    // After reinstatement they sign in again (password, then authenticator code).
+    await ada.agent
+      .post('/v1/auth/login')
+      .send({ identifier: 'ada@example.com', password: 'correct horse battery staple' })
+      .expect(200);
+    await ada.agent
+      .post('/v1/auth/mfa/challenge')
+      .send({ code: totp(ada.secret, new Date(Date.now() + 30_000)) })
+      .expect(200);
     await ada.agent.post('/v1/ai/ask').send({ question: 'hotels in Lisbon' }).expect(200);
     await act('reinstate', { reason: 'not suspended' }).expect(409);
     const audit = await t.admin.query(
@@ -136,7 +146,7 @@ describe('admin: advisor lifecycle (FR-ADM-02)', () => {
     expect(await status()).toMatchObject({ status: 'offboarded' });
     await act('offboard', { reason: 'Left again' }).expect(409);
     await act('reinstate', { reason: 'Come back' }).expect(409); // offboarding is final
-    await ada.agent.get('/v1/bookings').expect(403);
+    await ada.agent.get('/v1/bookings').expect(401); // sessions were ended
   });
 
   it('offboarding with open bookings needs an active successor; bookings, trips and clients move, earned commission stays', async () => {

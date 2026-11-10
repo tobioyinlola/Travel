@@ -19,6 +19,8 @@ const PUBLIC_ROUTES = [
   'POST /v1/auth/verify',
   'POST /v1/auth/login',
   'POST /v1/auth/verify/resend',
+  'POST /v1/auth/password-reset/request',
+  'POST /v1/auth/password-reset/confirm',
   'POST /v1/auth/logout',
   // Public price list
   'GET /v1/membership/plans',

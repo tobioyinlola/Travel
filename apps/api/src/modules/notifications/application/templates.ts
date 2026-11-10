@@ -105,6 +105,15 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
     subject: `Your membership renews on ${v.endsAt}`,
     text: `Hi ${v.name},\n\nYour membership renews on ${v.endsAt} and we will charge ${v.amount} to your card on file. Update your card or cancel before then at ${v.webBaseUrl}/application`,
   }),
+  password_reset: (v) => ({
+    subject: 'Reset your password',
+    text: `Hi ${v.name},\n\nUse this link to choose a new password. It works once and expires in an hour:\n${v.webBaseUrl}/reset-password?token=${v.token}\n\nIf you did not ask for this, ignore this message: your password has not changed.`,
+    sensitive: true,
+  }),
+  password_changed: (v) => ({
+    subject: 'Your password was changed',
+    text: `Hi ${v.name},\n\nYour password was just changed and you were signed out everywhere. If this was not you, contact support straight away.`,
+  }),
   membership_cancelled: (v) => ({
     subject: 'Your membership is cancelled',
     text: `Hi ${v.name},\n\nYour membership is cancelled and ends on ${v.endsAt}. Your open bookings stay serviceable.`,

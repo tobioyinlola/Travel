@@ -26,18 +26,24 @@ export function useRefreshMe() {
 export function nextPath(me: NonNullable<Me>): string {
   if (me.next === 'mfa_enroll') return '/mfa/setup';
   if (me.next === 'mfa_challenge') return '/mfa';
-  return me.role === 'advisor' ? '/dashboard' : '/admin/applications';
+  if (me.role === 'advisor') return '/dashboard';
+  if (me.role === 'finance') return '/admin/finance';
+  if (me.role === 'support') return '/admin/support';
+  return '/admin/applications';
 }
 
+export type Role = 'advisor' | 'admin' | 'finance' | 'support';
+
 /** Client-side redirect guard. The API enforces every rule; this only keeps people on the right page. */
-export function useRequireRole(role: 'advisor' | 'admin') {
+export function useRequireRole(role: 'advisor' | 'staff') {
+  const allowed = (r: string) => (role === 'advisor' ? r === 'advisor' : r !== 'advisor');
   const { data: me, isPending } = useMe();
   const router = useRouter();
   useEffect(() => {
     if (isPending) return;
     if (!me) router.replace('/login');
     else if (me.next) router.replace(nextPath(me));
-    else if (me.role !== role) router.replace(nextPath(me));
+    else if (!allowed(me.role)) router.replace(nextPath(me));
   }, [me, isPending, role, router]);
-  return { me: me && !me.next && me.role === role ? me : null, isPending };
+  return { me: me && !me.next && allowed(me.role) ? me : null, isPending };
 }

@@ -50,6 +50,7 @@ const hotelsText = (p: Record<string, unknown>) =>
     .join('\n');
 
 const RULES: Rule[] = [
+  { event: 'PasswordChanged', template: 'password_changed', urgent: true },
   {
     event: 'MembershipRenewalAnnounced',
     template: 'membership_renewal_upcoming',
@@ -267,6 +268,39 @@ export class NotificationsService implements OnModuleInit {
           null,
           'email',
           e.payload.recipientEmail,
+          r.subject,
+          r.text,
+          true,
+          true,
+        );
+      },
+    });
+
+    // The reset link is secret: sent to the address on the event, body stored redacted.
+    this.bus.subscribe<{
+      userId: string;
+      email: string;
+      displayName: string | null;
+      token: string;
+    }>({
+      module: 'notifications',
+      handler: 'notifications.sendPasswordReset',
+      event: 'PasswordResetRequested',
+      version: 1,
+      queue: 'critical',
+      handle: async (e, tx) => {
+        const r = templates.password_reset!({
+          name: e.payload.displayName ?? 'there',
+          webBaseUrl: this.config.WEB_BASE_URL,
+          token: e.payload.token,
+        });
+        await this.queue(
+          tx,
+          e,
+          'password_reset',
+          e.payload.userId,
+          'email',
+          e.payload.email,
           r.subject,
           r.text,
           true,

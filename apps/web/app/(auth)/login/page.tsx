@@ -49,6 +49,9 @@ export default function LoginPage() {
         <Button type="submit" disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
         </Button>
+        <Link className="text-sm underline" href="/forgot-password">
+          Forgot your password?
+        </Link>
       </form>
       <p className="mt-6 text-sm text-muted">
         New here?{' '}

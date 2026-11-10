@@ -73,6 +73,99 @@ export class AuthService {
     this.throttle = new LoginThrottle(redis);
   }
 
+  // ---------- Password reset ----------
+
+  /**
+   * Emails a single-use link. The answer is the same whether or not the account exists, so this cannot be used to find
+   * out who has an account. Limited per address and per IP. A reset never switches MFA off: the person must still
+   * pass the second factor to sign in afterwards.
+   */
+  async requestPasswordReset(identifier: string, ip: string): Promise<void> {
+    if (!(await this.throttle.allow(`pwreset:ip:${ip}`, 20, 3600)))
+      throw problem(HttpStatus.TOO_MANY_REQUESTS, 'rate-limited', 'Too many requests');
+    if (!(await this.throttle.allow(`pwreset:acct:${identifier.toLowerCase()}`, 3, 3600))) return;
+    const [user] = await this.db.read<UserRow>(
+      'identity',
+      'SELECT * FROM identity.users WHERE email = $1',
+      [identifier],
+    );
+    if (!user || !user.email || user.status === 'disabled') return;
+    const token = randomBytes(32).toString('base64url');
+    const expiresAt = new Date(Date.now() + 60 * 60_000);
+    await this.db.transaction('identity', async (tx) => {
+      await tx.query(
+        `UPDATE identity.password_resets SET used_at = now() WHERE user_id = $1 AND used_at IS NULL`,
+        [user.id],
+      );
+      await tx.query(
+        `INSERT INTO identity.password_resets (id, user_id, token_hash, expires_at) VALUES ($1, $2, $3, $4)`,
+        [newId(), user.id, SessionStore.idOf(token), expiresAt],
+      );
+      await tx.publish({
+        type: 'PasswordResetRequested',
+        version: 1,
+        payload: {
+          userId: user.id,
+          email: user.email,
+          displayName: user.display_name,
+          token,
+          expiresAt: expiresAt.toISOString(),
+        },
+      });
+      await this.audit.record({
+        actorType: 'user',
+        actorId: user.id,
+        action: 'auth.password_reset_requested',
+        entityType: 'user',
+        entityId: user.id,
+        module: 'identity',
+        metadata: { ip },
+      });
+    });
+  }
+
+  /** Sets the new password, retires every reset link and signs the account out everywhere. */
+  async confirmPasswordReset(token: string, newPassword: string, ip: string): Promise<void> {
+    if (!(await this.throttle.allow(`pwreset-confirm:ip:${ip}`, 20, 3600)))
+      throw problem(HttpStatus.TOO_MANY_REQUESTS, 'rate-limited', 'Too many requests');
+    const passwordHash = await hashPassword(newPassword);
+    const userId = await this.db.transaction('identity', async (tx) => {
+      const [row] = await tx.query<{ id: string; user_id: string }>(
+        `SELECT id, user_id FROM identity.password_resets
+          WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now() FOR UPDATE`,
+        [SessionStore.idOf(token)],
+      );
+      if (!row)
+        throw problem(
+          HttpStatus.BAD_REQUEST,
+          'reset-invalid',
+          'This reset link is invalid or has expired',
+          'Request a new one.',
+        );
+      await tx.query(
+        `UPDATE identity.password_resets SET used_at = now() WHERE user_id = $1 AND used_at IS NULL`,
+        [row.user_id],
+      );
+      await tx.query(
+        `UPDATE identity.users SET password_hash = $2, updated_at = now(), version = version + 1 WHERE id = $1`,
+        [row.user_id, passwordHash],
+      );
+      await tx.publish({ type: 'PasswordChanged', version: 1, payload: { userId: row.user_id } });
+      await this.audit.record({
+        actorType: 'user',
+        actorId: row.user_id,
+        action: 'auth.password_reset_completed',
+        entityType: 'user',
+        entityId: row.user_id,
+        module: 'identity',
+        metadata: { ip },
+      });
+      return row.user_id;
+    });
+    await this.throttle.reset('login', userId);
+    await this.sessions.destroyAllForUser(userId);
+  }
+
   // ---------- Registration and contact verification (FR-AUTH-01) ----------
 
   async register(input: {

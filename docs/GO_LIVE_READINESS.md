@@ -37,10 +37,11 @@ container scanning; an email domain with SPF/DKIM; provider sandboxes and produc
 
 ## Known gaps in the code
 
-1. **No password reset.** Advisors who forget their password cannot recover the account. Needs a reset flow (email
-   link, MFA still required) before any real user is onboarded.
-2. Suspending or offboarding does not end existing sessions; the gates act on the next request.
-3. Finance and support roles have API access only; there is no web sign-in for them (admin only).
+1. ~~No password reset~~ Fixed: email link (one use, one hour, stored hashed), throttled, ends every session on use;
+   MFA is still required to sign in afterwards.
+2. ~~Suspending or offboarding does not end sessions~~ Fixed: both end all of the person's sessions at once.
+3. ~~Finance and support have no web sign-in~~ Fixed: the staff console shows each role only its own pages
+   (finance: Finance and Reports; support: Privacy and Stuck bookings; admin: everything).
 4. USD only: tiers, payouts and reports assume one currency; local-currency payouts are not built.
 5. Contractor agreement PDF is not stored (needs the real e-sign provider); privacy policy and terms pages are not
    written; tax identifier collection with field encryption is available but not yet wired into onboarding.

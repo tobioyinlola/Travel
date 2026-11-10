@@ -5,6 +5,7 @@ import { requestContext } from '../../../platform/context/request-context.js';
 import { Database } from '../../../platform/db/database.js';
 import type { Tx } from '../../../platform/db/tx.js';
 import { decodeCursor, toPage, type Page } from '../../../platform/http/pagination.js';
+import { AuthService } from './auth.service.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
 import { JobRegistry } from '../../../platform/jobs/job-registry.js';
 import { WebhookRegistry } from '../../../platform/webhooks/webhooks.js';
@@ -111,6 +112,7 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
     private readonly webhooks: WebhookRegistry,
     @Inject(IDENTITY_VERIFICATION_PORT) private readonly kyc: IdentityVerificationPort,
     @Inject(SIGNATURE_PORT) private readonly esign: SignaturePort,
+    private readonly auth: AuthService,
   ) {}
 
   onModuleInit(): void {
@@ -334,8 +336,10 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
     event: 'suspended' | 'reinstated' | 'offboarded',
     reason: string,
   ): Promise<AdvisorSummary> {
+    let userId = '';
     await this.db.transaction('identity', async (tx) => {
       const a = await this.lock(tx, advisorId);
+      userId = a.user_id;
       if (!advisorLifecycle.can(a.status, event))
         throw problem(
           HttpStatus.CONFLICT,
@@ -344,6 +348,8 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
         );
       await this.transition(tx, a, event, { status_reason: reason, status_changed_at: new Date() });
     });
+    // Suspension and offboarding end every open session now, not at the next request after expiry.
+    if (event !== 'reinstated') await this.auth.sessions.destroyAllForUser(userId);
     return (await this.getAdvisor(advisorId))!;
   }
 

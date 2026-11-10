@@ -118,3 +118,11 @@ export const applicationViewSchema = advisorSummarySchema.extend({
   }),
 });
 export { advisorStatus };
+
+export const passwordResetRequestSchema = z.object({
+  identifier: z.string().trim().min(3).max(200),
+});
+export const passwordResetConfirmSchema = z.object({
+  token: z.string().min(20).max(200),
+  password: passwordSchema,
+});

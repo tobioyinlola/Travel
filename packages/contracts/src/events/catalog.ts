@@ -49,6 +49,18 @@ export const eventCatalog = {
       expiresAt: z.iso.datetime(),
     }),
   },
+  /** Carries the single-use reset token (like VerificationCodeIssued carries a code); stored redacted by Notifications. */
+  'PasswordResetRequested.v1': {
+    producer: 'identity',
+    payload: z.object({
+      userId: id,
+      email: z.string(),
+      displayName: z.string().nullable(),
+      token: z.string(),
+      expiresAt: z.iso.datetime(),
+    }),
+  },
+  'PasswordChanged.v1': { producer: 'identity', payload: z.object({ userId: id }) },
   'AdvisorApplicationSubmitted.v1': {
     producer: 'identity',
     payload: z.object({ advisorId: id, userId: id }),
