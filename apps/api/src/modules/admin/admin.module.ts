@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/index.js';
 import { AdvisorLifecycleService } from './application/advisor-lifecycle.service.js';
 import { AdvisorsAdminController } from './http/advisors.controller.js';
+import { DeadLettersController } from './http/dead-letters.controller.js';
 import { ConfigAdminController } from './http/config.controller.js';
 import { AdminController } from './http/admin.controller.js';
 
@@ -11,7 +12,12 @@ import { AdminController } from './http/admin.controller.js';
  */
 @Module({
   imports: [AuditModule],
-  controllers: [AdminController, AdvisorsAdminController, ConfigAdminController],
+  controllers: [
+    AdminController,
+    AdvisorsAdminController,
+    ConfigAdminController,
+    DeadLettersController,
+  ],
   providers: [AdvisorLifecycleService],
 })
 export class AdminModule {}

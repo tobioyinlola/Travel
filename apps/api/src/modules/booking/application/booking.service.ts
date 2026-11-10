@@ -5,6 +5,7 @@ import type { Redis } from 'ioredis';
 import { AuditWriter } from '../../../platform/audit/audit-writer.js';
 import { Database } from '../../../platform/db/database.js';
 import { FeatureFlags } from '../../../platform/feature-flags.js';
+import { MetricsRegistry } from '../../../platform/metrics.js';
 import type { Tx } from '../../../platform/db/tx.js';
 import { EventBus } from '../../../platform/events/event-bus.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
@@ -145,10 +146,35 @@ export class BookingService implements OnModuleInit {
     private readonly catalog: CatalogApi,
     private readonly identity: IdentityApi,
     private readonly flags: FeatureFlags,
+    private readonly metrics: MetricsRegistry,
     @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
   onModuleInit(): void {
+    this.metrics.gauge(
+      'atp_booking_failure_ratio_10m',
+      'Share of bookings that failed among those that confirmed or failed in the last 10 minutes (SLO alert: > 0.02).',
+      async () => {
+        const rows = await this.system((tx) =>
+          tx.query<{ ok: string; bad: string }>(
+            `SELECT count(*) FILTER (WHERE status IN ('confirmed', 'completed', 'cancelled', 'modified') AND confirmed_at > now() - interval '10 minutes')::text AS ok,
+                    count(*) FILTER (WHERE status = 'failed' AND updated_at > now() - interval '10 minutes')::text AS bad
+               FROM booking.bookings`,
+          ),
+        );
+        const ok = Number(rows[0]!.ok);
+        const bad = Number(rows[0]!.bad);
+        return ok + bad === 0 ? 0 : Math.round((bad / (ok + bad)) * 1000) / 1000;
+      },
+    );
+    this.metrics.gauge(
+      'atp_bookings_stuck_pending',
+      'Bookings waiting on suppliers for more than 15 minutes.',
+      async () => {
+        const { items } = await this.stuck();
+        return items.length;
+      },
+    );
     this.jobs.register<{ lineId: string }>({
       name: 'booking.reserve-line',
       module: 'booking',

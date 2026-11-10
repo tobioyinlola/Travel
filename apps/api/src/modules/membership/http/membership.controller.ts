@@ -28,8 +28,8 @@ export class MembershipController {
     return this.membership.listPlans();
   }
 
+  /** Signed-in advisors only: a public quote would let anyone probe which promo codes exist. */
   @Get('quote')
-  @Public()
   @ZResponse(200, quoteSchema)
   quote(@ZQuery(quoteQuerySchema) q: z.infer<typeof quoteQuerySchema>) {
     return this.membership.quoteFor(q.planCode, q.promoCode);

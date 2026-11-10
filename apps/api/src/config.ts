@@ -36,6 +36,8 @@ const envSchema = z.object({
    * addresses or hop count in production.
    */
   TRUST_PROXY: z.string().default('loopback'),
+  /** Bearer token for GET /metrics. Unset: the endpoint is disabled. Required in production. */
+  METRICS_TOKEN: z.string().min(16).optional(),
   OTEL_ENABLED: z
     .enum(['true', 'false'])
     .default('false')
@@ -58,6 +60,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       throw new Error('PROVIDERS_MODE=fake is not allowed in production');
     if (parsed.data.MAIL_TRANSPORT !== 'smtp')
       throw new Error('MAIL_TRANSPORT must be smtp in production');
+    if (!parsed.data.METRICS_TOKEN)
+      throw new Error('Set METRICS_TOKEN in production (monitoring needs the SLO metrics)');
+    if (/atp_app:atp_app@/.test(parsed.data.DATABASE_URL))
+      throw new Error('DATABASE_URL still has the development password');
+    if (parsed.data.WEB_ORIGINS.split(',').some((o) => !o.trim().startsWith('https://')))
+      throw new Error('WEB_ORIGINS must be https origins in production');
+    if (!parsed.data.WEB_BASE_URL.startsWith('https://'))
+      throw new Error('WEB_BASE_URL must be https in production (links in emails)');
+    if (parsed.data.TRUST_PROXY === 'loopback')
+      throw new Error('Set TRUST_PROXY to the load balancer addresses or hop count in production');
   }
   return parsed.data;
 }

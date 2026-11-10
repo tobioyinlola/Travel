@@ -1,11 +1,14 @@
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import type { AppConfig } from './config.js';
+import { MetricsRegistry } from './platform/metrics.js';
 import { correlationMiddleware } from './platform/http/correlation.middleware.js';
 import { IdempotencyInterceptor } from './platform/http/idempotency.js';
+import { securityHeaders } from './platform/http/security-headers.js';
 import { originCheck } from './platform/http/origin-check.middleware.js';
 import { ProblemDetailsFilter } from './platform/http/problem-details.filter.js';
 
@@ -29,7 +32,7 @@ export async function createHttpApp(
 /** Cross-cutting HTTP setup, shared with tests that build their own module graph. */
 export function configureHttpApp(
   app: INestApplication,
-  config: Pick<AppConfig, 'WEB_ORIGINS'>,
+  config: Pick<AppConfig, 'WEB_ORIGINS'> & Partial<Pick<AppConfig, 'NODE_ENV'>>,
 ): void {
   const origins = config.WEB_ORIGINS.split(',').map((o) => o.trim());
   app.enableCors({
@@ -37,6 +40,11 @@ export function configureHttpApp(
     credentials: true,
     exposedHeaders: ['x-correlation-id', 'idempotent-replayed'],
   });
+  app.getHttpAdapter().getInstance().disable?.('x-powered-by');
+  app.use(securityHeaders({ production: config.NODE_ENV === 'production' }));
+  // Statement imports and CSV pastes are larger than Express's 100 kb default, but never need more than this.
+  (app as unknown as NestExpressApplication).useBodyParser('json', { limit: '1mb' });
+  app.use(app.get(MetricsRegistry).middleware());
   app.use(correlationMiddleware);
   app.use(cookieParser());
   app.use(originCheck(origins));

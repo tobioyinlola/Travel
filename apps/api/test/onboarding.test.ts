@@ -178,8 +178,7 @@ describe('advisor onboarding (AC-01, FR-AUTH-03..07, FR-MEM-01/02/04/07, FR-ADM-
       .send({ code: 'PILOT100', kind: 'waiver', maxRedemptions: 100 })
       .expect(201);
     const a = await readyForReview('eve@example.com');
-    const quote = await t
-      .http()
+    const quote = await a.agent
       .get('/v1/membership/quote?planCode=annual&promoCode=PILOT100')
       .expect(200);
     expect(quote.body.total.amountMinor).toBe('0');
@@ -217,10 +216,12 @@ describe('advisor onboarding (AC-01, FR-AUTH-03..07, FR-MEM-01/02/04/07, FR-ADM-
         expiresAt: '2020-01-01T00:00:00Z',
       })
       .expect(201);
-    const res = await t
-      .http()
+    const advisor = await t.signUpAdvisor('olga@example.com');
+    const res = await advisor.agent
       .get('/v1/membership/quote?planCode=annual&promoCode=OLD')
       .expect(400);
+    // A promo code cannot be probed without signing in.
+    await t.http().get('/v1/membership/quote?planCode=annual&promoCode=OLD').expect(401);
     expect(res.body.detail).toBe('expired');
   });
 

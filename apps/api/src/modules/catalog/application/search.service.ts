@@ -4,6 +4,7 @@ import type { Redis } from 'ioredis';
 import { Database } from '../../../platform/db/database.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
 import { CircuitBreaker, withTimeout } from '../../../platform/resilience/resilience.js';
+import { MetricsRegistry } from '../../../platform/metrics.js';
 import { REDIS } from '../../../platform/tokens.js';
 import { addDays, nightsBetween } from '../domain/dates.js';
 import {
@@ -126,7 +127,18 @@ export class SearchService {
     private readonly db: Database,
     @Inject(HOTEL_SUPPLIERS) private readonly suppliers: HotelSupplierPort[],
     @Inject(REDIS) private readonly redis: Redis,
-  ) {}
+    metrics: MetricsRegistry,
+  ) {
+    metrics.gauge(
+      'atp_supplier_circuit_open',
+      'Supplier circuit breakers that are open (1) or half open (0.5): that supplier is being skipped.',
+      async () =>
+        [...this.breakers.entries()].map(([supplier, b]) => ({
+          value: b.current === 'open' ? 1 : b.current === 'half_open' ? 0.5 : 0,
+          labels: { supplier },
+        })),
+    );
+  }
 
   private breaker(name: string): CircuitBreaker {
     let b = this.breakers.get(name);

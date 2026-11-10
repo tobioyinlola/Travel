@@ -17,6 +17,9 @@ import { createTxHooks } from './events/tx-hooks.js';
 import { HealthController } from './health/health.controller.js';
 import { IDEMPOTENCY_TTL_HOURS, IdempotencyInterceptor } from './http/idempotency.js';
 import { FeatureFlags } from './feature-flags.js';
+import { MetricsController } from './http/metrics.controller.js';
+import { MetricsRegistry } from './metrics.js';
+import { PlatformMetrics } from './platform-metrics.js';
 import { DeadLetterService } from './jobs/dead-letters.js';
 import { JobRegistry } from './jobs/job-registry.js';
 import { WorkerRunner, registerEventHandlerJobs } from './jobs/worker-runner.js';
@@ -96,7 +99,7 @@ export class PlatformModule {
   static forRoot(config: AppConfig, role: ProcessRole): DynamicModule {
     return {
       module: PlatformModule,
-      controllers: role === 'web' ? [HealthController, WebhookController] : [],
+      controllers: role === 'web' ? [HealthController, WebhookController, MetricsController] : [],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: PROCESS_ROLE, useValue: role },
@@ -141,10 +144,12 @@ export class PlatformModule {
           inject: [Database],
           useFactory: (db: Database) => new FeatureFlags(db),
         },
+        MetricsRegistry,
         WebhookRegistry,
         WebhookInbox,
         IdempotencyInterceptor,
         PlatformJobs,
+        PlatformMetrics,
         PlatformLifecycle,
       ],
       exports: [
@@ -159,6 +164,7 @@ export class PlatformModule {
         AuditWriter,
         FieldCrypto,
         FeatureFlags,
+        MetricsRegistry,
         WebhookRegistry,
         WebhookInbox,
       ],

@@ -4,6 +4,7 @@ import { AuditWriter } from '../../../platform/audit/audit-writer.js';
 import { Database } from '../../../platform/db/database.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
 import { JobRegistry } from '../../../platform/jobs/job-registry.js';
+import { MetricsRegistry } from '../../../platform/metrics.js';
 import { newId } from '../../shared-kernel/index.js';
 import { matchLine, parseStatementCsv, type StatementLineInput } from '../domain/statements.js';
 import { CommissionService } from './commission.service.js';
@@ -54,9 +55,29 @@ export class StatementsService implements OnModuleInit {
     private readonly commissions: CommissionService,
     private readonly audit: AuditWriter,
     private readonly jobs: JobRegistry,
+    private readonly metrics: MetricsRegistry,
   ) {}
 
   onModuleInit(): void {
+    this.metrics.gauge(
+      'atp_ledger_variance_minor',
+      'Ledger receivable minus expected commission, in minor units, plus 1 if debits and credits differ (SLO: must be 0).',
+      async () => {
+        const r = await this.reconciliation();
+        return Math.abs(Number(r.receivableVarianceMinor)) + (r.ledgerBalanced ? 0 : 1);
+      },
+    );
+    this.metrics.gauge(
+      'atp_statement_lines_open',
+      'Statement lines waiting for finance, by kind.',
+      async () => {
+        const r = await this.reconciliation();
+        return [
+          { value: r.openMismatches, labels: { kind: 'variance' } },
+          { value: r.unmatchedLines, labels: { kind: 'unmatched' } },
+        ];
+      },
+    );
     this.jobs.register<Record<string, never>>({
       name: 'commission.reconcile-daily',
       module: 'commission-payments',
