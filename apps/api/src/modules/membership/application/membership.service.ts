@@ -32,6 +32,8 @@ interface MembershipRow {
   current_period_start: Date | null;
   current_period_end: Date | null;
   cancel_at_period_end: boolean;
+  renewal_reminder_for: Date | null;
+  past_due_since: Date | null;
 }
 
 interface InvoiceRow {
@@ -48,6 +50,7 @@ interface InvoiceRow {
   currency: string;
   status: 'open' | 'paid' | 'void';
   attempts: number;
+  kind: 'initial' | 'renewal';
   last_error: string | null;
   issued_at: Date;
   paid_at: Date | null;
@@ -119,6 +122,15 @@ export class MembershipService implements OnModuleInit {
       queue: 'critical',
       maxAttempts: 8,
       handle: ({ invoiceId }) => this.chargeInvoice(invoiceId),
+    });
+    this.jobs.register({
+      name: 'membership.renewals',
+      module: 'membership',
+      queue: 'default',
+      cron: '20 1 * * *',
+      handle: async () => {
+        await this.runRenewals();
+      },
     });
     this.jobs.register({
       name: 'membership.end-cancelled-periods',
@@ -389,7 +401,8 @@ export class MembershipService implements OnModuleInit {
     const result = await this.billing.charge({
       paymentMethodRef: inv.payment_method_ref,
       amount: Money.ofMinor(inv.total_minor, inv.currency),
-      idempotencyKey: `${inv.id}:${inv.payment_method_ref}`,
+      // One key per attempt: a provider that replays a declined result for a repeated key must not block a retry.
+      idempotencyKey: `${inv.id}:${inv.attempts}:${inv.payment_method_ref}`,
       description: `${inv.description} ${inv.number}`,
     });
     await this.db.transaction('membership', async (tx) => {
@@ -401,6 +414,7 @@ export class MembershipService implements OnModuleInit {
         `UPDATE membership.invoices SET attempts = attempts + 1, last_error = $2 WHERE id = $1 AND status = 'open'`,
         [inv.id, result.reason],
       );
+      if (inv.kind === 'renewal') await this.onRenewalDeclined(tx, inv.id);
       await this.audit.record({
         actorType: 'provider',
         actorId: null,
@@ -434,7 +448,7 @@ export class MembershipService implements OnModuleInit {
     if (!inv) return;
     const [m] = (await tx.query<MembershipRow>(
       `UPDATE membership.memberships SET status = 'active', current_period_start = $2, current_period_end = $3,
-              updated_at = now(), version = version + 1 WHERE id = $1 RETURNING *`,
+              past_due_since = NULL, updated_at = now(), version = version + 1 WHERE id = $1 RETURNING *`,
       [inv.membership_id, inv.period_start, inv.period_end],
     )) as [MembershipRow];
     await this.audit.record({
@@ -458,6 +472,155 @@ export class MembershipService implements OnModuleInit {
       },
     });
     await this.identity.approveAfterMembershipPaid(m.advisor_id);
+  }
+
+  // ---------- Renewals and dunning (FR-MEM-03) ----------
+
+  /** Days to wait after the 1st, 2nd and 3rd failed attempt; the 4th failure ends the membership. */
+  private static readonly DUNNING_DAYS = [1, 3, 7];
+
+  /**
+   * Daily: remind advisors a week before renewal, open the renewal invoice when a period ends (continuous period,
+   * full price), and retry declined renewals on the dunning schedule. Cancelled-at-period-end memberships are left
+   * to end. Idempotent: running it twice on the same day does nothing more.
+   */
+  async runRenewals(
+    now = new Date(),
+  ): Promise<{ reminders: number; renewals: number; retries: number }> {
+    const week = new Date(now.getTime() + 7 * 86_400_000);
+    const reminders = await this.db.transaction('membership', async (tx) => {
+      const due = await tx.query<MembershipRow & { price_minor: string; currency: string }>(
+        `UPDATE membership.memberships m SET renewal_reminder_for = m.current_period_end
+           FROM membership.plans p
+          WHERE p.id = m.plan_id AND m.status = 'active' AND NOT m.cancel_at_period_end
+            AND m.current_period_end > $1 AND m.current_period_end <= $2
+            AND m.renewal_reminder_for IS DISTINCT FROM m.current_period_end
+        RETURNING m.*, p.price_minor, p.currency`,
+        [now, week],
+      );
+      for (const m of due)
+        await tx.publish({
+          type: 'MembershipRenewalAnnounced',
+          version: 1,
+          payload: {
+            membershipId: m.id,
+            advisorId: m.advisor_id,
+            userId: m.user_id,
+            endsAt: m.current_period_end!.toISOString(),
+            amount: { amountMinor: m.price_minor, currency: m.currency },
+          },
+        });
+      return due.length;
+    });
+
+    const renewals = await this.db.transaction('membership', async (tx) => {
+      const due = await tx.query<MembershipRow>(
+        `SELECT m.* FROM membership.memberships m
+          WHERE m.status = 'active' AND NOT m.cancel_at_period_end AND m.current_period_end <= $1
+            AND NOT EXISTS (SELECT 1 FROM membership.invoices i WHERE i.membership_id = m.id AND i.status = 'open')
+          FOR UPDATE`,
+        [now],
+      );
+      for (const m of due) await this.openRenewalInvoice(tx, m);
+      return due.length;
+    });
+
+    const retries = await this.db.transaction('membership', async (tx) => {
+      const due = await tx.query<{ id: string }>(
+        `SELECT id FROM membership.invoices WHERE kind = 'renewal' AND status = 'open' AND next_attempt_at IS NOT NULL AND next_attempt_at <= $1`,
+        [now],
+      );
+      for (const i of due) {
+        await tx.query(`UPDATE membership.invoices SET next_attempt_at = NULL WHERE id = $1`, [
+          i.id,
+        ]);
+        await tx.enqueue(
+          'membership.charge-invoice',
+          { invoiceId: i.id },
+          { jobKey: `charge:${i.id}:retry` },
+        );
+      }
+      return due.length;
+    });
+    return { reminders, renewals, retries };
+  }
+
+  private async openRenewalInvoice(tx: Tx, m: MembershipRow): Promise<void> {
+    const [plan] = await tx.query<PlanRow>('SELECT * FROM membership.plans WHERE id = $1', [
+      m.plan_id,
+    ]);
+    if (!plan) return;
+    const start = m.current_period_end!; // the new period starts where the last one ended
+    const id = newId();
+    const [{ n }] = (await tx.query<{ n: string }>(
+      `SELECT nextval('membership.invoice_number_seq')::text AS n`,
+    )) as [{ n: string }];
+    await tx.query(
+      `INSERT INTO membership.invoices (id, number, membership_id, advisor_id, description, period_start, period_end,
+                                        subtotal_minor, discount_minor, total_minor, currency, status, kind)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0, $8, $9, 'open', 'renewal')`,
+      [
+        id,
+        `MEM-${start.getUTCFullYear()}-${n.padStart(6, '0')}`,
+        m.id,
+        m.advisor_id,
+        `${plan.name} (renewal)`,
+        start,
+        periodEnd(start, plan.billing_period),
+        plan.price_minor,
+        plan.currency,
+      ],
+    );
+    await tx.enqueue('membership.charge-invoice', { invoiceId: id }, { jobKey: `charge:${id}` });
+  }
+
+  /** A renewal was declined: grace period with retries; after the last one the membership lapses. */
+  private async onRenewalDeclined(tx: Tx, invoiceId: string): Promise<void> {
+    const [inv] = await tx.query<InvoiceRow & { user_id: string }>(
+      `SELECT i.*, m.user_id FROM membership.invoices i JOIN membership.memberships m ON m.id = i.membership_id WHERE i.id = $1`,
+      [invoiceId],
+    );
+    if (!inv) return;
+    const days = MembershipService.DUNNING_DAYS[inv.attempts - 1];
+    if (days !== undefined) {
+      await tx.query(
+        `UPDATE membership.invoices SET next_attempt_at = now() + make_interval(days => $2) WHERE id = $1`,
+        [invoiceId, days],
+      );
+      await tx.query(
+        `UPDATE membership.memberships SET status = 'past_due', past_due_since = coalesce(past_due_since, now()), updated_at = now(), version = version + 1
+          WHERE id = $1 AND status IN ('active', 'past_due')`,
+        [inv.membership_id],
+      );
+      return;
+    }
+    await tx.query(
+      `UPDATE membership.invoices SET status = 'void', next_attempt_at = NULL WHERE id = $1`,
+      [invoiceId],
+    );
+    await tx.query(
+      `UPDATE membership.memberships SET status = 'cancelled', updated_at = now(), version = version + 1 WHERE id = $1`,
+      [inv.membership_id],
+    );
+    await this.audit.record({
+      actorType: 'system',
+      actorId: null,
+      action: 'membership.lapsed',
+      entityType: 'membership',
+      entityId: inv.membership_id,
+      module: 'membership',
+      metadata: { invoiceId, attempts: inv.attempts },
+    });
+    await tx.publish({
+      type: 'MembershipCancelled',
+      version: 1,
+      payload: {
+        membershipId: inv.membership_id,
+        advisorId: inv.advisor_id,
+        userId: inv.user_id,
+        endsAt: new Date().toISOString(),
+      },
+    });
   }
 
   // ---------- Cancellation (FR-MEM-07) ----------

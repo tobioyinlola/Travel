@@ -612,6 +612,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ai/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AiController_ask_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AiController_drafts_v1"];
+        put?: never;
+        post: operations["AiController_draft_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/drafts/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AiController_approve_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/drafts/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AiController_reject_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AiController_history_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/history/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AiController_remove_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AiController_settings_v1"];
+        put: operations["AiController_putSettings_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/admin/reindex": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AiAdminController_reindex_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/clients": {
         parameters: {
             query?: never;
@@ -3535,6 +3663,410 @@ export interface operations {
                             amountMinor: string;
                             currency: string;
                         };
+                    };
+                };
+            };
+        };
+    };
+    AiController_ask_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    question: string;
+                    /** Format: uuid */
+                    clientId?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        answer: string;
+                        /** @enum {string} */
+                        confidence: "high" | "medium" | "low";
+                        sources: {
+                            /** Format: uuid */
+                            id: string;
+                            type: string;
+                            title: string;
+                            snippet: string;
+                            score: number;
+                            cited: boolean;
+                            index: number | null;
+                        }[];
+                        flags: {
+                            sentence: string;
+                            /** @enum {string} */
+                            kind: "price" | "policy" | "perk";
+                            reason: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AiController_drafts_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            kind: string;
+                            /** Format: uuid */
+                            clientId: string | null;
+                            instruction: string;
+                            text: string;
+                            edited: boolean;
+                            /** @enum {string} */
+                            status: "draft" | "approved" | "rejected";
+                            sources: {
+                                /** Format: uuid */
+                                id: string;
+                                type: string;
+                                title: string;
+                                snippet: string;
+                                score: number;
+                                cited: boolean;
+                                index: number | null;
+                            }[];
+                            flags: {
+                                sentence: string;
+                                /** @enum {string} */
+                                kind: "price" | "policy" | "perk";
+                                reason: string;
+                            }[];
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            decidedAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AiController_draft_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @default client_message
+                     * @enum {string}
+                     */
+                    kind?: "client_message" | "trip_summary";
+                    instruction: string;
+                    /** Format: uuid */
+                    clientId?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        kind: string;
+                        /** Format: uuid */
+                        clientId: string | null;
+                        instruction: string;
+                        text: string;
+                        edited: boolean;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "rejected";
+                        sources: {
+                            /** Format: uuid */
+                            id: string;
+                            type: string;
+                            title: string;
+                            snippet: string;
+                            score: number;
+                            cited: boolean;
+                            index: number | null;
+                        }[];
+                        flags: {
+                            sentence: string;
+                            /** @enum {string} */
+                            kind: "price" | "policy" | "perk";
+                            reason: string;
+                        }[];
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+        };
+    };
+    AiController_approve_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    text?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        kind: string;
+                        /** Format: uuid */
+                        clientId: string | null;
+                        instruction: string;
+                        text: string;
+                        edited: boolean;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "rejected";
+                        sources: {
+                            /** Format: uuid */
+                            id: string;
+                            type: string;
+                            title: string;
+                            snippet: string;
+                            score: number;
+                            cited: boolean;
+                            index: number | null;
+                        }[];
+                        flags: {
+                            sentence: string;
+                            /** @enum {string} */
+                            kind: "price" | "policy" | "perk";
+                            reason: string;
+                        }[];
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+        };
+    };
+    AiController_reject_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        kind: string;
+                        /** Format: uuid */
+                        clientId: string | null;
+                        instruction: string;
+                        text: string;
+                        edited: boolean;
+                        /** @enum {string} */
+                        status: "draft" | "approved" | "rejected";
+                        sources: {
+                            /** Format: uuid */
+                            id: string;
+                            type: string;
+                            title: string;
+                            snippet: string;
+                            score: number;
+                            cited: boolean;
+                            index: number | null;
+                        }[];
+                        flags: {
+                            sentence: string;
+                            /** @enum {string} */
+                            kind: "price" | "policy" | "perk";
+                            reason: string;
+                        }[];
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        decidedAt: string | null;
+                    };
+                };
+            };
+        };
+    };
+    AiController_history_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "ask" | "draft";
+                            prompt: string;
+                            output: string;
+                            /** @enum {string} */
+                            confidence: "high" | "medium" | "low";
+                            sources: string[];
+                            toolCalls: {
+                                name: string;
+                                resultCount: number;
+                            }[];
+                            flagCount: number;
+                            model: string;
+                            /** Format: date-time */
+                            createdAt: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AiController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AiController_settings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        enabled: boolean;
+                        useClientNotes: boolean;
+                    };
+                };
+            };
+        };
+    };
+    AiController_putSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    enabled: boolean;
+                    useClientNotes: boolean;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        enabled: boolean;
+                        useClientNotes: boolean;
+                    };
+                };
+            };
+        };
+    };
+    AiAdminController_reindex_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        queued: boolean;
                     };
                 };
             };

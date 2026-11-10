@@ -51,6 +51,11 @@ const hotelsText = (p: Record<string, unknown>) =>
 
 const RULES: Rule[] = [
   {
+    event: 'MembershipRenewalAnnounced',
+    template: 'membership_renewal_upcoming',
+    vars: (p) => ({ endsAt: String(p.endsAt).slice(0, 10), amount: money(p.amount) }),
+  },
+  {
     event: 'PayoutPaid',
     template: 'payout_paid_advisor',
     recipient: 'advisorUserId',

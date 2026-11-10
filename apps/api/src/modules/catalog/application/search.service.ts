@@ -497,6 +497,16 @@ export class SearchService {
     return { rate: view, property: this.toSummary(c), preferred };
   }
 
+  /** Content for the AI index and other bulk readers, in a stable order. */
+  async listProperties(offset: number, limit: number): Promise<PropertySummary[]> {
+    const rows = await this.db.read<CandidateRow>(
+      'catalog',
+      `SELECT *, '[]'::json AS sources FROM catalog.properties ORDER BY id OFFSET $1 LIMIT $2`,
+      [offset, limit],
+    );
+    return rows.map((c) => this.toSummary(c));
+  }
+
   async getProperty(id: string): Promise<PropertySummary | null> {
     const [c] = await this.db.read<CandidateRow>(
       'catalog',

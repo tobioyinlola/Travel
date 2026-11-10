@@ -172,6 +172,38 @@ export class ClientsService implements OnModuleInit {
     return new Map(rows.map((r) => [r.id, { firstName: r.first_name, lastName: r.last_name }]));
   }
 
+  async profilesForAi(
+    advisorId: string,
+  ): Promise<Array<{ id: string; name: string; text: string }>> {
+    const rows = await this.asAdvisor(advisorId, (tx) =>
+      tx.query<{
+        id: string;
+        first_name: string;
+        last_name: string;
+        home_city: string | null;
+        notes: string;
+        preferences: Record<string, unknown>;
+      }>(
+        `SELECT id, first_name, last_name, home_city, notes, preferences FROM clients.clients
+          WHERE owner_advisor_id = $1 AND status = 'active'`,
+        [advisorId],
+      ),
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      name: `${r.first_name} ${r.last_name}`,
+      text: [
+        r.home_city ? `Based in ${r.home_city}.` : '',
+        r.notes,
+        Object.keys(r.preferences ?? {}).length
+          ? `Preferences: ${JSON.stringify(r.preferences)}`
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+    }));
+  }
+
   async count(advisorId: string): Promise<number> {
     const [r] = await this.asAdvisor(advisorId, (tx) =>
       tx.query<{ n: number }>(

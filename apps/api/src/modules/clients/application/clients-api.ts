@@ -10,6 +10,11 @@ export class ClientsApi {
     return this.clients.names(advisorId, ids);
   }
 
+  /** Active clients' notes and preferences as text, for this advisor only (the AI assistant's client context). */
+  profilesForAi(advisorId: string) {
+    return this.clients.profilesForAi(advisorId);
+  }
+
   countActive(advisorId: string) {
     return this.clients.count(advisorId);
   }

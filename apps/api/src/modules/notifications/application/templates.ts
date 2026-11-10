@@ -101,6 +101,10 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
     subject: `Your payout of ${v.net} is on its way`,
     text: `Hi ${v.name},\n\nWe have sent your payout: ${v.net}.\nCommission paid out: ${v.gross}${v.debt !== v.zero ? `\nDeducted for earlier cancelled bookings: ${v.debt}` : ''}\nSee the itemised statement: ${v.webBaseUrl}/earnings`,
   }),
+  membership_renewal_upcoming: (v) => ({
+    subject: `Your membership renews on ${v.endsAt}`,
+    text: `Hi ${v.name},\n\nYour membership renews on ${v.endsAt} and we will charge ${v.amount} to your card on file. Update your card or cancel before then at ${v.webBaseUrl}/application`,
+  }),
   membership_cancelled: (v) => ({
     subject: 'Your membership is cancelled',
     text: `Hi ${v.name},\n\nYour membership is cancelled and ends on ${v.endsAt}. Your open bookings stay serviceable.`,

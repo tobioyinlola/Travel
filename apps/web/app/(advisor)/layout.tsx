@@ -5,6 +5,7 @@ import {
   GraduationCap,
   IdCard,
   LayoutGrid,
+  Sparkles,
   Luggage,
   MessagesSquare,
   UserRound,
@@ -21,6 +22,7 @@ const TABS: NavItem[] = [
   { href: '/community', label: 'Community', icon: MessagesSquare },
 ];
 const RAIL: NavItem[] = [
+  { href: '/assistant', label: 'Assistant', icon: Sparkles },
   { href: '/learn', label: 'Learn', icon: GraduationCap },
   { href: '/application', label: 'Membership', icon: IdCard },
 ];

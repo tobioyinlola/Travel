@@ -87,6 +87,17 @@ export const eventCatalog = {
     producer: 'membership',
     payload: z.object({ invoiceId: id, membershipId: id, advisorId: id, userId: id, total: money }),
   },
+  /** A week before an automatic renewal: tell the advisor what will be charged. */
+  'MembershipRenewalAnnounced.v1': {
+    producer: 'membership',
+    payload: z.object({
+      membershipId: id,
+      advisorId: id,
+      userId: id,
+      endsAt: z.iso.datetime(),
+      amount: money,
+    }),
+  },
   'MembershipPaymentFailed.v1': {
     producer: 'membership',
     payload: z.object({

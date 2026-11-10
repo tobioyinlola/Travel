@@ -29,6 +29,10 @@ export class CatalogApi {
     return this.searchService.cancelReservation(qualifiedRef, idempotencyKey);
   }
 
+  listProperties(offset: number, limit: number) {
+    return this.searchService.listProperties(offset, limit);
+  }
+
   getProperty(id: string) {
     return this.searchService.getProperty(id);
   }
