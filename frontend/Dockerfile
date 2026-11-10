@@ -13,6 +13,8 @@ RUN pnpm --filter @atp/api-client build && pnpm --filter @atp/web build
 
 FROM node:22-bookworm-slim
 ENV NODE_ENV=production
+# The app only needs `node`: drop the bundled package managers (a frequent source of scanner findings).
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn* /usr/local/bin/yarn /usr/local/bin/yarnpkg
 WORKDIR /app
 COPY --from=build /repo/frontend/.next/standalone ./
 COPY --from=build /repo/frontend/.next/static ./frontend/.next/static
