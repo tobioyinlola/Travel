@@ -39,7 +39,61 @@ const decision = (p: Record<string, unknown>) => ({
   note: String(p.note ?? ''),
 });
 
+const money = (v: unknown) =>
+  Money.fromJSON(v as { amountMinor: string; currency: string }).toString();
+const hotelsText = (p: Record<string, unknown>) =>
+  ((p.lines as Array<Record<string, string>> | undefined) ?? [])
+    .map(
+      (l) =>
+        `- ${l.propertyName}: ${l.checkIn} to ${l.checkOut}, confirmation ${l.confirmationCode}`,
+    )
+    .join('\n');
+
 const RULES: Rule[] = [
+  {
+    event: 'BookingConfirmed',
+    template: 'booking_confirmed_advisor',
+    recipient: 'advisorUserId',
+    vars: (p) => ({
+      tripId: String(p.tripId),
+      title: String(p.tripTitle),
+      traveler: String(p.travelerName ?? 'your traveler'),
+      hotels: hotelsText(p),
+    }),
+  },
+  {
+    event: 'BookingFailed',
+    template: 'booking_failed_advisor',
+    recipient: 'advisorUserId',
+    urgent: true,
+    vars: (p) => ({
+      tripId: String(p.tripId),
+      title: String(p.tripTitle),
+      reason: String(p.reason),
+    }),
+  },
+  {
+    event: 'BookingBlocked',
+    template: 'booking_blocked_advisor',
+    recipient: 'advisorUserId',
+    urgent: true,
+    vars: (p) => ({
+      tripId: String(p.tripId),
+      title: String(p.tripTitle),
+      reason: String(p.reason),
+    }),
+  },
+  {
+    event: 'BookingCancelled',
+    template: 'booking_cancelled_advisor',
+    recipient: 'advisorUserId',
+    vars: (p) => ({
+      tripId: String(p.tripId),
+      title: String(p.tripTitle),
+      penalty: money(p.penalty),
+      refund: money(p.refund),
+    }),
+  },
   { event: 'AdvisorApplicationSubmitted', template: 'application_received' },
   {
     event: 'AdvisorInformationRequested',
@@ -193,6 +247,60 @@ export class NotificationsService implements OnModuleInit {
         );
       },
     });
+
+    // The traveler has no account: write to the address given at checkout, carried on the event.
+    const toTraveler: Array<
+      [string, string, (p: Record<string, unknown>) => Record<string, string>]
+    > = [
+      [
+        'BookingConfirmed',
+        'booking_confirmed_traveler',
+        (p) => ({ title: String(p.tripTitle), hotels: hotelsText(p) }),
+      ],
+      [
+        'BookingFailed',
+        'booking_failed_traveler',
+        (p) => ({ title: String(p.tripTitle), reason: String(p.reason) }),
+      ],
+      [
+        'BookingCancelled',
+        'booking_cancelled_traveler',
+        (p) => ({
+          title: String(p.tripTitle),
+          penalty: money(p.penalty),
+          refund: money(p.refund),
+          zero: money({ amountMinor: '0', currency: (p.penalty as { currency: string }).currency }),
+        }),
+      ],
+    ];
+    for (const [event, template, vars] of toTraveler) {
+      this.bus.subscribe({
+        module: 'notifications',
+        handler: `notifications.${template}`,
+        event,
+        version: 1,
+        handle: async (e, tx) => {
+          const p = e.payload;
+          if (!p.travelerEmail) return; // the booking never got as far as traveler details
+          const r = templates[template]!({
+            name: String(p.travelerName ?? 'there'),
+            ...vars(p),
+          });
+          await this.queue(
+            tx,
+            e,
+            template,
+            null,
+            'email',
+            String(p.travelerEmail),
+            r.subject,
+            r.text,
+            false,
+            true,
+          );
+        },
+      });
+    }
 
     for (const rule of RULES) {
       this.bus.subscribe({

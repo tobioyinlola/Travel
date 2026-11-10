@@ -65,6 +65,35 @@ export interface RateQuery {
   currency: string;
 }
 
+export interface ReserveRequest {
+  rateKey: string;
+  currency: string;
+  /** What the traveler was quoted: the supplier must refuse if its price has moved (FR-BKG-01). */
+  expectedTotal: Money;
+  occupancy: Occupancy;
+  guest: { name: string; email: string; phone: string | null; specialRequests: string | null };
+  /** The same key always returns the same reservation (no double booking on retry, FR-BKG-06). */
+  idempotencyKey: string;
+}
+
+export type ReserveResult =
+  | {
+      status: 'confirmed';
+      reservationRef: string;
+      confirmationCode: string;
+      total: Money;
+      /** Provider response kept verbatim for support and reconciliation (FR-BKG-04). */
+      raw: unknown;
+    }
+  | { status: 'rejected'; reason: 'sold_out' | 'price_changed' | 'invalid'; raw: unknown };
+
+export interface CancelResult {
+  status: 'cancelled';
+  /** What the supplier keeps. Zero inside the free-cancellation window. */
+  penalty: Money;
+  raw: unknown;
+}
+
 export interface HotelSupplierPort {
   readonly name: string;
   /** Content for ingestion, paged. */
@@ -74,6 +103,13 @@ export interface HotelSupplierPort {
   searchRates(q: RateQuery): Promise<SupplierRate[]>;
   /** Re-price one offer now; null when no longer available. Never cached (ARCH). */
   checkRate(rateKey: string, currency: string): Promise<SupplierRate | null>;
+  /**
+   * Book one offer. Throws on transport errors or timeouts (the caller retries with the same key);
+   * returns `rejected` for definitive refusals (no retry).
+   */
+  reserve(req: ReserveRequest): Promise<ReserveResult>;
+  /** Cancel a reservation. Idempotent by reservation reference. */
+  cancel(reservationRef: string, idempotencyKey: string): Promise<CancelResult>;
 }
 
 export const HOTEL_SUPPLIERS = Symbol('HotelSuppliers');

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IngestionService } from './ingestion.service.js';
 import { SearchService } from './search.service.js';
+import type { ReserveRequest } from './supplier.port.js';
 
 /** Public interface for higher layers (Itineraries, Booking, Admin, AI). */
 @Injectable()
@@ -13,6 +14,15 @@ export class CatalogApi {
   /** Live re-price of one offer, never cached. Null when sold out. */
   checkRate(rateKey: string, currency: string) {
     return this.searchService.checkRate(rateKey, currency);
+  }
+
+  /** Book one offer with its supplier. Throws on transport errors (retry with the same key). */
+  reserve(rateKey: string, req: Omit<ReserveRequest, 'rateKey'>) {
+    return this.searchService.reserve(rateKey, req);
+  }
+
+  cancelReservation(qualifiedRef: string, idempotencyKey: string) {
+    return this.searchService.cancelReservation(qualifiedRef, idempotencyKey);
   }
 
   getProperty(id: string) {

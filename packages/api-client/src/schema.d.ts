@@ -308,6 +308,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dev/fake-payments/{clientToken}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FakePaymentsController_pay_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dev/fake-payments/{clientToken}/dispute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["FakePaymentsController_dispute_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/clients": {
         parameters: {
             query?: never;
@@ -862,6 +894,134 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["ProposalLinkController_decide_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/checkout/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CheckoutController_view_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/checkout/{token}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CheckoutController_confirm_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/bookings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingsController_get_v1"];
+        put?: never;
+        post?: never;
+        delete: operations["BookingsController_discard_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/bookings/{id}/cancellation-quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BookingsController_quote_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/bookings/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BookingsController_cancel_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/support/bookings/stuck": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportBookingsController_stuck_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/support/bookings/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SupportBookingsController_retry_v1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1974,6 +2134,63 @@ export interface operations {
                         }[];
                     };
                 };
+            };
+        };
+    };
+    FakePaymentsController_pay_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clientToken: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    cardNumber: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "succeeded" | "declined";
+                        reason: string;
+                    };
+                };
+            };
+        };
+    };
+    FakePaymentsController_dispute_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clientToken: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @default fraudulent */
+                    reason?: string;
+                };
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3536,7 +3753,7 @@ export interface operations {
     TripsController_list_v1: {
         parameters: {
             query?: {
-                status?: "planning" | "proposed" | "approved" | "cancelled";
+                status?: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                 clientId?: string;
             };
             header?: never;
@@ -3564,7 +3781,7 @@ export interface operations {
                         nights: number;
                         travelers: number;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         currency: string;
                         destination: {
                             city: string;
@@ -3634,7 +3851,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -3797,6 +4014,7 @@ export interface operations {
                             planning: number;
                             proposed: number;
                             approved: number;
+                            booked: number;
                             upcoming: number;
                             travelingNow: number;
                         };
@@ -3834,7 +4052,7 @@ export interface operations {
                             nights: number;
                             travelers: number;
                             /** @enum {string} */
-                            status: "planning" | "proposed" | "approved" | "cancelled";
+                            status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                             currency: string;
                             destination: {
                                 city: string;
@@ -3888,7 +4106,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -4084,7 +4302,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -4278,7 +4496,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -4464,7 +4682,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -4645,7 +4863,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -4839,7 +5057,7 @@ export interface operations {
                         };
                         notes: string;
                         /** @enum {string} */
-                        status: "planning" | "proposed" | "approved" | "cancelled";
+                        status: "planning" | "proposed" | "approved" | "booked" | "cancelled";
                         version: number;
                         items: {
                             /** Format: uuid */
@@ -5325,6 +5543,685 @@ export interface operations {
                         decisionNote: string | null;
                     };
                 };
+            };
+        };
+    };
+    CheckoutController_view_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "draft" | "pending" | "confirmed" | "failed" | "modified" | "cancelled" | "completed" | "reversed";
+                        title: string;
+                        currency: string;
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        lines: {
+                            /** Format: uuid */
+                            id: string;
+                            propertyName: string;
+                            city: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            nights: number;
+                            roomName: string;
+                            board: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            feesAtHotel: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            refundable: boolean;
+                            /** Format: date-time */
+                            freeCancellationUntil: string | null;
+                            cancellationPolicy: string;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "failed" | "cancelled";
+                            confirmationCode: string | null;
+                        }[];
+                        paymentOptions: {
+                            /** @enum {string} */
+                            mode: "pay_at_hotel" | "prepay" | "deposit";
+                            dueNow: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        }[];
+                        selected: {
+                            /** @enum {string} */
+                            mode: "pay_at_hotel" | "prepay" | "deposit";
+                            dueNow: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        } | null;
+                        traveler: {
+                            name: string;
+                            email: string;
+                            phone: string | null;
+                            specialRequests: string | null;
+                        } | null;
+                        payment: {
+                            /** @enum {string} */
+                            state: "none" | "awaiting" | "captured" | "failed" | "partially_refunded" | "refunded";
+                            amount: {
+                                amountMinor: string;
+                                currency: string;
+                            } | null;
+                            clientToken: string | null;
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            failure: string | null;
+                        };
+                        failureReason: string | null;
+                        /** Format: date-time */
+                        linkExpiresAt: string;
+                    };
+                };
+            };
+        };
+    };
+    CheckoutController_confirm_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    traveler: {
+                        name: string;
+                        /** Format: email */
+                        email: string;
+                        phone?: string | null;
+                        specialRequests?: string | null;
+                    };
+                    /** @enum {string} */
+                    paymentMode: "pay_at_hotel" | "prepay" | "deposit";
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        status: "draft" | "pending" | "confirmed" | "failed" | "modified" | "cancelled" | "completed" | "reversed";
+                        title: string;
+                        currency: string;
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        lines: {
+                            /** Format: uuid */
+                            id: string;
+                            propertyName: string;
+                            city: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            nights: number;
+                            roomName: string;
+                            board: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            feesAtHotel: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            refundable: boolean;
+                            /** Format: date-time */
+                            freeCancellationUntil: string | null;
+                            cancellationPolicy: string;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "failed" | "cancelled";
+                            confirmationCode: string | null;
+                        }[];
+                        paymentOptions: {
+                            /** @enum {string} */
+                            mode: "pay_at_hotel" | "prepay" | "deposit";
+                            dueNow: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        }[];
+                        selected: {
+                            /** @enum {string} */
+                            mode: "pay_at_hotel" | "prepay" | "deposit";
+                            dueNow: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        } | null;
+                        traveler: {
+                            name: string;
+                            email: string;
+                            phone: string | null;
+                            specialRequests: string | null;
+                        } | null;
+                        payment: {
+                            /** @enum {string} */
+                            state: "none" | "awaiting" | "captured" | "failed" | "partially_refunded" | "refunded";
+                            amount: {
+                                amountMinor: string;
+                                currency: string;
+                            } | null;
+                            clientToken: string | null;
+                            /** Format: date-time */
+                            expiresAt: string | null;
+                            failure: string | null;
+                        };
+                        failureReason: string | null;
+                        /** Format: date-time */
+                        linkExpiresAt: string;
+                    };
+                };
+            };
+        };
+    };
+    BookingsController_list_v1: {
+        parameters: {
+            query?: {
+                tripId?: string;
+                status?: "draft" | "pending" | "confirmed" | "failed" | "modified" | "cancelled" | "completed" | "reversed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            tripId: string;
+                            /** Format: uuid */
+                            proposalId: string;
+                            tripTitle: string;
+                            /** @enum {string} */
+                            status: "draft" | "pending" | "confirmed" | "failed" | "modified" | "cancelled" | "completed" | "reversed";
+                            cancelling: boolean;
+                            currency: string;
+                            /** @enum {string|null} */
+                            paymentMode: "pay_at_hotel" | "prepay" | "deposit" | null;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            dueNow: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            paid: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            refunded: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            penalty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            /** @enum {string} */
+                            paymentState: "none" | "awaiting" | "captured" | "failed" | "partially_refunded" | "refunded";
+                            traveler: {
+                                name: string;
+                                email: string;
+                                phone: string | null;
+                                specialRequests: string | null;
+                            } | null;
+                            lines: {
+                                /** Format: uuid */
+                                id: string;
+                                propertyName: string;
+                                city: string;
+                                /** Format: date */
+                                checkIn: string;
+                                /** Format: date */
+                                checkOut: string;
+                                nights: number;
+                                roomName: string;
+                                board: string;
+                                total: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                feesAtHotel: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                refundable: boolean;
+                                /** Format: date-time */
+                                freeCancellationUntil: string | null;
+                                cancellationPolicy: string;
+                                /** @enum {string} */
+                                status: "pending" | "confirmed" | "failed" | "cancelled";
+                                confirmationCode: string | null;
+                                supplier: string;
+                                commissionable: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                commissionBps: number;
+                                penalty: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                                attempts: number;
+                                failureReason: string | null;
+                            }[];
+                            failureReason: string | null;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** Format: date-time */
+                            confirmedAt: string | null;
+                            /** Format: date-time */
+                            cancelledAt: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    BookingsController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        tripId: string;
+                        /** Format: uuid */
+                        proposalId: string;
+                        tripTitle: string;
+                        /** @enum {string} */
+                        status: "draft" | "pending" | "confirmed" | "failed" | "modified" | "cancelled" | "completed" | "reversed";
+                        cancelling: boolean;
+                        currency: string;
+                        /** @enum {string|null} */
+                        paymentMode: "pay_at_hotel" | "prepay" | "deposit" | null;
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        dueNow: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        paid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        refunded: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        penalty: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        /** @enum {string} */
+                        paymentState: "none" | "awaiting" | "captured" | "failed" | "partially_refunded" | "refunded";
+                        traveler: {
+                            name: string;
+                            email: string;
+                            phone: string | null;
+                            specialRequests: string | null;
+                        } | null;
+                        lines: {
+                            /** Format: uuid */
+                            id: string;
+                            propertyName: string;
+                            city: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            nights: number;
+                            roomName: string;
+                            board: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            feesAtHotel: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            refundable: boolean;
+                            /** Format: date-time */
+                            freeCancellationUntil: string | null;
+                            cancellationPolicy: string;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "failed" | "cancelled";
+                            confirmationCode: string | null;
+                            supplier: string;
+                            commissionable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            commissionBps: number;
+                            penalty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            attempts: number;
+                            failureReason: string | null;
+                        }[];
+                        failureReason: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        confirmedAt: string | null;
+                        /** Format: date-time */
+                        cancelledAt: string | null;
+                    };
+                };
+            };
+        };
+    };
+    BookingsController_discard_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BookingsController_quote_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        bookingId: string;
+                        /** @enum {boolean} */
+                        estimate: true;
+                        lines: {
+                            /** Format: uuid */
+                            id: string;
+                            propertyName: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            penalty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            /** Format: date-time */
+                            freeCancellationUntil: string | null;
+                            cancellationPolicy: string;
+                        }[];
+                        penalty: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        paid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        refund: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+    BookingsController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        tripId: string;
+                        /** Format: uuid */
+                        proposalId: string;
+                        tripTitle: string;
+                        /** @enum {string} */
+                        status: "draft" | "pending" | "confirmed" | "failed" | "modified" | "cancelled" | "completed" | "reversed";
+                        cancelling: boolean;
+                        currency: string;
+                        /** @enum {string|null} */
+                        paymentMode: "pay_at_hotel" | "prepay" | "deposit" | null;
+                        total: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        dueNow: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        paid: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        refunded: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        penalty: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        /** @enum {string} */
+                        paymentState: "none" | "awaiting" | "captured" | "failed" | "partially_refunded" | "refunded";
+                        traveler: {
+                            name: string;
+                            email: string;
+                            phone: string | null;
+                            specialRequests: string | null;
+                        } | null;
+                        lines: {
+                            /** Format: uuid */
+                            id: string;
+                            propertyName: string;
+                            city: string;
+                            /** Format: date */
+                            checkIn: string;
+                            /** Format: date */
+                            checkOut: string;
+                            nights: number;
+                            roomName: string;
+                            board: string;
+                            total: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            feesAtHotel: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            refundable: boolean;
+                            /** Format: date-time */
+                            freeCancellationUntil: string | null;
+                            cancellationPolicy: string;
+                            /** @enum {string} */
+                            status: "pending" | "confirmed" | "failed" | "cancelled";
+                            confirmationCode: string | null;
+                            supplier: string;
+                            commissionable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            commissionBps: number;
+                            penalty: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            attempts: number;
+                            failureReason: string | null;
+                        }[];
+                        failureReason: string | null;
+                        /** Format: date-time */
+                        createdAt: string;
+                        /** Format: date-time */
+                        confirmedAt: string | null;
+                        /** Format: date-time */
+                        cancelledAt: string | null;
+                    };
+                };
+            };
+        };
+    };
+    SupportBookingsController_stuck_v1: {
+        parameters: {
+            query?: {
+                minutes?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            tripTitle: string;
+                            /** Format: date-time */
+                            pendingSince: string;
+                            lines: {
+                                /** Format: uuid */
+                                id: string;
+                                propertyName: string;
+                                supplier: string;
+                                /** @enum {string} */
+                                status: "pending" | "confirmed" | "failed" | "cancelled";
+                                attempts: number;
+                            }[];
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    SupportBookingsController_retry_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

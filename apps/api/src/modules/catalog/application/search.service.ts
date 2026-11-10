@@ -11,10 +11,14 @@ import {
   type HotelSupplierPort,
   type Money,
   type Occupancy,
+  type CancelResult,
+  type ReserveRequest,
+  type ReserveResult,
   type SupplierRate,
 } from './supplier.port.js';
 
 const SUPPLIER_TIMEOUT_MS = 2500;
+const RESERVE_TIMEOUT_MS = 10_000;
 const RATE_CACHE_SECONDS = 120;
 const MAX_CANDIDATES = 100;
 const RATES_PER_PROPERTY = 6;
@@ -130,9 +134,55 @@ export class SearchService {
   }
 
   /** Each supplier call: circuit breaker + explicit timeout (bulkheaded: one supplier cannot stall another). */
-  private call<T>(supplier: string, label: string, fn: () => Promise<T>): Promise<T> {
-    return this.breaker(supplier).run(() =>
-      withTimeout(fn(), SUPPLIER_TIMEOUT_MS, `${supplier} ${label}`),
+  private call<T>(
+    supplier: string,
+    label: string,
+    fn: () => Promise<T>,
+    timeoutMs = SUPPLIER_TIMEOUT_MS,
+  ): Promise<T> {
+    return this.breaker(supplier).run(() => withTimeout(fn(), timeoutMs, `${supplier} ${label}`));
+  }
+
+  private supplierFor(rateKeyOrRef: string): { supplier: HotelSupplierPort; key: string } {
+    const { supplier: name, key } = splitKey(rateKeyOrRef);
+    const supplier = this.suppliers.find((s) => s.name === name);
+    if (!supplier) throw problem(HttpStatus.BAD_REQUEST, 'rate-key-invalid', 'Unknown rate');
+    return { supplier, key };
+  }
+
+  /**
+   * Book an offer with its supplier (FR-BKG-04). Booking calls get a longer timeout than searches; transport
+   * errors and an open circuit throw, so the caller's job retries with the same idempotency key.
+   */
+  async reserve(
+    rateKey: string,
+    req: Omit<ReserveRequest, 'rateKey'>,
+  ): Promise<ReserveResult & { supplier: string }> {
+    const { supplier, key } = this.supplierFor(rateKey);
+    const result = await this.call(
+      supplier.name,
+      'reserve',
+      () => supplier.reserve({ ...req, rateKey: key }),
+      RESERVE_TIMEOUT_MS,
+    );
+    // References are supplier-qualified so cancel can find the right adapter later.
+    return result.status === 'confirmed'
+      ? {
+          ...result,
+          reservationRef: qualifyKey(supplier.name, result.reservationRef),
+          supplier: supplier.name,
+        }
+      : { ...result, supplier: supplier.name };
+  }
+
+  /** Cancel with the supplier that holds the reservation (reference is supplier-qualified). */
+  async cancelReservation(qualifiedRef: string, idempotencyKey: string): Promise<CancelResult> {
+    const { supplier, key } = this.supplierFor(qualifiedRef);
+    return this.call(
+      supplier.name,
+      'cancel',
+      () => supplier.cancel(key, idempotencyKey),
+      RESERVE_TIMEOUT_MS,
     );
   }
 

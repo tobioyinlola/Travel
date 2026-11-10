@@ -51,7 +51,7 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
   }),
   proposal_approved: (v) => ({
     subject: `Proposal approved: ${v.title}`,
-    text: `Hi ${v.name},\n\n${v.decidedBy} approved your proposal. Next: book it from the trip page:\n${v.webBaseUrl}/trips/${v.tripId}`,
+    text: `Hi ${v.name},\n\n${v.decidedBy} approved your proposal. They can now complete the booking from the same link (details and payment). We will email you when it is confirmed.\nTrip: ${v.webBaseUrl}/trips/${v.tripId}`,
   }),
   proposal_changes_requested: (v) => ({
     subject: `Changes requested: ${v.title}`,
@@ -60,6 +60,34 @@ export const templates: Record<string, (v: Vars) => Rendered> = {
   proposal_declined: (v) => ({
     subject: `Proposal declined: ${v.title}`,
     text: `Hi ${v.name},\n\n${v.decidedBy} declined the proposal.${v.note ? `\n\nTheir note: ${v.note}` : ''}`,
+  }),
+  booking_confirmed_advisor: (v) => ({
+    subject: `Booking confirmed: ${v.title}`,
+    text: `Hi ${v.name},\n\nEvery hotel on "${v.title}" is confirmed for ${v.traveler}.\n\n${v.hotels}\n\nOpen the booking: ${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  booking_failed_advisor: (v) => ({
+    subject: `Booking failed: ${v.title}`,
+    text: `Hi ${v.name},\n\nWe could not complete the booking for "${v.title}": ${v.reason}.\nAnything the traveler paid is being refunded. The trip is open for changes again, so you can update it and send a new proposal on the same link:\n${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  booking_blocked_advisor: (v) => ({
+    subject: `Your traveler could not check out: ${v.title}`,
+    text: `Hi ${v.name},\n\nYour traveler tried to book "${v.title}" but could not go ahead: ${v.reason}\nUpdate the proposal and send it again:\n${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  booking_cancelled_advisor: (v) => ({
+    subject: `Booking cancelled: ${v.title}`,
+    text: `Hi ${v.name},\n\nThe booking for "${v.title}" is cancelled. Supplier penalty: ${v.penalty}. Refund to the traveler: ${v.refund}.\n${v.webBaseUrl}/trips/${v.tripId}`,
+  }),
+  booking_confirmed_traveler: (v) => ({
+    subject: `Your trip is booked: ${v.title}`,
+    text: `Hi ${v.name},\n\nGood news: your trip "${v.title}" is confirmed.\n\n${v.hotels}\n\nKeep this email: the confirmation numbers are what the hotels will ask for. Questions? Reply to your advisor.`,
+  }),
+  booking_failed_traveler: (v) => ({
+    subject: `We could not complete your booking: ${v.title}`,
+    text: `Hi ${v.name},\n\nWe were not able to complete the booking for "${v.title}" (${v.reason}). Nothing is owed: anything you paid is being refunded to your card. Your advisor will be in touch with an updated proposal.`,
+  }),
+  booking_cancelled_traveler: (v) => ({
+    subject: `Your booking is cancelled: ${v.title}`,
+    text: `Hi ${v.name},\n\nYour booking for "${v.title}" has been cancelled.${v.penalty !== v.zero ? ` The hotels kept ${v.penalty} under their cancellation terms.` : ''} Refund to your card: ${v.refund}.`,
   }),
   membership_cancelled: (v) => ({
     subject: 'Your membership is cancelled',

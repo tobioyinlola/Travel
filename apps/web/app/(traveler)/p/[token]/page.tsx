@@ -10,6 +10,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
+import { Checkout, type CheckoutView } from './checkout';
 import { Decision } from './decision';
 
 // Proposal links carry a secret token: never index them, never cache them publicly.
@@ -118,6 +119,16 @@ async function load(token: string): Promise<{ proposal: Proposal } | { error: nu
   return { proposal: (await res.json()) as Proposal };
 }
 
+async function loadCheckout(token: string): Promise<CheckoutView | null> {
+  const h = await headers();
+  const forwarded = h.get('x-forwarded-for');
+  const res = await fetch(`${API}/v1/checkout/${encodeURIComponent(token)}`, {
+    cache: 'no-store',
+    headers: forwarded ? { 'x-forwarded-for': forwarded } : {},
+  });
+  return res.ok ? ((await res.json()) as CheckoutView) : null;
+}
+
 /** Server-rendered for fast first load on phones (NFR-02); no account needed (FR-TRV-01). */
 export default async function ProposalPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -137,6 +148,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ token
   const p = result.proposal;
   const byDay = new Map<string, Proposal['items']>();
   for (const it of p.items) byDay.set(it.day, [...(byDay.get(it.day) ?? []), it]);
+  const checkout = p.status === 'approved' ? await loadCheckout(token) : null;
   const people = p.travelers.adults + p.travelers.childrenAges.length;
 
   return (
@@ -256,9 +268,17 @@ export default async function ProposalPage({ params }: { params: Promise<{ token
         </p>
       </section>
 
+      {checkout && (
+        <Checkout
+          token={token}
+          initial={checkout}
+          suggestedName={p.decidedByName}
+          advisorName={p.advisorName}
+        />
+      )}
       <Decision
         token={token}
-        status={p.status}
+        status={checkout ? 'booking' : p.status}
         ratesExpired={p.ratesExpired}
         advisorName={p.advisorName}
         decidedByName={p.decidedByName}

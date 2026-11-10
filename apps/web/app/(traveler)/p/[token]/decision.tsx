@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Alert, Button, Field } from '@/components/ui';
 import { api, ApiError, call } from '@/lib/api';
 
@@ -26,12 +26,9 @@ export function Decision({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  if (status === 'booking') return null; // checkout takes over once approved
   if (status === 'approved')
-    return (
-      <Alert kind="success">
-        Approved by {decidedByName}. {advisorName} will be in touch to book.
-      </Alert>
-    );
+    return <ApprovedNotice decidedByName={decidedByName} advisorName={advisorName} />;
   if (status === 'changes_requested')
     return (
       <Alert kind="info">
@@ -124,10 +121,39 @@ export function Decision({
       </Button>
       {choice === 'approve' && (
         <p className="text-xs text-muted">
-          Payment is taken when your advisor books. You will see the amount before anything is
-          charged.
+          Next you add your details and choose how to pay. You will see the amount before anything
+          is charged.
         </p>
       )}
     </form>
+  );
+}
+
+/**
+ * Approval is recorded at once, but the booking for checkout is prepared a moment later by the worker. Look
+ * again a few times; trips with nothing to book keep the plain message.
+ */
+function ApprovedNotice({
+  decidedByName,
+  advisorName,
+}: {
+  decidedByName: string | null;
+  advisorName: string;
+}) {
+  const router = useRouter();
+  const [tries, setTries] = useState(0);
+  useEffect(() => {
+    if (tries >= 8) return;
+    const id = setTimeout(() => {
+      setTries(tries + 1);
+      router.refresh();
+    }, 1500);
+    return () => clearTimeout(id);
+  }, [tries, router]);
+  return (
+    <Alert kind="success">
+      Approved by {decidedByName}.{' '}
+      {tries < 8 ? 'Preparing your booking…' : `${advisorName} will be in touch to book.`}
+    </Alert>
   );
 }

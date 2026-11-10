@@ -6,3 +6,4 @@ export { HOTEL_SUPPLIERS } from './application/supplier.port.js';
 export { FakeHotelSupplier } from './infrastructure/fake-suppliers.js';
 export { rateSchema, propertySchema, preferredSchema } from './http/schemas.js';
 export { nightsBetween, addDays } from './domain/dates.js';
+export type { PaymentMode, ReserveResult, CancelResult } from './application/supplier.port.js';

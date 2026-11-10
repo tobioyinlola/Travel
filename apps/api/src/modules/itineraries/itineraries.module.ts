@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BookingOutcomes } from './application/booking-outcomes.service.js';
 import { ProposalLinkService } from './application/proposal-link.service.js';
 import { TripsService } from './application/trips.service.js';
 import { ProposalLinkController } from './http/proposal-link.controller.js';
@@ -11,6 +12,6 @@ import { TripsController } from './http/trips.controller.js';
  */
 @Module({
   controllers: [TripsController, ProposalLinkController],
-  providers: [TripsService, ProposalLinkService],
+  providers: [TripsService, ProposalLinkService, BookingOutcomes],
 })
 export class ItinerariesModule {}

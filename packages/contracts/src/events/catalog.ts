@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const id = z.uuid();
+const paymentMode = z.enum(['pay_at_hotel', 'prepay', 'deposit']);
 const money = z.object({
   amountMinor: z.string().regex(/^-?\d+$/),
   currency: z.string().length(3),
@@ -167,6 +168,11 @@ export const eventCatalog = {
       expiresAt: z.iso.datetime(),
     }),
   },
+  /**
+   * Carries everything Booking needs to prepare checkout, because Booking (same layer) may not call
+   * Itineraries. Added in Sprint 4 as optional fields; `hotels` is empty for a trip with nothing to book.
+   * `tokenHash` is the SHA-256 of the traveler link token, never the token itself.
+   */
   'ProposalApproved.v1': {
     producer: 'itineraries',
     payload: z.object({
@@ -177,6 +183,35 @@ export const eventCatalog = {
       advisorUserId: id,
       tripTitle: z.string(),
       decidedByName: z.string(),
+      tokenHash: z.string().optional(),
+      linkExpiresAt: z.iso.datetime().optional(),
+      currency: z.string().length(3).optional(),
+      hotels: z
+        .array(
+          z.object({
+            itemId: id,
+            supplier: z.string(),
+            rateKey: z.string(),
+            propertyName: z.string(),
+            city: z.string(),
+            checkIn: z.iso.date(),
+            checkOut: z.iso.date(),
+            nights: z.number().int(),
+            roomName: z.string(),
+            board: z.string(),
+            adults: z.number().int(),
+            childrenAges: z.array(z.number().int()),
+            total: money,
+            feesAtHotel: money,
+            commissionable: money,
+            commissionBps: z.number().int(),
+            paymentModes: z.array(paymentMode),
+            refundable: z.boolean(),
+            freeCancellationUntil: z.iso.datetime().nullable(),
+            cancellationPolicy: z.string(),
+          }),
+        )
+        .optional(),
     }),
   },
   'ProposalChangesRequested.v1': {
@@ -216,21 +251,126 @@ export const eventCatalog = {
       status: z.string(),
     }),
   },
+  /** Booking asks Payments to collect the traveler's money (prepay or deposit). */
+  'BookingPaymentRequested.v1': {
+    producer: 'booking',
+    payload: z.object({
+      bookingId: id,
+      proposalId: id,
+      advisorId: id,
+      amount: money,
+      description: z.string(),
+    }),
+  },
+  /** A payment is ready for the traveler to complete with the provider's hosted fields. */
+  'PaymentIntentCreated.v1': {
+    producer: 'commission-payments',
+    payload: z.object({
+      paymentId: id,
+      bookingId: id,
+      clientToken: z.string(),
+      expiresAt: z.iso.datetime(),
+      amount: money,
+    }),
+  },
   'PaymentCaptured.v1': {
     producer: 'commission-payments',
-    payload: z.object({ paymentId: id, proposalId: id, amount: money }),
+    payload: z.object({
+      paymentId: id,
+      proposalId: id,
+      amount: money,
+      bookingId: id.optional(),
+    }),
   },
+  'PaymentFailed.v1': {
+    producer: 'commission-payments',
+    payload: z.object({ paymentId: id, bookingId: id, reason: z.string() }),
+  },
+  'RefundIssued.v1': {
+    producer: 'commission-payments',
+    payload: z.object({ paymentId: id, bookingId: id, amount: money, reason: z.string() }),
+  },
+  /** The traveler could not go ahead: a price moved or a hotel sold out. The advisor needs to reprice. */
+  'BookingBlocked.v1': {
+    producer: 'booking',
+    payload: z.object({
+      bookingId: id,
+      tripId: id,
+      advisorId: id,
+      advisorUserId: id,
+      tripTitle: z.string(),
+      reason: z.string(),
+    }),
+  },
+  /** An unpaid draft was dropped so the trip can be edited and proposed again. */
+  'BookingDiscarded.v1': {
+    producer: 'booking',
+    payload: z.object({ bookingId: id, tripId: id, proposalId: id, advisorId: id }),
+  },
+  /** A chargeback was opened with the card network. Finance and support handle it (FR-PAY-02). */
+  'PaymentDisputed.v1': {
+    producer: 'commission-payments',
+    payload: z.object({ paymentId: id, bookingId: id, amount: money }),
+  },
+  /**
+   * Booking outcomes. Notifications reads the traveler and advisor details from here (it may not call
+   * Booking). `supplierId` predates multi-hotel bookings and is no longer sent.
+   */
   'BookingConfirmed.v1': {
     producer: 'booking',
-    payload: z.object({ bookingId: id, tripId: id, advisorId: id, supplierId: id }),
+    payload: z.object({
+      bookingId: id,
+      tripId: id,
+      advisorId: id,
+      supplierId: id.optional(),
+      advisorUserId: id.optional(),
+      tripTitle: z.string().optional(),
+      travelerName: z.string().optional(),
+      travelerEmail: z.string().optional(),
+      total: money.optional(),
+      lines: z
+        .array(
+          z.object({
+            supplier: z.string(),
+            propertyName: z.string(),
+            checkIn: z.iso.date(),
+            checkOut: z.iso.date(),
+            confirmationCode: z.string(),
+            total: money,
+            commissionable: money,
+            commissionBps: z.number().int(),
+          }),
+        )
+        .optional(),
+    }),
   },
   'BookingFailed.v1': {
     producer: 'booking',
-    payload: z.object({ bookingId: id, tripId: id, advisorId: id, reason: z.string() }),
+    payload: z.object({
+      bookingId: id,
+      tripId: id,
+      advisorId: id,
+      reason: z.string(),
+      advisorUserId: id.optional(),
+      tripTitle: z.string().optional(),
+      travelerName: z.string().optional(),
+      travelerEmail: z.string().optional(),
+    }),
   },
   'BookingCancelled.v1': {
     producer: 'booking',
-    payload: z.object({ bookingId: id, advisorId: id }),
+    payload: z.object({
+      bookingId: id,
+      advisorId: id,
+      tripId: id.optional(),
+      advisorUserId: id.optional(),
+      tripTitle: z.string().optional(),
+      travelerName: z.string().optional(),
+      travelerEmail: z.string().optional(),
+      /** What goes back to the traveler after supplier penalties. */
+      refund: money.optional(),
+      penalty: money.optional(),
+    }),
   },
   'BookingCompleted.v1': {
     producer: 'booking',

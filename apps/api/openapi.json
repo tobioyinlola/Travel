@@ -2468,6 +2468,111 @@
         ]
       }
     },
+    "/v1/dev/fake-payments/{clientToken}/pay": {
+      "post": {
+        "operationId": "FakePaymentsController_pay_v1",
+        "parameters": [
+          {
+            "name": "clientToken",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cardNumber": {
+                    "type": "string",
+                    "pattern": "^[0-9 ]{12,23}$"
+                  }
+                },
+                "required": [
+                  "cardNumber"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "succeeded",
+                        "declined"
+                      ]
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "reason"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/v1/dev/fake-payments/{clientToken}/dispute": {
+      "post": {
+        "operationId": "FakePaymentsController_dispute_v1",
+        "parameters": [
+          {
+            "name": "clientToken",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "default": "fraudulent",
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "dev"
+        ]
+      }
+    },
     "/v1/clients": {
       "get": {
         "operationId": "ClientsController_list_v1",
@@ -7586,6 +7691,7 @@
                 "planning",
                 "proposed",
                 "approved",
+                "booked",
                 "cancelled"
               ]
             }
@@ -7649,6 +7755,7 @@
                           "planning",
                           "proposed",
                           "approved",
+                          "booked",
                           "cancelled"
                         ]
                       },
@@ -7859,6 +7966,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -8501,6 +8609,9 @@
                         "approved": {
                           "type": "number"
                         },
+                        "booked": {
+                          "type": "number"
+                        },
                         "upcoming": {
                           "type": "number"
                         },
@@ -8513,6 +8624,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "upcoming",
                         "travelingNow"
                       ]
@@ -8639,6 +8751,7 @@
                               "planning",
                               "proposed",
                               "approved",
+                              "booked",
                               "cancelled"
                             ]
                           },
@@ -8804,6 +8917,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -9563,6 +9677,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -10319,6 +10434,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -11041,6 +11157,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -11797,6 +11914,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -12505,6 +12623,7 @@
                         "planning",
                         "proposed",
                         "approved",
+                        "booked",
                         "cancelled"
                       ]
                     },
@@ -14322,6 +14441,2324 @@
         },
         "tags": [
           "proposal-link"
+        ]
+      }
+    },
+    "/v1/checkout/{token}": {
+      "get": {
+        "operationId": "CheckoutController_view_v1",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "pending",
+                        "confirmed",
+                        "failed",
+                        "modified",
+                        "cancelled",
+                        "completed",
+                        "reversed"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "propertyName": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "checkIn": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "checkOut": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "nights": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "roomName": {
+                            "type": "string"
+                          },
+                          "board": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "feesAtHotel": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "refundable": {
+                            "type": "boolean"
+                          },
+                          "freeCancellationUntil": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "cancellationPolicy": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "failed",
+                              "cancelled"
+                            ]
+                          },
+                          "confirmationCode": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "propertyName",
+                          "city",
+                          "checkIn",
+                          "checkOut",
+                          "nights",
+                          "roomName",
+                          "board",
+                          "total",
+                          "feesAtHotel",
+                          "refundable",
+                          "freeCancellationUntil",
+                          "cancellationPolicy",
+                          "status",
+                          "confirmationCode"
+                        ]
+                      }
+                    },
+                    "paymentOptions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "pay_at_hotel",
+                              "prepay",
+                              "deposit"
+                            ]
+                          },
+                          "dueNow": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "mode",
+                          "dueNow"
+                        ]
+                      }
+                    },
+                    "selected": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "pay_at_hotel",
+                            "prepay",
+                            "deposit"
+                          ]
+                        },
+                        "dueNow": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "dueNow"
+                      ]
+                    },
+                    "traveler": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "specialRequests": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "email",
+                        "phone",
+                        "specialRequests"
+                      ]
+                    },
+                    "payment": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "awaiting",
+                            "captured",
+                            "failed",
+                            "partially_refunded",
+                            "refunded"
+                          ]
+                        },
+                        "amount": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "clientToken": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "expiresAt": {
+                          "nullable": true,
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "failure": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "amount",
+                        "clientToken",
+                        "expiresAt",
+                        "failure"
+                      ]
+                    },
+                    "failureReason": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "linkExpiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "title",
+                    "currency",
+                    "total",
+                    "lines",
+                    "paymentOptions",
+                    "selected",
+                    "traveler",
+                    "payment",
+                    "failureReason",
+                    "linkExpiresAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "checkout"
+        ]
+      }
+    },
+    "/v1/checkout/{token}/confirm": {
+      "post": {
+        "operationId": "CheckoutController_confirm_v1",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per logical request; reuse it on retry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "traveler": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 120
+                      },
+                      "email": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "format": "email",
+                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                      },
+                      "phone": {
+                        "nullable": true,
+                        "type": "string",
+                        "pattern": "^[0-9+()\\-. ]{6,30}$"
+                      },
+                      "specialRequests": {
+                        "nullable": true,
+                        "type": "string",
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "email"
+                    ]
+                  },
+                  "paymentMode": {
+                    "type": "string",
+                    "enum": [
+                      "pay_at_hotel",
+                      "prepay",
+                      "deposit"
+                    ]
+                  }
+                },
+                "required": [
+                  "traveler",
+                  "paymentMode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "pending",
+                        "confirmed",
+                        "failed",
+                        "modified",
+                        "cancelled",
+                        "completed",
+                        "reversed"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "propertyName": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "checkIn": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "checkOut": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "nights": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "roomName": {
+                            "type": "string"
+                          },
+                          "board": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "feesAtHotel": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "refundable": {
+                            "type": "boolean"
+                          },
+                          "freeCancellationUntil": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "cancellationPolicy": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "failed",
+                              "cancelled"
+                            ]
+                          },
+                          "confirmationCode": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "propertyName",
+                          "city",
+                          "checkIn",
+                          "checkOut",
+                          "nights",
+                          "roomName",
+                          "board",
+                          "total",
+                          "feesAtHotel",
+                          "refundable",
+                          "freeCancellationUntil",
+                          "cancellationPolicy",
+                          "status",
+                          "confirmationCode"
+                        ]
+                      }
+                    },
+                    "paymentOptions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "pay_at_hotel",
+                              "prepay",
+                              "deposit"
+                            ]
+                          },
+                          "dueNow": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "mode",
+                          "dueNow"
+                        ]
+                      }
+                    },
+                    "selected": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "pay_at_hotel",
+                            "prepay",
+                            "deposit"
+                          ]
+                        },
+                        "dueNow": {
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "dueNow"
+                      ]
+                    },
+                    "traveler": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "specialRequests": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "email",
+                        "phone",
+                        "specialRequests"
+                      ]
+                    },
+                    "payment": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "awaiting",
+                            "captured",
+                            "failed",
+                            "partially_refunded",
+                            "refunded"
+                          ]
+                        },
+                        "amount": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "amountMinor": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "amountMinor",
+                            "currency"
+                          ]
+                        },
+                        "clientToken": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "expiresAt": {
+                          "nullable": true,
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "failure": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "amount",
+                        "clientToken",
+                        "expiresAt",
+                        "failure"
+                      ]
+                    },
+                    "failureReason": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "linkExpiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "title",
+                    "currency",
+                    "total",
+                    "lines",
+                    "paymentOptions",
+                    "selected",
+                    "traveler",
+                    "payment",
+                    "failureReason",
+                    "linkExpiresAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "checkout"
+        ]
+      }
+    },
+    "/v1/bookings": {
+      "get": {
+        "operationId": "BookingsController_list_v1",
+        "parameters": [
+          {
+            "name": "tripId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "pending",
+                "confirmed",
+                "failed",
+                "modified",
+                "cancelled",
+                "completed",
+                "reversed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "tripId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "proposalId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "tripTitle": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "draft",
+                              "pending",
+                              "confirmed",
+                              "failed",
+                              "modified",
+                              "cancelled",
+                              "completed",
+                              "reversed"
+                            ]
+                          },
+                          "cancelling": {
+                            "type": "boolean"
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "paymentMode": {
+                            "nullable": true,
+                            "type": "string",
+                            "enum": [
+                              "pay_at_hotel",
+                              "prepay",
+                              "deposit"
+                            ]
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "dueNow": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "paid": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "refunded": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "penalty": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "paymentState": {
+                            "type": "string",
+                            "enum": [
+                              "none",
+                              "awaiting",
+                              "captured",
+                              "failed",
+                              "partially_refunded",
+                              "refunded"
+                            ]
+                          },
+                          "traveler": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "email": {
+                                "type": "string"
+                              },
+                              "phone": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "specialRequests": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "email",
+                              "phone",
+                              "specialRequests"
+                            ]
+                          },
+                          "lines": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "propertyName": {
+                                  "type": "string"
+                                },
+                                "city": {
+                                  "type": "string"
+                                },
+                                "checkIn": {
+                                  "type": "string",
+                                  "format": "date",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                },
+                                "checkOut": {
+                                  "type": "string",
+                                  "format": "date",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                },
+                                "nights": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "roomName": {
+                                  "type": "string"
+                                },
+                                "board": {
+                                  "type": "string"
+                                },
+                                "total": {
+                                  "type": "object",
+                                  "properties": {
+                                    "amountMinor": {
+                                      "type": "string"
+                                    },
+                                    "currency": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "amountMinor",
+                                    "currency"
+                                  ]
+                                },
+                                "feesAtHotel": {
+                                  "type": "object",
+                                  "properties": {
+                                    "amountMinor": {
+                                      "type": "string"
+                                    },
+                                    "currency": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "amountMinor",
+                                    "currency"
+                                  ]
+                                },
+                                "refundable": {
+                                  "type": "boolean"
+                                },
+                                "freeCancellationUntil": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                },
+                                "cancellationPolicy": {
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "confirmed",
+                                    "failed",
+                                    "cancelled"
+                                  ]
+                                },
+                                "confirmationCode": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "supplier": {
+                                  "type": "string"
+                                },
+                                "commissionable": {
+                                  "type": "object",
+                                  "properties": {
+                                    "amountMinor": {
+                                      "type": "string"
+                                    },
+                                    "currency": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "amountMinor",
+                                    "currency"
+                                  ]
+                                },
+                                "commissionBps": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "penalty": {
+                                  "type": "object",
+                                  "properties": {
+                                    "amountMinor": {
+                                      "type": "string"
+                                    },
+                                    "currency": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "amountMinor",
+                                    "currency"
+                                  ]
+                                },
+                                "attempts": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "failureReason": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "propertyName",
+                                "city",
+                                "checkIn",
+                                "checkOut",
+                                "nights",
+                                "roomName",
+                                "board",
+                                "total",
+                                "feesAtHotel",
+                                "refundable",
+                                "freeCancellationUntil",
+                                "cancellationPolicy",
+                                "status",
+                                "confirmationCode",
+                                "supplier",
+                                "commissionable",
+                                "commissionBps",
+                                "penalty",
+                                "attempts",
+                                "failureReason"
+                              ]
+                            }
+                          },
+                          "failureReason": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "confirmedAt": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "cancelledAt": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "tripId",
+                          "proposalId",
+                          "tripTitle",
+                          "status",
+                          "cancelling",
+                          "currency",
+                          "paymentMode",
+                          "total",
+                          "dueNow",
+                          "paid",
+                          "refunded",
+                          "penalty",
+                          "paymentState",
+                          "traveler",
+                          "lines",
+                          "failureReason",
+                          "createdAt",
+                          "confirmedAt",
+                          "cancelledAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/v1/bookings/{id}": {
+      "get": {
+        "operationId": "BookingsController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "tripId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "proposalId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "tripTitle": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "pending",
+                        "confirmed",
+                        "failed",
+                        "modified",
+                        "cancelled",
+                        "completed",
+                        "reversed"
+                      ]
+                    },
+                    "cancelling": {
+                      "type": "boolean"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "paymentMode": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "pay_at_hotel",
+                        "prepay",
+                        "deposit"
+                      ]
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "dueNow": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "paid": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "refunded": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "penalty": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "paymentState": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "awaiting",
+                        "captured",
+                        "failed",
+                        "partially_refunded",
+                        "refunded"
+                      ]
+                    },
+                    "traveler": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "specialRequests": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "email",
+                        "phone",
+                        "specialRequests"
+                      ]
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "propertyName": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "checkIn": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "checkOut": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "nights": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "roomName": {
+                            "type": "string"
+                          },
+                          "board": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "feesAtHotel": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "refundable": {
+                            "type": "boolean"
+                          },
+                          "freeCancellationUntil": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "cancellationPolicy": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "failed",
+                              "cancelled"
+                            ]
+                          },
+                          "confirmationCode": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "supplier": {
+                            "type": "string"
+                          },
+                          "commissionable": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "commissionBps": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "penalty": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "failureReason": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "propertyName",
+                          "city",
+                          "checkIn",
+                          "checkOut",
+                          "nights",
+                          "roomName",
+                          "board",
+                          "total",
+                          "feesAtHotel",
+                          "refundable",
+                          "freeCancellationUntil",
+                          "cancellationPolicy",
+                          "status",
+                          "confirmationCode",
+                          "supplier",
+                          "commissionable",
+                          "commissionBps",
+                          "penalty",
+                          "attempts",
+                          "failureReason"
+                        ]
+                      }
+                    },
+                    "failureReason": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "confirmedAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "cancelledAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "tripId",
+                    "proposalId",
+                    "tripTitle",
+                    "status",
+                    "cancelling",
+                    "currency",
+                    "paymentMode",
+                    "total",
+                    "dueNow",
+                    "paid",
+                    "refunded",
+                    "penalty",
+                    "paymentState",
+                    "traveler",
+                    "lines",
+                    "failureReason",
+                    "createdAt",
+                    "confirmedAt",
+                    "cancelledAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "bookings"
+        ]
+      },
+      "delete": {
+        "operationId": "BookingsController_discard_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/v1/bookings/{id}/cancellation-quote": {
+      "get": {
+        "operationId": "BookingsController_quote_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bookingId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "estimate": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "propertyName": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "penalty": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "freeCancellationUntil": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "cancellationPolicy": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "propertyName",
+                          "total",
+                          "penalty",
+                          "freeCancellationUntil",
+                          "cancellationPolicy"
+                        ]
+                      }
+                    },
+                    "penalty": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "paid": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "refund": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "bookingId",
+                    "estimate",
+                    "lines",
+                    "penalty",
+                    "paid",
+                    "refund"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/v1/bookings/{id}/cancel": {
+      "post": {
+        "operationId": "BookingsController_cancel_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per logical request; reuse it on retry.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "tripId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "proposalId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "tripTitle": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "pending",
+                        "confirmed",
+                        "failed",
+                        "modified",
+                        "cancelled",
+                        "completed",
+                        "reversed"
+                      ]
+                    },
+                    "cancelling": {
+                      "type": "boolean"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "paymentMode": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "pay_at_hotel",
+                        "prepay",
+                        "deposit"
+                      ]
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "dueNow": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "paid": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "refunded": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "penalty": {
+                      "type": "object",
+                      "properties": {
+                        "amountMinor": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "amountMinor",
+                        "currency"
+                      ]
+                    },
+                    "paymentState": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "awaiting",
+                        "captured",
+                        "failed",
+                        "partially_refunded",
+                        "refunded"
+                      ]
+                    },
+                    "traveler": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "specialRequests": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "email",
+                        "phone",
+                        "specialRequests"
+                      ]
+                    },
+                    "lines": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "propertyName": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "checkIn": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "checkOut": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "nights": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "roomName": {
+                            "type": "string"
+                          },
+                          "board": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "feesAtHotel": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "refundable": {
+                            "type": "boolean"
+                          },
+                          "freeCancellationUntil": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "cancellationPolicy": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "confirmed",
+                              "failed",
+                              "cancelled"
+                            ]
+                          },
+                          "confirmationCode": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "supplier": {
+                            "type": "string"
+                          },
+                          "commissionable": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "commissionBps": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "penalty": {
+                            "type": "object",
+                            "properties": {
+                              "amountMinor": {
+                                "type": "string"
+                              },
+                              "currency": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "amountMinor",
+                              "currency"
+                            ]
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "failureReason": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "propertyName",
+                          "city",
+                          "checkIn",
+                          "checkOut",
+                          "nights",
+                          "roomName",
+                          "board",
+                          "total",
+                          "feesAtHotel",
+                          "refundable",
+                          "freeCancellationUntil",
+                          "cancellationPolicy",
+                          "status",
+                          "confirmationCode",
+                          "supplier",
+                          "commissionable",
+                          "commissionBps",
+                          "penalty",
+                          "attempts",
+                          "failureReason"
+                        ]
+                      }
+                    },
+                    "failureReason": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "confirmedAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "cancelledAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "tripId",
+                    "proposalId",
+                    "tripTitle",
+                    "status",
+                    "cancelling",
+                    "currency",
+                    "paymentMode",
+                    "total",
+                    "dueNow",
+                    "paid",
+                    "refunded",
+                    "penalty",
+                    "paymentState",
+                    "traveler",
+                    "lines",
+                    "failureReason",
+                    "createdAt",
+                    "confirmedAt",
+                    "cancelledAt"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "bookings"
+        ]
+      }
+    },
+    "/v1/support/bookings/stuck": {
+      "get": {
+        "operationId": "SupportBookingsController_stuck_v1",
+        "parameters": [
+          {
+            "name": "minutes",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1440
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "tripTitle": {
+                            "type": "string"
+                          },
+                          "pendingSince": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "lines": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "propertyName": {
+                                  "type": "string"
+                                },
+                                "supplier": {
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "confirmed",
+                                    "failed",
+                                    "cancelled"
+                                  ]
+                                },
+                                "attempts": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "propertyName",
+                                "supplier",
+                                "status",
+                                "attempts"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "tripTitle",
+                          "pendingSince",
+                          "lines"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "support"
+        ]
+      }
+    },
+    "/v1/support/bookings/{id}/retry": {
+      "post": {
+        "operationId": "SupportBookingsController_retry_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "support"
         ]
       }
     },

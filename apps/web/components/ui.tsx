@@ -382,6 +382,15 @@ const STATUS: Record<
   in_progress: { tone: 'blue', label: 'In progress' },
   superseded: { tone: 'grey' },
   verified: { tone: 'blue' },
+  draft: { tone: 'grey' },
+  confirmed: { tone: 'green' },
+  booked: { tone: 'green' },
+  modified: { tone: 'amber' },
+  reversed: { tone: 'grey' },
+  awaiting: { tone: 'amber', label: 'Awaiting payment' },
+  captured: { tone: 'green', label: 'Paid' },
+  refunded: { tone: 'grey' },
+  partially_refunded: { tone: 'grey', label: 'Partly refunded' },
 };
 
 const TONES = {

@@ -10,6 +10,7 @@ import { totp } from '../src/modules/identity/domain/totp.js';
 import { AuthService, IdentityApi } from '../src/modules/identity/index.js';
 import { CatalogApi, FakeHotelSupplier, HOTEL_SUPPLIERS } from '../src/modules/catalog/index.js';
 import { SearchService } from '../src/modules/catalog/application/search.service.js';
+import { FakePaymentProvider, PAYMENT_PROVIDER } from '../src/modules/commission-payments/index.js';
 import { Database } from '../src/platform/db/database.js';
 import { EventBus } from '../src/platform/events/event-bus.js';
 import { OutboxRelay } from '../src/platform/events/outbox-relay.js';
@@ -52,6 +53,12 @@ export async function startApp() {
     await app.get(CatalogApi).ingestAll();
     await settle();
   }
+  /** Runs one registered job (e.g. a cron task) now, as the worker would. */
+  async function runJob(name: string, payload: unknown = {}): Promise<void> {
+    const job = jobs.get(name);
+    if (!job) throw new Error(`No such job: ${name}`);
+    await job.handle(payload, { jobId: 'test', attempts: 1, maxAttempts: 1, correlationId: null });
+  }
   const server = () => app.getHttpServer();
   const app_ = app;
 
@@ -75,7 +82,7 @@ export async function startApp() {
     adminAgent = null;
     const { rows } = await admin.query<{ t: string }>(
       `SELECT format('%I.%I', schemaname, tablename) AS t FROM pg_tables
-        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries')
+        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries', 'booking', 'payments')
           AND tablename <> ALL ($1)`,
       [SEED_TABLES],
     );
@@ -90,7 +97,15 @@ export async function startApp() {
       s.failing = false;
       s.hangMs = 0;
       s.soldOut.clear();
+      s.reserveFailures = 0;
+      s.rejectReserve = null;
+      s.rejectWhen = null;
+      s.reserveCalls.length = 0;
     }
+    const pay = app.get<FakePaymentProvider>(PAYMENT_PROVIDER);
+    pay.failRefunds = null;
+    pay.refundTransportFailures = 0;
+    pay.intentTransportFailures = 0;
     app.get(SearchService).resetBreakers();
   }
 
@@ -198,6 +213,7 @@ export async function startApp() {
     admin1,
     onboardAdvisor,
     ingestCatalog,
+    runJob,
     suppliers,
     close,
   };

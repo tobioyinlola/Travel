@@ -1,10 +1,13 @@
 import { createHash } from 'node:crypto';
 import type {
   Board,
+  CancelResult,
   HotelSupplierPort,
   Occupancy,
   PaymentMode,
   RateQuery,
+  ReserveRequest,
+  ReserveResult,
   SupplierProperty,
   SupplierRate,
 } from '../application/supplier.port.js';
@@ -175,6 +178,14 @@ export class FakeHotelSupplier implements HotelSupplierPort {
   failing = false;
   hangMs = 0;
   readonly soldOut = new Set<string>();
+  /** Test hooks for booking: transport errors for the next N reserve calls, or a definitive refusal. */
+  reserveFailures = 0;
+  rejectReserve: 'sold_out' | 'price_changed' | 'invalid' | null = null;
+  /** Refuse only some requests (e.g. the second hotel of a booking). */
+  rejectWhen: ((req: ReserveRequest) => 'sold_out' | 'price_changed' | 'invalid' | null) | null =
+    null;
+  /** Every reserve call that reached this supplier, for assertions (idempotency, retries). */
+  readonly reserveCalls: ReserveRequest[] = [];
 
   constructor(
     readonly name: 'fake-wholesaler-a' | 'fake-wholesaler-b',
@@ -258,6 +269,68 @@ export class FakeHotelSupplier implements HotelSupplierPort {
     const h = this.find(k.h);
     if (!h) return null;
     return this.price(h, k.r, k.b, k.rf, k.ci, k.co, { adults: k.a, childrenAges: k.c }, currency);
+  }
+
+  /**
+   * Stateless on purpose (API and worker are separate processes): the reservation reference encodes the
+   * offer, so the same idempotency key always yields the same reference and cancel can re-derive terms.
+   */
+  async reserve(req: ReserveRequest): Promise<ReserveResult> {
+    await this.delay();
+    this.reserveCalls.push(req);
+    if (this.reserveFailures > 0) {
+      this.reserveFailures -= 1;
+      throw new Error(`${this.name} reserve timed out`);
+    }
+    const refusal = this.rejectReserve ?? this.rejectWhen?.(req) ?? null;
+    if (refusal) return { status: 'rejected', reason: refusal, raw: { error: refusal } };
+    const rate = await this.checkRate(req.rateKey, req.currency);
+    if (!rate) return { status: 'rejected', reason: 'sold_out', raw: { error: 'sold_out' } };
+    if (rate.total.amountMinor !== req.expectedTotal.amountMinor) {
+      return {
+        status: 'rejected',
+        reason: 'price_changed',
+        raw: { error: 'price_changed', now: rate.total },
+      };
+    }
+    const reservationRef = `RSV-${Buffer.from(
+      JSON.stringify({
+        k: req.rateKey,
+        i: req.idempotencyKey,
+        c: req.currency,
+        t: rate.total.amountMinor,
+      }),
+    ).toString('base64url')}`;
+    const confirmationCode = hash(this.name, req.idempotencyKey)
+      .toString(36)
+      .toUpperCase()
+      .padStart(7, '0');
+    return {
+      status: 'confirmed',
+      reservationRef,
+      confirmationCode,
+      total: rate.total,
+      raw: { supplier: this.name, reservationRef, confirmationCode, guest: req.guest.name },
+    };
+  }
+
+  async cancel(reservationRef: string): Promise<CancelResult> {
+    await this.delay();
+    const decoded = JSON.parse(
+      Buffer.from(reservationRef.replace(/^RSV-/, ''), 'base64url').toString('utf8'),
+    ) as { k: string; c: string; t: string };
+    const k = decodeKey(decoded.k);
+    const total = Number(decoded.t);
+    const nights = nightsBetween(k.ci, k.co);
+    const freeUntil = new Date(`${addDays(k.ci, -3)}T12:00:00Z`);
+    const inWindow = k.rf && new Date() <= freeUntil;
+    // Refundable after the window: first night. Non-refundable: everything.
+    const penalty = inWindow ? 0 : k.rf ? Math.round(total / nights) : total;
+    return {
+      status: 'cancelled',
+      penalty: { amountMinor: String(penalty), currency: decoded.c },
+      raw: { supplier: this.name, reservationRef, penalty },
+    };
   }
 
   private price(

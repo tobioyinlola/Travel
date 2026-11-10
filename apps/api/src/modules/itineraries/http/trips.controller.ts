@@ -28,7 +28,7 @@ import {
 } from './schemas.js';
 
 const listQuery = z.object({
-  status: z.enum(['planning', 'proposed', 'approved', 'cancelled']).optional(),
+  status: z.enum(['planning', 'proposed', 'approved', 'booked', 'cancelled']).optional(),
   clientId: z.uuid().optional(),
 });
 

@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   CircleDashed,
   Copy,
-  CreditCard,
   MapPin,
   RefreshCw,
   Send,
@@ -21,6 +20,7 @@ import {
 import Link from 'next/link';
 import { Fragment, use, useState, type FormEvent } from 'react';
 import { AccessNotice } from '@/components/gate';
+import { BookingCard } from '@/components/booking-card';
 import { HotelSearch } from '@/components/hotel-search';
 import {
   Alert,
@@ -201,8 +201,9 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
       {notice && <Alert kind="success">{notice}</Alert>}
       {!editable && (
         <Alert kind="info">
-          This trip is {t.status}; the approved proposal is locked. Booking arrives in the next
-          release.
+          {t.status === 'approved'
+            ? 'Your client approved this trip. The proposal is locked while they complete the booking.'
+            : `This trip is ${t.status}.`}
         </Alert>
       )}
 
@@ -378,6 +379,8 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
             </p>
           </Card>
 
+          <BookingCard tripId={id} />
+
           <Card title="Proposal" action={current && <StatusBadge status={current.status} />}>
             {current ? (
               <div className="flex flex-col gap-2 text-sm">
@@ -460,10 +463,6 @@ export default function TripPage({ params }: { params: Promise<{ id: string }> }
               </ul>
             </Card>
           )}
-          <p className="flex items-center gap-2 px-2 text-xs text-muted">
-            <CreditCard {...ICON} size={14} aria-hidden /> Payment and booking arrive in the next
-            release.
-          </p>
         </aside>
       </div>
     </div>

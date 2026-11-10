@@ -25,7 +25,6 @@ export const BUSINESS_MODULES = [
   LearningModule,
   ItinerariesModule,
   BookingModule,
-  CommissionPaymentsModule,
   ReportingModule,
   AiModule,
   AdminModule,
@@ -41,6 +40,7 @@ export class AppModule {
         IdentityModule.forRoot(config),
         NotificationsModule.forRoot(config),
         MembershipModule.forRoot(config),
+        CommissionPaymentsModule.forRoot(config),
         ...BUSINESS_MODULES,
       ],
     };

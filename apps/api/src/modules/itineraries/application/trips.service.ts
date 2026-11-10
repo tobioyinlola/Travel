@@ -69,7 +69,7 @@ interface TripRow {
   currency: string;
   planning_fee_minor: string;
   notes: string;
-  status: 'planning' | 'proposed' | 'approved' | 'cancelled';
+  status: 'planning' | 'proposed' | 'approved' | 'booked' | 'cancelled';
   version: number;
   updated_at: Date;
 }
@@ -359,6 +359,7 @@ export class TripsService {
         planning: trips.filter((t) => t.status === 'planning').length,
         proposed: trips.filter((t) => t.status === 'proposed').length,
         approved: trips.filter((t) => t.status === 'approved').length,
+        booked: trips.filter((t) => t.status === 'booked').length,
         upcoming: active.filter((t) => t.startDate >= today).length,
         travelingNow: active.filter((t) => t.startDate <= today && t.endDate >= today).length,
       },

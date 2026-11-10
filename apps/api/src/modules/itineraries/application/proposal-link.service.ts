@@ -55,6 +55,33 @@ function travelerHotel(h: HotelSnapshot) {
   };
 }
 
+/** The hotel lines Booking will reserve, from the immutable proposal snapshot. */
+function hotelForBooking(itemId: string, h: HotelSnapshot) {
+  const r = h.rate;
+  return {
+    itemId,
+    supplier: r.supplier,
+    rateKey: r.rateKey,
+    propertyName: h.property.name,
+    city: h.property.city,
+    checkIn: r.checkIn,
+    checkOut: r.checkOut,
+    nights: r.nights,
+    roomName: r.roomName,
+    board: r.board,
+    adults: r.occupancy.adults,
+    childrenAges: r.occupancy.childrenAges,
+    total: r.total,
+    feesAtHotel: r.feesAtHotel,
+    commissionable: r.commissionable,
+    commissionBps: r.commissionBps,
+    paymentModes: r.paymentModes,
+    refundable: r.refundable,
+    freeCancellationUntil: r.freeCancellationUntil,
+    cancellationPolicy: r.cancellationPolicy,
+  };
+}
+
 /** The no-login proposal page (FR-ITN-04/06, FR-TRV-01..03, AC-02). */
 @Injectable()
 export class ProposalLinkService {
@@ -217,7 +244,17 @@ export class ProposalLinkService {
         await tx.publish({
           type: 'ProposalApproved',
           version: 1,
-          payload: { ...base, proposalVersion: p.version },
+          payload: {
+            ...base,
+            proposalVersion: p.version,
+            // Booking (same layer) cannot call us, so the event carries what checkout needs. Hash only, never the token.
+            tokenHash: tokenHash(token),
+            linkExpiresAt: p.token_expires_at.toISOString(),
+            currency: p.snapshot.trip.currency,
+            hotels: p.snapshot.items.flatMap((i) =>
+              i.hotel ? [hotelForBooking(i.id, i.hotel)] : [],
+            ),
+          },
         });
       } else if (decision === 'decline') {
         await tx.publish({
