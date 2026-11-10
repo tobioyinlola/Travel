@@ -4,6 +4,7 @@ import type { EventPayload } from '@atp/contracts';
 import type { Redis } from 'ioredis';
 import { AuditWriter } from '../../../platform/audit/audit-writer.js';
 import { Database } from '../../../platform/db/database.js';
+import { FeatureFlags } from '../../../platform/feature-flags.js';
 import type { Tx } from '../../../platform/db/tx.js';
 import { EventBus } from '../../../platform/events/event-bus.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
@@ -143,6 +144,7 @@ export class BookingService implements OnModuleInit {
     private readonly crypto: FieldCrypto,
     private readonly catalog: CatalogApi,
     private readonly identity: IdentityApi,
+    private readonly flags: FeatureFlags,
     @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
@@ -468,6 +470,7 @@ export class BookingService implements OnModuleInit {
    * then either payment is requested (prepay/deposit) or reservation starts at once (pay at hotel).
    */
   async confirm(token: string, input: ConfirmInput, key: string) {
+    await this.flags.require('new_bookings', 'bookings-paused', 'Booking is paused for the moment');
     const pre = await this.system(async (tx) => {
       const b = await this.findByToken(tx, token);
       return { b, lines: await this.lines(tx, b.id) };
@@ -1361,6 +1364,65 @@ export class BookingService implements OnModuleInit {
           [l.id],
         );
       await this.evaluate(tx, b.id);
+    });
+  }
+
+  // ---------- Admin: advisor leaves (FR-ADM-02) ----------
+
+  private static readonly OPEN = `(b.status IN ('draft', 'pending') OR (b.status IN ('confirmed', 'modified')
+      AND EXISTS (SELECT 1 FROM booking.lines l WHERE l.booking_id = b.id AND l.status = 'confirmed' AND l.check_out >= current_date)))`;
+
+  /** Bookings that still need someone: not yet submitted, in progress, or confirmed with a stay to come. */
+  async openCount(advisorId: string): Promise<number> {
+    return this.system(async (tx) => {
+      const [r] = await tx.query<{ n: number }>(
+        `SELECT count(*)::int AS n FROM booking.bookings b WHERE b.owner_advisor_id = $1 AND ${BookingService.OPEN}`,
+        [advisorId],
+      );
+      return r!.n;
+    });
+  }
+
+  /**
+   * Move an advisor's open bookings to another advisor. Commission already earned stays with whoever earned it.
+   * Trips and clients follow by event. Safe to repeat: only bookings still owned by `from` move.
+   */
+  async reassignOpen(from: string, to: { advisorId: string; userId: string }, actorId: string) {
+    return this.system(async (tx) => {
+      const moved = await tx.query<{ id: string; trip_id: string }>(
+        `UPDATE booking.bookings b SET owner_advisor_id = $2, advisor_user_id = $3, updated_at = now()
+          WHERE b.owner_advisor_id = $1 AND ${BookingService.OPEN} RETURNING b.id, b.trip_id`,
+        [from, to.advisorId, to.userId],
+      );
+      if (moved.length === 0) return { bookingIds: [] as string[], tripIds: [] as string[] };
+      const ids = moved.map((m) => m.id);
+      await tx.query(
+        `UPDATE booking.lines SET owner_advisor_id = $2 WHERE booking_id = ANY($1::uuid[])`,
+        [ids, to.advisorId],
+      );
+      const tripIds = [...new Set(moved.map((m) => m.trip_id))];
+      await this.audit.record({
+        actorType: 'user',
+        actorId,
+        action: 'booking.reassigned',
+        entityType: 'advisor',
+        entityId: from,
+        module: 'booking',
+        metadata: { toAdvisorId: to.advisorId, bookingIds: ids },
+      });
+      await tx.publish({
+        type: 'AdvisorBookingsReassigned',
+        version: 1,
+        payload: {
+          fromAdvisorId: from,
+          toAdvisorId: to.advisorId,
+          toAdvisorUserId: to.userId,
+          bookingIds: ids,
+          tripIds,
+        },
+      });
+      for (const id of ids) await this.touch(tx, 'id', id);
+      return { bookingIds: ids, tripIds };
     });
   }
 

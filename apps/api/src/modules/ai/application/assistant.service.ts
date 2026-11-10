@@ -1,6 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AuditWriter } from '../../../platform/audit/audit-writer.js';
 import { Database } from '../../../platform/db/database.js';
+import { FeatureFlags } from '../../../platform/feature-flags.js';
 import type { Tx } from '../../../platform/db/tx.js';
 import { ProblemException, problemType } from '../../../platform/http/problem.js';
 import { ClientsApi } from '../../clients/index.js';
@@ -52,6 +53,7 @@ export class AssistantService {
     private readonly indexer: IndexerService,
     private readonly clients: ClientsApi,
     private readonly audit: AuditWriter,
+    private readonly flags: FeatureFlags,
     @Inject(MODEL_PORT) private readonly model: ModelPort,
   ) {}
 
@@ -96,6 +98,7 @@ export class AssistantService {
     clientId: string | undefined,
     recipientFirstName: string | undefined,
   ) {
+    await this.flags.require('ai_assistant', 'ai-paused', 'The assistant is paused for the moment');
     const settings = await this.getSettings(advisorId);
     if (!settings.enabled)
       throw problem(

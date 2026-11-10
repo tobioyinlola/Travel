@@ -122,6 +122,20 @@ CREATE TABLE IF NOT EXISTS platform.webhook_inbox (
   UNIQUE (provider, event_id)
 );
 
+-- Feature flags and kill switches (FR-ADM-04): changed by admins without a deploy, read by every module.
+CREATE TABLE IF NOT EXISTS platform.feature_flags (
+  key          text PRIMARY KEY,
+  enabled      boolean NOT NULL DEFAULT true,
+  description  text NOT NULL,
+  updated_by   uuid,
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+INSERT INTO platform.feature_flags (key, enabled, description) VALUES
+  ('new_bookings', true, 'Travelers can start new bookings. Turn off to pause checkout during a supplier or payment incident.'),
+  ('ai_assistant', true, 'The advisor AI assistant is available. Turn off to disable it for everyone.')
+ON CONFLICT (key) DO NOTHING;
+GRANT SELECT ON platform.feature_flags TO atp_modules;
+
 RESET ROLE;
 `;
 }

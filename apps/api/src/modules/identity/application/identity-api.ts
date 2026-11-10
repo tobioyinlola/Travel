@@ -20,6 +20,18 @@ export class IdentityApi {
     return this.advisors.getAdvisor(advisorId);
   }
 
+  changeAdvisorStatus(
+    advisorId: string,
+    event: 'suspended' | 'reinstated' | 'offboarded',
+    reason: string,
+  ): Promise<AdvisorSummary> {
+    return this.advisors.changeStatus(advisorId, event, reason);
+  }
+
+  listAdvisors(filter: { status?: AdvisorStatus | undefined; q?: string | undefined }) {
+    return this.advisors.listAdvisors(filter);
+  }
+
   getAdvisorByUser(userId: string): Promise<AdvisorSummary | null> {
     return this.advisors.getAdvisorByUser(userId);
   }

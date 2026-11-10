@@ -1476,6 +1476,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/reports/advisor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReportsController_advisor_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/finance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReportsController_finance_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReportsController_platform_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/applications": {
         parameters: {
             query?: never;
@@ -1678,6 +1726,150 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AdminController_createPromo_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/advisors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdvisorsAdminController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/advisors/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdvisorsAdminController_suspend_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/advisors/{id}/reinstate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdvisorsAdminController_reinstate_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/advisors/{id}/offboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdvisorsAdminController_offboard_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigAdminController_listFlags_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/flags/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["ConfigAdminController_setFlag_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigAdminController_plans_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/plans/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["ConfigAdminController_upsertPlan_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigAdminController_tiers_v1"];
+        put: operations["ConfigAdminController_putTiers_v1"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -8287,6 +8479,220 @@ export interface operations {
             };
         };
     };
+    ReportsController_advisor_v1: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        period: {
+                            /** Format: date-time */
+                            from: string;
+                            /** Format: date-time */
+                            to: string;
+                        };
+                        pipeline: {
+                            proposalsSent: number;
+                            proposalsApproved: number;
+                            approvalRatePercent: number;
+                        };
+                        bookings: {
+                            confirmed: number;
+                            cancelled: number;
+                            net: number;
+                            value: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        commission: {
+                            earned: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            payable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            paid: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        tier: {
+                            tier: string;
+                            tierName: string;
+                            advisorShareBps: number;
+                            year: number;
+                            currency: string;
+                            calendarYearSales: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            next: {
+                                code: string;
+                                name: string;
+                                advisorShareBps: number;
+                                remaining: {
+                                    amountMinor: string;
+                                    currency: string;
+                                };
+                            } | null;
+                        };
+                        topSuppliers: {
+                            supplier: string;
+                            hotels: number;
+                            value: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ReportsController_finance_v1: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        period: {
+                            /** Format: date-time */
+                            from: string;
+                            /** Format: date-time */
+                            to: string;
+                        };
+                        commission: {
+                            recognized: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            advisorShare: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            platformShare: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            reversed: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            receivedFromSuppliers: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            madePayable: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            paidToAdvisors: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            outstanding: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        };
+                        bySupplier: {
+                            supplier: string;
+                            recognized: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            received: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ReportsController_platform_v1: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        period: {
+                            /** Format: date-time */
+                            from: string;
+                            /** Format: date-time */
+                            to: string;
+                        };
+                        activation: {
+                            applied: number;
+                            approved: number;
+                            active: number;
+                            booked: number;
+                            medianDaysActiveToFirstBooking: number | null;
+                        };
+                        activeAdvisors: number;
+                        bookings: {
+                            confirmed: number;
+                            cancelled: number;
+                            failed: number;
+                            gmv: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            proposalToBookingPercent: number;
+                        };
+                        bySupplier: {
+                            supplier: string;
+                            hotels: number;
+                            value: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                        }[];
+                    };
+                };
+            };
+        };
+    };
     AdminController_list_v1: {
         parameters: {
             query?: {
@@ -8875,6 +9281,387 @@ export interface operations {
                 content: {
                     "application/json": {
                         code: string;
+                    };
+                };
+            };
+        };
+    };
+    AdvisorsAdminController_list_v1: {
+        parameters: {
+            query?: {
+                status?: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            userId: string;
+                            /** @enum {string} */
+                            status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                            legalName: string;
+                            country: string;
+                            acceptedAt: string | null;
+                            approvedAt: string | null;
+                            essentialsPassedAt: string | null;
+                            statusReason?: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    AdvisorsAdminController_suspend_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        userId: string;
+                        /** @enum {string} */
+                        status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                        legalName: string;
+                        country: string;
+                        acceptedAt: string | null;
+                        approvedAt: string | null;
+                        essentialsPassedAt: string | null;
+                        statusReason?: string | null;
+                    };
+                };
+            };
+        };
+    };
+    AdvisorsAdminController_reinstate_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        id: string;
+                        /** Format: uuid */
+                        userId: string;
+                        /** @enum {string} */
+                        status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                        legalName: string;
+                        country: string;
+                        acceptedAt: string | null;
+                        approvedAt: string | null;
+                        essentialsPassedAt: string | null;
+                        statusReason?: string | null;
+                    };
+                };
+            };
+        };
+    };
+    AdvisorsAdminController_offboard_v1: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Unique per logical request; reuse it on retry. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                    /** Format: uuid */
+                    reassignToAdvisorId?: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        advisor: {
+                            /** Format: uuid */
+                            id: string;
+                            /** Format: uuid */
+                            userId: string;
+                            /** @enum {string} */
+                            status: "applied" | "under_review" | "approved" | "active" | "suspended" | "offboarded" | "rejected";
+                            legalName: string;
+                            country: string;
+                            acceptedAt: string | null;
+                            approvedAt: string | null;
+                            essentialsPassedAt: string | null;
+                            statusReason?: string | null;
+                        };
+                        reassignedBookings: number;
+                    };
+                };
+            };
+        };
+    };
+    ConfigAdminController_listFlags_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            key: string;
+                            enabled: boolean;
+                            description: string;
+                            /** Format: date-time */
+                            updatedAt: string;
+                            /** Format: uuid */
+                            updatedBy: string | null;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ConfigAdminController_setFlag_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    enabled: boolean;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        key: string;
+                        enabled: boolean;
+                        description: string;
+                        /** Format: date-time */
+                        updatedAt: string;
+                        /** Format: uuid */
+                        updatedBy: string | null;
+                    };
+                };
+            };
+        };
+    };
+    ConfigAdminController_plans_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            code: string;
+                            name: string;
+                            /** @enum {string} */
+                            billingPeriod: "quarter" | "year";
+                            price: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            active: boolean;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ConfigAdminController_upsertPlan_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    /** @enum {string} */
+                    billingPeriod: "quarter" | "year";
+                    priceMinor: string;
+                    /** @default USD */
+                    currency?: string;
+                    /** @default true */
+                    active?: boolean;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        code: string;
+                        name: string;
+                        /** @enum {string} */
+                        billingPeriod: "quarter" | "year";
+                        price: {
+                            amountMinor: string;
+                            currency: string;
+                        };
+                        active: boolean;
+                    };
+                };
+            };
+        };
+    };
+    ConfigAdminController_tiers_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            code: string;
+                            name: string;
+                            position: number;
+                            minSales: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            advisorShareBps: number;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+    ConfigAdminController_putTiers_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    tiers: {
+                        code: string;
+                        name: string;
+                        minSalesMinor: string;
+                        advisorShareBps: number;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            code: string;
+                            name: string;
+                            position: number;
+                            minSales: {
+                                amountMinor: string;
+                                currency: string;
+                            };
+                            advisorShareBps: number;
+                        }[];
                     };
                 };
             };

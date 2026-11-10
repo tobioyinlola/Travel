@@ -16,6 +16,7 @@ import { OutboxRelay } from './events/outbox-relay.js';
 import { createTxHooks } from './events/tx-hooks.js';
 import { HealthController } from './health/health.controller.js';
 import { IDEMPOTENCY_TTL_HOURS, IdempotencyInterceptor } from './http/idempotency.js';
+import { FeatureFlags } from './feature-flags.js';
 import { DeadLetterService } from './jobs/dead-letters.js';
 import { JobRegistry } from './jobs/job-registry.js';
 import { WorkerRunner, registerEventHandlerJobs } from './jobs/worker-runner.js';
@@ -135,6 +136,11 @@ export class PlatformModule {
           useFactory: (db: Database) => new AuditWriter(db),
         },
         { provide: FieldCrypto, useFactory: () => new FieldCrypto(config.FIELD_ENCRYPTION_KEY) },
+        {
+          provide: FeatureFlags,
+          inject: [Database],
+          useFactory: (db: Database) => new FeatureFlags(db),
+        },
         WebhookRegistry,
         WebhookInbox,
         IdempotencyInterceptor,
@@ -152,6 +158,7 @@ export class PlatformModule {
         IdempotencyInterceptor,
         AuditWriter,
         FieldCrypto,
+        FeatureFlags,
         WebhookRegistry,
         WebhookInbox,
       ],

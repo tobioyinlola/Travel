@@ -16,6 +16,7 @@ export class BookingOutcomes implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
+    this.moveTrips();
     this.on('BookingConfirmed', 'itineraries.tripBooked', (tx, p) =>
       this.setStatus(tx, p.tripId, 'booked', ['approved']),
     );
@@ -28,6 +29,49 @@ export class BookingOutcomes implements OnModuleInit {
     this.on('BookingDiscarded', 'itineraries.tripReopenedAfterDiscard', (tx, p) =>
       this.reopen(tx, p.tripId),
     );
+  }
+
+  private moveTrips(): void {
+    this.bus.subscribe<{
+      fromAdvisorId: string;
+      toAdvisorId: string;
+      toAdvisorUserId: string;
+      tripIds: string[];
+    }>({
+      module: 'itineraries',
+      handler: 'itineraries.tripsFollowBookings',
+      event: 'AdvisorBookingsReassigned',
+      version: 1,
+      handle: async (e, tx) => {
+        const p = e.payload;
+        await tx.setLocal('atp.scope', 'all');
+        const trips = await tx.query<{ id: string; client_id: string }>(
+          `UPDATE itineraries.trips SET owner_advisor_id = $2, updated_at = now(), version = version + 1
+            WHERE id = ANY($1::uuid[]) AND owner_advisor_id = $3 RETURNING id, client_id`,
+          [p.tripIds, p.toAdvisorId, p.fromAdvisorId],
+        );
+        if (trips.length === 0) return;
+        const ids = trips.map((t) => t.id);
+        await tx.query(
+          `UPDATE itineraries.items SET owner_advisor_id = $2 WHERE trip_id = ANY($1::uuid[])`,
+          [ids, p.toAdvisorId],
+        );
+        await tx.query(
+          `UPDATE itineraries.proposals SET owner_advisor_id = $2, advisor_user_id = $3 WHERE trip_id = ANY($1::uuid[])`,
+          [ids, p.toAdvisorId, p.toAdvisorUserId],
+        );
+        await tx.publish({
+          type: 'TripsReassigned',
+          version: 1,
+          payload: {
+            fromAdvisorId: p.fromAdvisorId,
+            toAdvisorId: p.toAdvisorId,
+            tripIds: ids,
+            clientIds: [...new Set(trips.map((t) => t.client_id))],
+          },
+        });
+      },
+    });
   }
 
   private on(

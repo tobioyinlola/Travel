@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ClientsApi } from './application/clients-api.js';
+import { ReassignmentService } from './application/reassignment.service.js';
 import { ClientsService } from './application/clients.service.js';
 import { ClientsController } from './http/clients.controller.js';
 
@@ -10,7 +11,7 @@ import { ClientsController } from './http/clients.controller.js';
 @Global() // exports only the public API
 @Module({
   controllers: [ClientsController],
-  providers: [ClientsService, ClientsApi],
+  providers: [ClientsService, ClientsApi, ReassignmentService],
   exports: [ClientsApi],
 })
 export class ClientsModule {}

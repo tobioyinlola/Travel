@@ -328,6 +328,39 @@ export class AdvisorsService implements OnModuleInit, ProviderResultSink {
 
   // ---------- Lifecycle ----------
 
+  /** FR-ADM-02: suspend, reinstate or offboard an advisor, with a reason. Callers handle open bookings first. */
+  async changeStatus(
+    advisorId: string,
+    event: 'suspended' | 'reinstated' | 'offboarded',
+    reason: string,
+  ): Promise<AdvisorSummary> {
+    await this.db.transaction('identity', async (tx) => {
+      const a = await this.lock(tx, advisorId);
+      if (!advisorLifecycle.can(a.status, event))
+        throw problem(
+          HttpStatus.CONFLICT,
+          'status-not-allowed',
+          `An advisor who is ${a.status} cannot be ${event === 'reinstated' ? 'reinstated' : event}`,
+        );
+      await this.transition(tx, a, event, { status_reason: reason, status_changed_at: new Date() });
+    });
+    return (await this.getAdvisor(advisorId))!;
+  }
+
+  /** The admin console's advisor list: everyone past the application stage, newest first. */
+  async listAdvisors(filter: { status?: AdvisorStatus | undefined; q?: string | undefined }) {
+    const rows = await this.db.read<AdvisorRow & { status_reason: string | null }>(
+      'identity',
+      `SELECT * FROM identity.advisors
+        WHERE ($1::text IS NULL OR status = $1)
+          AND ($2::text IS NULL OR legal_name ILIKE '%' || $2 || '%')
+          AND status NOT IN ('applied', 'under_review', 'rejected')
+        ORDER BY coalesce(status_changed_at, approved_at, submitted_at) DESC LIMIT 200`,
+      [filter.status ?? null, filter.q ?? null],
+    );
+    return rows.map((r) => ({ ...this.toSummary(r), statusReason: r.status_reason }));
+  }
+
   private async lock(tx: Tx, advisorId: string): Promise<AdvisorRow> {
     const [a] = await tx.query<AdvisorRow>(
       'SELECT * FROM identity.advisors WHERE id = $1 FOR UPDATE',

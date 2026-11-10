@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MembershipService, type MembershipView } from './membership.service.js';
+import { MembershipConfigService, type PlanInput, type TierInput } from './config.service.js';
 import { TiersService } from './tiers.service.js';
 
 /** Public interface for higher layers (Admin, Commission, Reporting). */
@@ -8,7 +9,24 @@ export class MembershipApi {
   constructor(
     private readonly membership: MembershipService,
     private readonly tiers: TiersService,
+    private readonly config: MembershipConfigService,
   ) {}
+
+  listAllPlans() {
+    return this.config.listPlans();
+  }
+
+  upsertPlan(input: PlanInput, actorId: string) {
+    return this.config.upsertPlan(input, actorId);
+  }
+
+  listTiers() {
+    return this.config.listTiers();
+  }
+
+  replaceTiers(tiers: TierInput[], actorId: string) {
+    return this.config.replaceTiers(tiers, actorId);
+  }
 
   /** The advisor's commission split for a sale recognised now (FR-COM-02). */
   splitFor(advisorId: string, currency: string) {

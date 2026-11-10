@@ -89,7 +89,7 @@ export async function startApp() {
     adminAgent = null;
     const { rows } = await admin.query<{ t: string }>(
       `SELECT format('%I.%I', schemaname, tablename) AS t FROM pg_tables
-        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries', 'booking', 'payments', 'commission', 'ai')
+        WHERE schemaname IN ('identity', 'notifications', 'membership', 'learning', 'clients', 'catalog', 'partners', 'itineraries', 'booking', 'payments', 'commission', 'ai', 'reporting')
           AND tablename <> ALL ($1)`,
       [SEED_TABLES],
     );

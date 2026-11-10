@@ -2,6 +2,7 @@
 
 import {
   BadgeDollarSign,
+  ChartColumn,
   GraduationCap,
   IdCard,
   LayoutGrid,
@@ -18,6 +19,7 @@ const TABS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
   { href: '/trips', label: 'Trips', icon: Luggage },
   { href: '/clients', label: 'Clients', icon: UserRound },
+  { href: '/insights', label: 'Insights', icon: ChartColumn },
   { href: '/earnings', label: 'Earnings', icon: BadgeDollarSign },
   { href: '/community', label: 'Community', icon: MessagesSquare },
 ];

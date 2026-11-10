@@ -115,8 +115,11 @@ export class PayoutsService implements OnModuleInit {
   /** Why this advisor cannot be paid right now; empty means they can. */
   private async blockers(tx: Tx, advisorId: string): Promise<string[]> {
     const out: string[] = [];
-    const gate = await this.identity.canBook(advisorId); // active advisor: approved, Essentials passed, in good standing
-    if (!gate.allowed) out.push('not_active');
+    // An active advisor in good standing, or one who has left: what they already earned is still theirs.
+    const advisor = await this.identity.getAdvisor(advisorId);
+    const eligible =
+      advisor?.status === 'offboarded' || (await this.identity.canBook(advisorId)).allowed;
+    if (!eligible) out.push('not_active');
     const [acct] = await tx.query(
       `SELECT 1 FROM commission.payout_accounts WHERE advisor_id = $1`,
       [advisorId],

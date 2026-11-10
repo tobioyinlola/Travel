@@ -418,6 +418,27 @@ export const eventCatalog = {
     producer: 'booking',
     payload: z.object({ bookingId: id, tripId: id, advisorId: id, status: z.string() }),
   },
+  /** An advisor left or was offboarded: their open bookings moved to another advisor (FR-ADM-02). */
+  'AdvisorBookingsReassigned.v1': {
+    producer: 'booking',
+    payload: z.object({
+      fromAdvisorId: id,
+      toAdvisorId: id,
+      toAdvisorUserId: id,
+      bookingIds: z.array(id),
+      tripIds: z.array(id),
+    }),
+  },
+  /** Trips (and so their clients) now belong to another advisor. */
+  'TripsReassigned.v1': {
+    producer: 'itineraries',
+    payload: z.object({
+      fromAdvisorId: id,
+      toAdvisorId: id,
+      tripIds: z.array(id),
+      clientIds: z.array(id),
+    }),
+  },
   'BookingCompleted.v1': {
     producer: 'booking',
     payload: z.object({ bookingId: id, advisorId: id }),
